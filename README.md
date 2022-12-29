@@ -1,6 +1,6 @@
 # rucksack
 
-A terminal-based password manager, importer (FireFox sync), and generator
+A terminal-based password manager, importer (Firefox Sync), and generator
 
 ## Features
 
