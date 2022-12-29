@@ -13,6 +13,8 @@ jobs:
       run: make deps
     - name: Build
       run: make build
+    - name: Lint
+      run: make lint
     - name: Run tests
       run: make test
     - name: Notify CI/CD Slack Channel

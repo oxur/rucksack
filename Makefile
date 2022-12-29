@@ -21,6 +21,9 @@ build: $(BIN_DIR)
 	@rm -f $(BIN_DIR)/*
 	@cargo install --path . --root .
 
+lint:
+	@cargo clippy --all-targets --all-features -- --no-deps -D warnings
+
 test:
 	@RUST_BACKTRACE=1 cargo test
 
