@@ -4,7 +4,7 @@ BIN = target/release/$(PROJ)
 
 default: all
 
-all: deps build test
+all: deps build lint test
 
 auth:
 	@echo "Copy and paste the following in the terminal where you"
