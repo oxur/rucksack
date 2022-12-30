@@ -4,20 +4,38 @@ use rand::distributions::{Distribution, Uniform};
 
 use anyhow::{Result};
 use clap::ArgMatches;
-use passwords::{analyzer, scorer};
+use passwords::{analyzer, scorer, PasswordGenerator};
+use uuid::{Uuid};
+
+use super::util;
 
 const SPECIALS: &[u8] = b"!@#%&*?=+:";
 
 // pub fn generate(matches: &ArgMatches, config: &config::Config) -> Result<()> {
-pub fn generate(matches: &ArgMatches) -> Result<()> {
+pub fn new(matches: &ArgMatches) -> Result<()> {
     match matches.get_one::<String>("type").map(|s| s.as_str()) {
+        Some("lipsum") => generate_pwd_lipsum(matches),
+        Some("random") => generate_pwd(matches),
         Some("uuid") => generate_pwd_uuid(),
         Some("uuid+") => generate_pwd_uuid_plus(),
         Some("uuid++") => generate_pwd_uuid_special(),
-        Some("default") => generate_pwd_uuid(),
         Some(_) => todo!(),
         None => todo!(),
     }
+}
+
+// Generator type dispatch functions
+
+fn generate_pwd(matches: &ArgMatches) -> Result<()> {
+    let length = matches.get_one::<usize>("length").unwrap();
+    display_scored_password(&rand_pwd(length))
+}
+
+fn generate_pwd_lipsum(matches: &ArgMatches) -> Result<()> {
+    let delimiter = matches.get_one::<String>("delimiter").map(|s| s.as_str()).unwrap();
+    let suffix_length = matches.get_one::<usize>("suffix-length").unwrap();
+    let word_count = matches.get_one::<usize>("word-count").unwrap();
+    display_scored_password(&lipsum_pwd(word_count, suffix_length, delimiter))
 }
 
 fn generate_pwd_uuid() -> Result<()> {
@@ -33,24 +51,17 @@ fn generate_pwd_uuid_special() -> Result<()> {
     display_scored_password(&uuid4_with_specials(number_of_specials))
 }
 
-pub fn version(version: &str) -> Result<()> {
-    display(version)
-}
+// Utility functions
 
 fn display_scored_password(pwd: &str) -> Result<()> {
     let analyzed = analyzer::analyze(pwd);
     let score = scorer::score(&analyzed);
     let msg = format!("\nNew password: {}\nPassword score: {:.2}\n", pwd, score);
-    display(&msg)
-}
-
-fn display(text: &str) -> Result<()> {
-    println!("{}", text);
-    Ok(())
+    util::display(&msg)
 }
 
 fn uuid4_string() -> String {
-    uuid::Uuid::new_v4().to_string()
+    Uuid::new_v4().to_string()
 }
 
 fn uuid4_with_uppers() -> String {
@@ -86,4 +97,36 @@ fn random_specials(count: usize) -> Vec<u8> {
         specials.push(SPECIALS[rng.gen_range(0..SPECIALS.len())])
     }
     specials
+}
+
+fn rand_pwd(length: &usize) -> String {
+    let pg = PasswordGenerator {
+        length: *length,
+        numbers: true,
+        lowercase_letters: true,
+        uppercase_letters: true,
+        symbols: true,
+        spaces: false,
+        exclude_similar_characters: true,
+        strict: true,
+    };
+    pg.generate_one().unwrap()
+}
+
+fn lipsum_pwd(word_count: &usize, suffix_length: &usize, delim: &str) -> String {
+    let mut rng = rand::thread_rng();
+    let phrase = lipsum::lipsum_words_from_seed(*word_count, rng.gen_range(0..10000));
+    let mut words: Vec<String> = phrase.split(' ').map(|s| s.to_string()).collect();
+    let pg = PasswordGenerator {
+        length: *suffix_length,
+        numbers: true,
+        lowercase_letters: false,
+        uppercase_letters: false,
+        symbols: true,
+        spaces: false,
+        exclude_similar_characters: true,
+        strict: true,
+    };
+    words.push(pg.generate_one().unwrap());
+    words.join(delim)
 }

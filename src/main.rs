@@ -8,7 +8,7 @@ use anyhow::{Context, Result};
 use clap::builder::{EnumValueParser};
 use clap::{Arg, ArgAction, ArgMatches, Command};
 
-mod cli;
+use rucksack::cli::command::{util, gen};
 
 const NAME: &str = env!("CARGO_PKG_NAME");
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -16,7 +16,7 @@ const DESC: &str = env!("CARGO_PKG_DESCRIPTION");
 
 fn cli() -> Command {
     Command::new(NAME)
-    .about(DESC)
+    .about(format!("{}: {}", NAME, DESC))
     .arg_required_else_help(true)
     .allow_external_subcommands(true)
     .arg(
@@ -41,7 +41,38 @@ fn cli() -> Command {
                     .help("the type of generator to use")
                     .short('t')
                     .long("type")
-                    .default_value("default"),
+                    .default_value("random")
+                    .value_parser(["lipsum", "random", "uuid", "uuid+", "uuid++", ]),
+            )
+            .arg(
+                Arg::new("length")
+                    .help("the character length of secret to generate (ignored for fixed-length generator types)")
+                    .short('l')
+                    .long("length")
+                    .value_parser(clap::value_parser!(usize))
+                    .default_value("12"),
+            )
+            .arg(
+                Arg::new("suffix-length")
+                    .help("the character length of a random suffix (for generator types that support suffixes)")
+                    .long("suffix-length")
+                    .value_parser(clap::value_parser!(usize))
+                    .default_value("4"),
+            )
+            .arg(
+                Arg::new("word-count")
+                    .help("the number of words to generate (for generator types that assemble words)")
+                    .short('w')
+                    .long("word-count")
+                    .value_parser(clap::value_parser!(usize))
+                    .default_value("4"),
+            )
+            .arg(
+                Arg::new("delimiter")
+                    .help("the character used to join parts (for generator types that join parts)")
+                    .short('d')
+                    .long("delimiter")
+                    .default_value("-"),
             ),
     )
 }
@@ -49,7 +80,7 @@ fn cli() -> Command {
 // fn run(matches: &ArgMatches, config: &kbs2::config::Config) -> Result<()> {
 fn run(matches: &ArgMatches) -> Result<()> {
     match matches.subcommand() {
-        Some(("gen", matches)) => cli::command::generate(matches)?,
+        Some(("gen", matches)) => gen::new(matches)?,
             Some((&_, _)) => todo!(),
             None => todo!(),
     }
@@ -64,7 +95,7 @@ fn main() -> Result<()> {
     // any config or subcommand operations.
     if let Some(is_version) = matches.get_one::<bool>("version") {
         if *is_version {
-            return cli::command::version(VERSION);
+            return util::display(VERSION);
         }
     } else if let Some(shell) = matches.get_one::<clap_complete::Shell>("completions") {
         clap_complete::generate(*shell, &mut rucksack, NAME, &mut io::stdout());
