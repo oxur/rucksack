@@ -32,3 +32,9 @@ deps:
 
 publish:
 	@cargo publish
+
+tag:
+	@git tag $$($(BIN_DIR)/$(PROJ) -v)
+	@git push --tags
+
+release: build list test tag publish
