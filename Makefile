@@ -37,4 +37,4 @@ tag:
 	@git tag $$($(BIN_DIR)/$(PROJ) -v)
 	@git push --tags
 
-release: build list test tag publish
+release: build lint test tag publish
