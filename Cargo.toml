@@ -1,7 +1,7 @@
 [package]
 name = "rucksack"
 description = "A terminal-based password manager, importer (Firefox Sync), and generator"
-version = "0.1.0-dev"
+version = "0.1.0"
 license = "Apache-2.0"
 authors = ["Duncan McGreggor <oubiwann@gmail.com>"]
 repository = "https://github.com/oxur/rucksack"

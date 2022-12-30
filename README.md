@@ -11,7 +11,7 @@
 
 ## Features
 
-* [ ] Password generator
+* [x] Password generator
 * [ ] Encrypted local storage
 * [ ] Supports Firefox sync
 * [ ] Supports local network sync
