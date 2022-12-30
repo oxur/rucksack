@@ -1,6 +1,11 @@
 name: CI/CD
 
-on: [push]
+on:
+  workflow_dispatch:
+  push:
+  pull_request:
+  schedule:
+  - cron: "20 4 19 * *"
 
 jobs:
   build:
