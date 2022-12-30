@@ -16,6 +16,44 @@
 * [ ] Supports Firefox sync
 * [ ] Supports local network sync
 
+## Password Generator Usage
+
+Use a UUID:
+
+```shell
+./bin/rucksack gen --type uuid
+
+New password: 229ef9b4-b95b-4d91-a6ac-f6b7ef1cfc47
+Password score: 88.50
+```
+
+Augmented UUID:
+
+```shell
+./bin/rucksack gen --type uuid++
+
+New password: 4C7360%E-4@60-4?03-b559-491C8A52E750
+Password score: 100.00
+```
+
+Random:
+
+```shell
+./bin/rucksack gen --type random
+
+New password: A&6YU?#xk.?)
+Password score: 91.22
+```
+
+Lorem-ipsum inspired:
+
+```shell
+./bin/rucksack gen --type lipsum
+
+New password: Esse-maius-amicitia,-nihil.-]9^,
+Password score: 100.00
+```
+
 ## Other
 
 [Here](https://crates.io/keywords/password-manager?sort=downloads) are other cargo projects tagged with "password manager" ...
