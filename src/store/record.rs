@@ -119,14 +119,7 @@ mod tests {
             "Creds{user: alice@site.com, password: *****}"
         );
         let epr = dpr.encrypt(store_pwd.clone());
-        assert_eq!(
-            epr.value,
-            [
-                101, 17, 166, 86, 153, 74, 37, 214, 8, 132, 34, 171, 59, 16, 237, 55, 142, 193, 20,
-                37, 129, 209, 236, 51, 60, 51, 201, 60, 241, 65, 83, 170, 12, 100, 228, 187, 254,
-                29, 190, 217
-            ]
-        );
+        assert_eq!(40, epr.value.len());
         let re_dpr = epr.decrypt(store_pwd);
         assert_eq!(re_dpr.value.password, "4 s3kr1t");
     }
