@@ -13,6 +13,7 @@
 
 * [x] Password generator
 * [x] Encrypted local storage
+* [x] Concurrent hashmap for use by daemons
 * [ ] Supports Firefox sync
 * [ ] Supports local network sync
 
