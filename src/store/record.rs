@@ -2,6 +2,8 @@ use bincode::{config, Decode, Encode};
 use secrecy::Zeroize;
 use serde::{Deserialize, Serialize};
 
+use super::crypto::{decrypt, encrypt};
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub enum Kind {
     #[default]
@@ -51,11 +53,13 @@ pub struct DecryptedRecord {
 }
 
 impl DecryptedRecord {
-    pub fn encrypt(&self) -> EncryptedRecord {
+    pub fn encrypt(&self, prime_pwd: String) -> EncryptedRecord {
+        let encoded = bincode::encode_to_vec(&self.value, config::standard()).unwrap();
+        let encrypted = encrypt(encoded, prime_pwd, self.updated.clone());
         EncryptedRecord {
             key: self.key.clone(),
             kind: self.kind.clone(),
-            value: bincode::encode_to_vec(&self.value, config::standard()).unwrap(),
+            value: encrypted,
             created: self.created.clone(),
             updated: self.updated.clone(),
         }
@@ -63,9 +67,11 @@ impl DecryptedRecord {
 }
 
 impl EncryptedRecord {
-    pub fn decrypt(&self) -> DecryptedRecord {
+    pub fn decrypt(&self, prime_pwd: String) -> DecryptedRecord {
+        let decrypted = decrypt(self.value.clone(), prime_pwd, self.updated.clone());
         let (decoded, _len) =
-            bincode::decode_from_slice(&self.value[..], config::standard()).unwrap();
+            bincode::decode_from_slice(&decrypted[..], config::standard()).unwrap();
+
         DecryptedRecord {
             key: self.key.clone(),
             kind: self.kind.clone(),
@@ -82,6 +88,7 @@ mod tests {
 
     #[test]
     fn password_records() {
+        let store_pwd = "abc123".to_string();
         let now = chrono::offset::Local::now().to_rfc3339();
         let dpr = DecryptedRecord {
             key: "a site".to_string(),
@@ -101,15 +108,16 @@ mod tests {
             format!("{:?}", dpr.value),
             "PasswordValue{user: alice@site.com, password: *****}"
         );
-        let epr = dpr.encrypt();
+        let epr = dpr.encrypt(store_pwd.clone());
         assert_eq!(
             epr.value,
             [
-                14, 97, 108, 105, 99, 101, 64, 115, 105, 116, 101, 46, 99, 111, 109, 8, 52, 32,
-                115, 51, 107, 114, 49, 116
+                101, 17, 166, 86, 153, 74, 37, 214, 8, 132, 34, 171, 59, 16, 237, 55, 142, 193, 20,
+                37, 129, 209, 236, 51, 60, 51, 201, 60, 241, 65, 83, 170, 12, 100, 228, 187, 254,
+                29, 190, 217
             ]
         );
-        let re_dpr = epr.decrypt();
+        let re_dpr = epr.decrypt(store_pwd);
         assert_eq!(re_dpr.value.password, "4 s3kr1t");
     }
 }

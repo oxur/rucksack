@@ -15,6 +15,8 @@ edition = "2021"
 name = "rucksack"
 
 [dependencies]
+aead = "0.5.1"
+aes-gcm = "0.10.1"
 anyhow = "1.0"
 bincode = "2.0.0-rc.2"
 chrono = "0.4.23"
@@ -28,5 +30,3 @@ scc = "1.0.4"
 secrecy = "0.8.0"
 serde = { version = "1.0", features = ["derive"] }
 uuid = {version = "1.2.2",  features = ["v4"]}
-
-#surrealdb = "1.0.0-beta.8"
