@@ -12,7 +12,7 @@
 ## Features
 
 * [x] Password generator
-* [ ] Encrypted local storage
+* [x] Encrypted local storage
 * [ ] Supports Firefox sync
 * [ ] Supports local network sync
 
