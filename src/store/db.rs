@@ -31,3 +31,7 @@ pub fn read(path: String, store_pwd: String, updated: String) -> DashMap<String,
         bincode::serde::decode_from_slice(decrypted.as_ref(), config::standard()).unwrap();
     decoded
 }
+
+pub fn open(path: String, store_pwd: String, updated: String) -> DashMap<String, EncryptedRecord> {
+    read(path, store_pwd, updated)
+}
