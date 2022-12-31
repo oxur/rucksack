@@ -23,6 +23,7 @@ chrono = "0.4.23"
 clap = "4.0.32"
 clap_complete = "4.0"
 confyg = "0.1.3"
+csv = "1.1.6"
 dashmap = { version = "5.4.0", features = ["serde"] }
 lipsum = "0.8.2"
 passwords = "3.1.12"
