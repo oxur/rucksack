@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use super::crypto::{decrypt, encrypt};
 
+// Structs and Enums
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub enum Kind {
     #[default]
@@ -25,6 +27,17 @@ pub struct PasswordValue {
     pub password: String,
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
+pub struct DecryptedRecord {
+    pub key: String,
+    pub kind: Kind,
+    pub value: PasswordValue,
+    pub created: String,
+    pub updated: String,
+}
+
+// Traits and methods
+
 impl Zeroize for PasswordValue {
     fn zeroize(&mut self) {
         self.password.zeroize();
@@ -43,19 +56,11 @@ impl std::fmt::Debug for PasswordValue {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
-pub struct DecryptedRecord {
-    pub key: String,
-    pub kind: Kind,
-    pub value: PasswordValue,
-    pub created: String,
-    pub updated: String,
-}
-
 impl DecryptedRecord {
     pub fn encrypt(&self, prime_pwd: String) -> EncryptedRecord {
         let encoded = bincode::encode_to_vec(&self.value, config::standard()).unwrap();
         let encrypted = encrypt(encoded, prime_pwd, self.updated.clone());
+
         EncryptedRecord {
             key: self.key.clone(),
             kind: self.kind.clone(),

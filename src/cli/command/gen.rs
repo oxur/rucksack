@@ -1,11 +1,11 @@
-use std::str;
-use rand::Rng;
 use rand::distributions::{Distribution, Uniform};
+use rand::Rng;
+use std::str;
 
-use anyhow::{Result};
+use anyhow::Result;
 use clap::ArgMatches;
 use passwords::{analyzer, scorer, PasswordGenerator};
-use uuid::{Uuid};
+use uuid::Uuid;
 
 use super::util;
 
@@ -32,7 +32,10 @@ fn generate_pwd(matches: &ArgMatches) -> Result<()> {
 }
 
 fn generate_pwd_lipsum(matches: &ArgMatches) -> Result<()> {
-    let delimiter = matches.get_one::<String>("delimiter").map(|s| s.as_str()).unwrap();
+    let delimiter = matches
+        .get_one::<String>("delimiter")
+        .map(|s| s.as_str())
+        .unwrap();
     let suffix_length = matches.get_one::<usize>("suffix-length").unwrap();
     let word_count = matches.get_one::<usize>("word-count").unwrap();
     display_scored_password(&lipsum_pwd(word_count, suffix_length, delimiter))
@@ -83,7 +86,7 @@ fn uuid4_with_specials(count: usize) -> String {
     let len = parts.len();
     let die = Uniform::from(1..len);
     let specials = random_specials(count);
-    for special in specials.iter().take(count)  {
+    for special in specials.iter().take(count) {
         let throw = die.sample(&mut rng);
         parts[throw] = String::from_utf8_lossy(&[*special]).to_string();
     }
@@ -93,7 +96,7 @@ fn uuid4_with_specials(count: usize) -> String {
 fn random_specials(count: usize) -> Vec<u8> {
     let mut specials: Vec<u8> = Vec::new();
     let mut rng = rand::thread_rng();
-    for _ in 1..count+1 {
+    for _ in 1..count + 1 {
         specials.push(SPECIALS[rng.gen_range(0..SPECIALS.len())])
     }
     specials

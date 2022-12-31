@@ -1,14 +1,14 @@
 // use std::ffi::OsStr;
 // use std::process;
-use std::{io};
+use std::io;
 
 // use anyhow::{anyhow, Context, Result};
 use anyhow::{Context, Result};
 // use clap::builder::{EnumValueParser, PossibleValuesParser, ValueParser};
-use clap::builder::{EnumValueParser};
+use clap::builder::EnumValueParser;
 use clap::{Arg, ArgAction, ArgMatches, Command};
 
-use rucksack::cli::command::{util, gen};
+use rucksack::cli::command::{gen, util};
 
 const NAME: &str = env!("CARGO_PKG_NAME");
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -81,8 +81,8 @@ fn cli() -> Command {
 fn run(matches: &ArgMatches) -> Result<()> {
     match matches.subcommand() {
         Some(("gen", matches)) => gen::new(matches)?,
-            Some((&_, _)) => todo!(),
-            None => todo!(),
+        Some((&_, _)) => todo!(),
+        None => todo!(),
     }
     Ok(())
 }

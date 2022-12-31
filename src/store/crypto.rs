@@ -1,8 +1,9 @@
+use std::cmp::Ordering;
+
 use aes_gcm::{
     aead::{Aead, KeyInit},
     Aes256Gcm, Nonce,
 };
-use std::cmp::Ordering;
 
 const NONCE_SIZE: usize = 12;
 
