@@ -15,3 +15,5 @@ Cargo.lock
 
 /data
 /resources/images/drafts/
+/workbench
+.DS_Store

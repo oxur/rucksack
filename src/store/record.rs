@@ -13,83 +13,84 @@ pub enum Kind {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
-pub struct EncryptedRecord {
-    pub key: String,
+pub struct Metadata {
     pub kind: Kind,
-    pub value: Vec<u8>,
+    pub url: String,
     pub created: String,
     pub updated: String,
+    pub password_changed: String,
 }
 
 #[derive(Clone, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
-pub struct PasswordValue {
+pub struct Creds {
     pub user: String,
     pub password: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
+pub struct EncryptedRecord {
+    pub key: String,
+    pub value: Vec<u8>,
+    pub metadata: Metadata,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
 pub struct DecryptedRecord {
     pub key: String,
-    pub kind: Kind,
-    pub value: PasswordValue,
-    pub created: String,
-    pub updated: String,
+    pub value: Creds,
+    pub metadata: Metadata,
 }
 
 // Traits and methods
 
-impl Zeroize for PasswordValue {
+impl Zeroize for Creds {
     fn zeroize(&mut self) {
         self.password.zeroize();
     }
 }
 
-impl std::fmt::Display for PasswordValue {
+impl std::fmt::Display for Creds {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "PasswordValue{{user: {}, password: *****}}", self.user)
+        write!(f, "Creds{{user: {}, password: *****}}", self.user)
     }
 }
 
-impl std::fmt::Debug for PasswordValue {
+impl std::fmt::Debug for Creds {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "PasswordValue{{user: {}, password: *****}}", self.user)
+        write!(f, "Creds{{user: {}, password: *****}}", self.user)
     }
 }
 
 impl DecryptedRecord {
     pub fn encrypt(&self, prime_pwd: String) -> EncryptedRecord {
         let encoded = bincode::encode_to_vec(&self.value, config::standard()).unwrap();
-        let encrypted = encrypt(encoded, prime_pwd, self.updated.clone());
+        let encrypted = encrypt(encoded, prime_pwd, self.metadata.updated.clone());
 
         EncryptedRecord {
             key: self.key.clone(),
-            kind: self.kind.clone(),
             value: encrypted,
-            created: self.created.clone(),
-            updated: self.updated.clone(),
+            metadata: self.metadata.clone(),
         }
     }
 }
 
 impl EncryptedRecord {
     pub fn decrypt(&self, prime_pwd: String) -> DecryptedRecord {
-        let decrypted = decrypt(self.value.clone(), prime_pwd, self.updated.clone());
+        let decrypted = decrypt(self.value.clone(), prime_pwd, self.metadata.updated.clone());
         let (decoded, _len) =
             bincode::decode_from_slice(&decrypted[..], config::standard()).unwrap();
 
         DecryptedRecord {
             key: self.key.clone(),
-            kind: self.kind.clone(),
             value: decoded,
-            created: self.created.clone(),
-            updated: self.updated.clone(),
+            metadata: self.metadata.clone(),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::store::record::{DecryptedRecord, Kind, PasswordValue};
+    use crate::store::record::{Creds, DecryptedRecord, Kind, Metadata};
 
     #[test]
     fn password_records() {
@@ -97,21 +98,25 @@ mod tests {
         let now = chrono::offset::Local::now().to_rfc3339();
         let dpr = DecryptedRecord {
             key: "a site".to_string(),
-            kind: Kind::Password,
-            value: PasswordValue {
+            value: Creds {
                 user: "alice@site.com".to_string(),
                 password: "4 s3kr1t".to_string(),
             },
-            created: now.clone(),
-            updated: now,
+            metadata: Metadata {
+                kind: Kind::Password,
+                url: "https://site.com/".to_string(),
+                created: now.clone(),
+                updated: now.clone(),
+                password_changed: now,
+            },
         };
         assert_eq!(
             format!("{}", dpr.value),
-            "PasswordValue{user: alice@site.com, password: *****}"
+            "Creds{user: alice@site.com, password: *****}"
         );
         assert_eq!(
             format!("{:?}", dpr.value),
-            "PasswordValue{user: alice@site.com, password: *****}"
+            "Creds{user: alice@site.com, password: *****}"
         );
         let epr = dpr.encrypt(store_pwd.clone());
         assert_eq!(
