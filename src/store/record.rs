@@ -37,7 +37,7 @@ pub struct EncryptedRecord {
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
 pub struct DecryptedRecord {
     pub key: String,
-    pub value: Creds,
+    pub creds: Creds,
     pub metadata: Metadata,
 }
 
@@ -62,65 +62,67 @@ impl std::fmt::Debug for Creds {
 }
 
 impl DecryptedRecord {
+    pub fn key(&self) -> String {
+        self.key.clone()
+    }
+
+    pub fn metadata(&self) -> Metadata {
+        self.metadata.clone()
+    }
+
     pub fn encrypt(&self, prime_pwd: String) -> EncryptedRecord {
-        let encoded = bincode::encode_to_vec(&self.value, config::standard()).unwrap();
-        let encrypted = encrypt(encoded, prime_pwd, self.metadata.updated.clone());
+        let encoded = bincode::encode_to_vec(&self.creds, config::standard()).unwrap();
+        let encrypted = encrypt(encoded, prime_pwd, self.metadata().updated);
 
         EncryptedRecord {
-            key: self.key.clone(),
+            key: self.key(),
             value: encrypted,
-            metadata: self.metadata.clone(),
+            metadata: self.metadata(),
         }
     }
 }
 
 impl EncryptedRecord {
+    pub fn key(&self) -> String {
+        self.key.clone()
+    }
+
+    pub fn metadata(&self) -> Metadata {
+        self.metadata.clone()
+    }
+
     pub fn decrypt(&self, prime_pwd: String) -> DecryptedRecord {
-        let decrypted = decrypt(self.value.clone(), prime_pwd, self.metadata.updated.clone());
+        let decrypted = decrypt(self.value.clone(), prime_pwd, self.metadata().updated);
         let (decoded, _len) =
             bincode::decode_from_slice(&decrypted[..], config::standard()).unwrap();
 
         DecryptedRecord {
-            key: self.key.clone(),
-            value: decoded,
-            metadata: self.metadata.clone(),
+            key: self.key(),
+            creds: decoded,
+            metadata: self.metadata(),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::store::record::{Creds, DecryptedRecord, Kind, Metadata};
+    use crate::store::testing_data;
 
     #[test]
     fn password_records() {
-        let store_pwd = "abc123".to_string();
-        let now = chrono::offset::Local::now().to_rfc3339();
-        let dpr = DecryptedRecord {
-            key: "a site".to_string(),
-            value: Creds {
-                user: "alice@site.com".to_string(),
-                password: "4 s3kr1t".to_string(),
-            },
-            metadata: Metadata {
-                kind: Kind::Password,
-                url: "https://site.com/".to_string(),
-                created: now.clone(),
-                updated: now.clone(),
-                password_changed: now,
-            },
-        };
+        let pwd = testing_data::store_pwd();
+        let dpr = testing_data::plaintext_record();
         assert_eq!(
-            format!("{}", dpr.value),
+            format!("{}", dpr.creds),
             "Creds{user: alice@site.com, password: *****}"
         );
         assert_eq!(
-            format!("{:?}", dpr.value),
+            format!("{:?}", dpr.creds),
             "Creds{user: alice@site.com, password: *****}"
         );
-        let epr = dpr.encrypt(store_pwd.clone());
+        let epr = dpr.encrypt(pwd.clone());
         assert_eq!(40, epr.value.len());
-        let re_dpr = epr.decrypt(store_pwd);
-        assert_eq!(re_dpr.value.password, "4 s3kr1t");
+        let re_dpr = epr.decrypt(pwd);
+        assert_eq!(re_dpr.creds.password, "4 s3kr1t");
     }
 }
