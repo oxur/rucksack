@@ -1,5 +1,4 @@
-use std::error::Error;
-
+use anyhow::Result;
 use chrono::TimeZone;
 use serde::Deserialize;
 
@@ -48,7 +47,7 @@ fn record_from_csv(csv: CSVRecord) -> store::record::DecryptedRecord {
     store::record::DecryptedRecord { creds, metadata }
 }
 
-pub fn import_csv(db: store::db::DB, csv_path: String) -> Result<(), Box<dyn Error>> {
+pub fn from_csv(db: store::db::DB, csv_path: String) -> Result<(), anyhow::Error> {
     let file = std::fs::File::open(csv_path)?;
     let reader = std::io::BufReader::new(file);
     let mut rdr = csv::Reader::from_reader(reader);
