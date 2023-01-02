@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use clap::builder::EnumValueParser;
 use clap::{Arg, ArgAction, ArgMatches, Command};
 
-use rucksack::cli::command::{gen, import, util};
+use rucksack::cli::command::{arg, gen, import, list, util};
 
 const NAME: &str = env!("CARGO_PKG_NAME");
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -83,23 +83,28 @@ fn cli() -> Command {
                     .value_parser(["firefox"]),
             )
             .arg(
-                Arg::new("db")
-                    .help("path to the encrypted database to use")
-                    .short('d')
-                    .long("db"),
-            ).arg(
                 Arg::new("file")
                     .help("credential file to import (for file-based importers)")
                     .short('f')
                     .long("file"),
             )
+            .arg(arg::db_arg())
+            .arg(arg::pwd_arg())
+    )
+    .subcommand(
+        Command::new("list")
+            .about("list all secrets")
             .arg(
-                Arg::new("password")
-                    .help("password used to encrypt the database")
-                    .short('p')
-                    .long("password"),
+                Arg::new("decrypt")
+                    .help("using this flag causes all secrets to be listed with decrypted passwords")
+                    .long("decrypt")
+                    .required(false)
+                    .num_args(0)
+                    .action(ArgAction::SetTrue)
             )
-        )
+            .arg(arg::db_arg())
+            .arg(arg::pwd_arg())
+    )
 }
 
 // fn run(matches: &ArgMatches, config: &kbs2::config::Config) -> Result<()> {
@@ -107,6 +112,7 @@ fn run(matches: &ArgMatches) -> Result<()> {
     match matches.subcommand() {
         Some(("gen", matches)) => gen::new(matches)?,
         Some(("import", matches)) => import::new(matches)?,
+        Some(("list", matches)) => list::all(matches)?,
         Some((&_, _)) => todo!(),
         None => todo!(),
     }

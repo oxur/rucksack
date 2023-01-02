@@ -30,12 +30,13 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
         let encrypted = fs::read(path.clone()).unwrap();
         let decrypted = decrypt(encrypted, store_pwd.clone(), salt.clone())?;
         (hash_map, _len) = bincode::serde::decode_from_slice(decrypted.as_ref(), bincode_cfg)?;
+        // XXX let's just do this on close or write ...
         let backup_name = format!(
             "{}-{}",
             path,
             chrono::offset::Local::now().format("%Y%m%d-%H%M%S")
         );
-        std::fs::rename(&path, backup_name)?;
+        std::fs::copy(&path, backup_name)?;
     }
     Ok(DB {
         path,
@@ -88,6 +89,10 @@ impl DB {
         self.hash_map
             .get(&key)
             .map(|encrypted| encrypted.decrypt(self.store_pwd()).unwrap())
+    }
+
+    pub fn iter(&self) -> dashmap::iter::Iter<String, EncryptedRecord> {
+        self.hash_map.iter()
     }
 }
 
