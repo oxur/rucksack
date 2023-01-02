@@ -15,7 +15,9 @@
 * [x] Encrypted local storage
 * [x] Concurrent hashmap for use by daemons
 * [x] Supports Firefox Sync
-* [ ] Supports local network sync
+* [x] List secrets (encrypted and decrypted)
+* [ ] Searching secrets
+* [ ] Local network sync
 
 ## Usage
 
@@ -64,7 +66,15 @@ Password score: 100.00
   --type firefox \
   --db ./data/creds.db \
   --password abc123 \
-  --file ./workbench/logins.csv
+  --file ~/Downloads/logins.csv
+```
+
+### List Secrets
+
+```shell
+./bin/rucksack list \
+  --db ./data/creds.db \
+  --password abc123
 ```
 
 ## Other
