@@ -17,8 +17,11 @@ pub struct Metadata {
     pub kind: Kind,
     pub url: String,
     pub created: String,
+    pub imported: String,
     pub updated: String,
     pub password_changed: String,
+    pub last_used: String,
+    pub access_count: u64,
 }
 
 #[derive(Clone, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
@@ -36,7 +39,6 @@ pub struct EncryptedRecord {
 
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
 pub struct DecryptedRecord {
-    pub key: String,
     pub creds: Creds,
     pub metadata: Metadata,
 }
@@ -63,7 +65,7 @@ impl std::fmt::Debug for Creds {
 
 impl DecryptedRecord {
     pub fn key(&self) -> String {
-        self.key.clone()
+        format!("{}:{}", self.creds.user, self.metadata.url)
     }
 
     pub fn metadata(&self) -> Metadata {
@@ -97,7 +99,6 @@ impl EncryptedRecord {
             bincode::decode_from_slice(&decrypted[..], config::standard()).unwrap();
 
         DecryptedRecord {
-            key: self.key(),
             creds: decoded,
             metadata: self.metadata(),
         }
