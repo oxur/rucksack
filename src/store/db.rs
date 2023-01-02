@@ -68,10 +68,9 @@ impl DB {
     }
 
     pub fn get(&self, key: String) -> Option<DecryptedRecord> {
-        match self.hash_map.get(&key) {
-            Some(encrypted) => Some(encrypted.decrypt(self.store_pwd())),
-            None => None,
-        }
+        self.hash_map
+            .get(&key)
+            .map(|encrypted| encrypted.decrypt(self.store_pwd()))
     }
 }
 
