@@ -1,5 +1,7 @@
 use std::cmp::Ordering;
 
+use anyhow::Result;
+
 use aes_gcm::{
     aead::{Aead, KeyInit},
     Aes256Gcm, Nonce,
@@ -21,13 +23,16 @@ pub fn encrypt(data: Vec<u8>, pwd: String, updated: String) -> Vec<u8> {
     cipher.encrypt(nonce, &data[..]).unwrap()
 }
 
-pub fn decrypt(encrypted: Vec<u8>, pwd: String, updated: String) -> Vec<u8> {
+pub fn decrypt(encrypted: Vec<u8>, pwd: String, updated: String) -> Result<Vec<u8>> {
     let key_bytes = sized_key(pwd, KeySize::Bit256);
     let key = aead::Key::<Aes256Gcm>::from_slice(key_bytes.as_ref());
     let cipher = Aes256Gcm::new(key);
     let nonce_bytes = sized_nonce(updated);
     let nonce = Nonce::from_slice(nonce_bytes.as_ref());
-    cipher.decrypt(nonce, &encrypted[..]).unwrap()
+    match cipher.decrypt(nonce, &encrypted[..]) {
+        Ok(result) => Ok(result),
+        Err(e) => Ok(e.to_string().into()),
+    }
 }
 
 fn sized_key(source: String, key_size: KeySize) -> Vec<u8> {

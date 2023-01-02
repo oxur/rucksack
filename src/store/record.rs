@@ -1,3 +1,4 @@
+use anyhow::Result;
 use bincode::{config, Decode, Encode};
 use secrecy::Zeroize;
 use serde::{Deserialize, Serialize};
@@ -93,15 +94,15 @@ impl EncryptedRecord {
         self.metadata.clone()
     }
 
-    pub fn decrypt(&self, prime_pwd: String) -> DecryptedRecord {
-        let decrypted = decrypt(self.value.clone(), prime_pwd, self.metadata().updated);
+    pub fn decrypt(&self, prime_pwd: String) -> Result<DecryptedRecord> {
+        let decrypted = decrypt(self.value.clone(), prime_pwd, self.metadata().updated)?;
         let (decoded, _len) =
             bincode::decode_from_slice(&decrypted[..], config::standard()).unwrap();
 
-        DecryptedRecord {
+        Ok(DecryptedRecord {
             creds: decoded,
             metadata: self.metadata(),
-        }
+        })
     }
 }
 
@@ -123,7 +124,7 @@ mod tests {
         );
         let epr = dpr.encrypt(pwd.clone());
         assert_eq!(40, epr.value.len());
-        let re_dpr = epr.decrypt(pwd);
+        let re_dpr = epr.decrypt(pwd).unwrap();
         assert_eq!(re_dpr.creds.password, "4 s3kr1t");
     }
 }

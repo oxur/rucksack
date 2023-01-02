@@ -14,7 +14,7 @@
 * [x] Password generator
 * [x] Encrypted local storage
 * [x] Concurrent hashmap for use by daemons
-* [ ] Supports Firefox Sync
+* [x] Supports Firefox Sync
 * [ ] Supports local network sync
 
 ## Usage
