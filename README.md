@@ -17,6 +17,7 @@
 * [x] Supports Firefox Sync
 * [x] List secrets (encrypted and decrypted)
 * [ ] Searching secrets
+* [ ] Reports (quality, duplicates, etc.)
 * [ ] Local network sync
 
 ## Usage
