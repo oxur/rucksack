@@ -29,12 +29,25 @@ pub fn all(matches: &ArgMatches) -> Result<()> {
     Ok(())
 }
 
+const URL_HEADER: &str = "URL";
+const USER_HEADER: &str = "User / Account";
+const PWD_HEADER: &str = "Password";
+
 fn decrypted_header() {
-    println!("{} | {} | {}", "URL", "User / Account", "Password");
-    println!("{}-+-{}-+-{}", "---", "--------------", "--------")
+    println!("{} | {} | {}", URL_HEADER, USER_HEADER, PWD_HEADER);
+    println!(
+        "{}-+-{}-+-{}",
+        "-".repeat(URL_HEADER.len()),
+        "-".repeat(USER_HEADER.len()),
+        "-".repeat(PWD_HEADER.len())
+    )
 }
 
 fn encrypted_header() {
-    println!("{} | {}", "URL", "User / Account");
-    println!("{}-+-{}", "---", "--------------")
+    println!("{} | {}", URL_HEADER, USER_HEADER);
+    println!(
+        "{}-+-{}",
+        "-".repeat(URL_HEADER.len()),
+        "-".repeat(USER_HEADER.len())
+    )
 }
