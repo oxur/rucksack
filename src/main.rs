@@ -8,7 +8,7 @@ use anyhow::{Context, Result};
 use clap::builder::EnumValueParser;
 use clap::{Arg, ArgAction, ArgMatches, Command};
 
-use rucksack::cli::command::{gen, util};
+use rucksack::cli::command::{gen, import, util};
 
 const NAME: &str = env!("CARGO_PKG_NAME");
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -75,12 +75,42 @@ fn cli() -> Command {
                     .default_value("-"),
             ),
     )
+    .subcommand(
+        Command::new("import")
+            .about("pull in creds from other sources")
+            .arg(
+                Arg::new("type")
+                    .help("the type of importer to use")
+                    .short('t')
+                    .long("type")
+                    .default_value("firefox")
+                    .value_parser(["firefox"]),
+            )
+            .arg(
+                Arg::new("db")
+                    .help("path to the encrypted database to use")
+                    .short('d')
+                    .long("db"),
+            ).arg(
+                Arg::new("file")
+                    .help("credential file to import (for file-based importers)")
+                    .short('f')
+                    .long("file"),
+            )
+            .arg(
+                Arg::new("password")
+                    .help("password used to encrypt the database")
+                    .short('p')
+                    .long("password"),
+            )
+        )
 }
 
 // fn run(matches: &ArgMatches, config: &kbs2::config::Config) -> Result<()> {
 fn run(matches: &ArgMatches) -> Result<()> {
     match matches.subcommand() {
         Some(("gen", matches)) => gen::new(matches)?,
+        Some(("import", matches)) => import::new(matches)?,
         Some((&_, _)) => todo!(),
         None => todo!(),
     }
