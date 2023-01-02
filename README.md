@@ -17,7 +17,9 @@
 * [ ] Supports Firefox Sync
 * [ ] Supports local network sync
 
-## Password Generator Usage
+## Usage
+
+### Password Generator
 
 Use a UUID:
 
@@ -53,6 +55,16 @@ Lorem-ipsum inspired:
 
 New password: Esse-maius-amicitia,-nihil.-]9^,
 Password score: 100.00
+```
+
+### Import Examples
+
+```shell
+./bin/rucksack import \
+  --type firefox \
+  --db ./data/creds.db \
+  --password abc123 \
+  --file ./workbench/logins.csv
 ```
 
 ## Other
