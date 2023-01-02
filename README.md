@@ -71,10 +71,21 @@ Password score: 100.00
 
 ### List Secrets
 
+Show URL/accounts for all secrets:
+
 ```shell
 ./bin/rucksack list \
   --db ./data/creds.db \
   --password abc123
+```
+
+Show URLs, accounts, passwords, and password scores for all secrets:
+
+```shell
+./bin/rucksack list \
+  --db ./data/creds.db \
+  --password abc123 \
+  --decrypt
 ```
 
 ## Other
