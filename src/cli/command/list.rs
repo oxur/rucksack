@@ -16,13 +16,13 @@ pub fn all(matches: &ArgMatches) -> Result<()> {
         match decrypt {
             Some(true) => {
                 println!(
-                    "{} | {} | {}",
+                    "{: <40} | {: <30} | {}",
                     record.metadata().url,
                     record.creds.user,
                     record.creds.password
                 )
             }
-            Some(false) => println!("{} | {}", record.metadata().url, record.creds.user),
+            Some(false) => println!("{: <40} | {}", record.metadata().url, record.creds.user),
             None => println!("{:?}", record),
         }
     }
@@ -34,20 +34,19 @@ const USER_HEADER: &str = "User / Account";
 const PWD_HEADER: &str = "Password";
 
 fn decrypted_header() {
-    println!("{} | {} | {}", URL_HEADER, USER_HEADER, PWD_HEADER);
     println!(
-        "{}-+-{}-+-{}",
-        "-".repeat(URL_HEADER.len()),
-        "-".repeat(USER_HEADER.len()),
-        "-".repeat(PWD_HEADER.len())
+        "{: <40} | {: <30} | {}",
+        URL_HEADER, USER_HEADER, PWD_HEADER
+    );
+    println!(
+        "{: <40}-+-{: <30}-+-{}",
+        "-".repeat(40),
+        "-".repeat(30),
+        "-".repeat(20)
     )
 }
 
 fn encrypted_header() {
-    println!("{} | {}", URL_HEADER, USER_HEADER);
-    println!(
-        "{}-+-{}",
-        "-".repeat(URL_HEADER.len()),
-        "-".repeat(USER_HEADER.len())
-    )
+    println!("{: <40} | {: <30}", URL_HEADER, USER_HEADER);
+    println!("{: <40}-+-{}", "-".repeat(40), "-".repeat(30))
 }
