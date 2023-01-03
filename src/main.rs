@@ -98,9 +98,23 @@ fn cli() -> Command {
             .about("list all secrets")
             .arg(
                 Arg::new("decrypt")
-                    .help("using this flag causes all secrets to be listed with decrypted passwords")
+                    .help("using this flag causes all secrets to be decrypted to allow for scoring, etc.")
                     .long("decrypt")
                     .action(ArgAction::SetTrue)
+            )
+            .arg(
+                Arg::new("reveal")
+                    .help("display the actual the passwords")
+                    .long("reveal")
+                    .action(ArgAction::SetTrue)
+            )
+            .arg(
+                Arg::new("sort-by")
+                    .help("display the actual the passwords")
+                    .short('s')
+                    .long("sort-by")
+                    .default_value("url")
+                    .value_parser(["score", "url", "user"]),
             )
             .arg(arg::db_arg())
             .arg(arg::pwd_arg())

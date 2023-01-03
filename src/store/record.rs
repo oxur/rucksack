@@ -73,6 +73,14 @@ impl DecryptedRecord {
         self.metadata.clone()
     }
 
+    pub fn password(&self) -> String {
+        self.creds.password.clone()
+    }
+
+    pub fn user(&self) -> String {
+        self.creds.user.clone()
+    }
+
     pub fn encrypt(&self, prime_pwd: String, salt: String) -> EncryptedRecord {
         let encoded = bincode::encode_to_vec(&self.creds, config::standard()).unwrap();
         let encrypted = encrypt(encoded, prime_pwd, salt);
