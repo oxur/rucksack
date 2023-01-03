@@ -73,9 +73,9 @@ impl DecryptedRecord {
         self.metadata.clone()
     }
 
-    pub fn encrypt(&self, prime_pwd: String) -> EncryptedRecord {
+    pub fn encrypt(&self, prime_pwd: String, salt: String) -> EncryptedRecord {
         let encoded = bincode::encode_to_vec(&self.creds, config::standard()).unwrap();
-        let encrypted = encrypt(encoded, prime_pwd, self.metadata().updated);
+        let encrypted = encrypt(encoded, prime_pwd, salt);
 
         EncryptedRecord {
             key: self.key(),
@@ -94,8 +94,8 @@ impl EncryptedRecord {
         self.metadata.clone()
     }
 
-    pub fn decrypt(&self, prime_pwd: String) -> Result<DecryptedRecord> {
-        let decrypted = decrypt(self.value.clone(), prime_pwd, self.metadata().updated)?;
+    pub fn decrypt(&self, prime_pwd: String, salt: String) -> Result<DecryptedRecord> {
+        let decrypted = decrypt(self.value.clone(), prime_pwd, salt)?;
         let (decoded, _len) =
             bincode::decode_from_slice(&decrypted[..], config::standard()).unwrap();
 
@@ -113,6 +113,7 @@ mod tests {
     #[test]
     fn password_records() {
         let pwd = testing_data::store_pwd();
+        let salt = testing_data::now();
         let dpr = testing_data::plaintext_record();
         assert_eq!(
             format!("{}", dpr.creds),
@@ -122,9 +123,9 @@ mod tests {
             format!("{:?}", dpr.creds),
             "Creds{user: alice@site.com, password: *****}"
         );
-        let epr = dpr.encrypt(pwd.clone());
+        let epr = dpr.encrypt(pwd.clone(), salt.clone());
         assert_eq!(40, epr.value.len());
-        let re_dpr = epr.decrypt(pwd).unwrap();
+        let re_dpr = epr.decrypt(pwd, salt).unwrap();
         assert_eq!(re_dpr.creds.password, "4 s3kr1t");
     }
 }

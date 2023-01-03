@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 
 use aes_gcm::{
     aead::{Aead, KeyInit},
@@ -14,24 +14,24 @@ pub enum KeySize {
     Bit256,
 }
 
-pub fn encrypt(data: Vec<u8>, pwd: String, updated: String) -> Vec<u8> {
+pub fn encrypt(data: Vec<u8>, pwd: String, salt: String) -> Vec<u8> {
     let key_bytes = sized_key(pwd, KeySize::Bit256);
     let key = aead::Key::<Aes256Gcm>::from_slice(key_bytes.as_ref());
     let cipher = Aes256Gcm::new(key);
-    let nonce_bytes = sized_nonce(updated);
+    let nonce_bytes = sized_nonce(salt);
     let nonce = Nonce::from_slice(nonce_bytes.as_ref());
     cipher.encrypt(nonce, &data[..]).unwrap()
 }
 
-pub fn decrypt(encrypted: Vec<u8>, pwd: String, updated: String) -> Result<Vec<u8>> {
+pub fn decrypt(encrypted: Vec<u8>, pwd: String, salt: String) -> Result<Vec<u8>> {
     let key_bytes = sized_key(pwd, KeySize::Bit256);
     let key = aead::Key::<Aes256Gcm>::from_slice(key_bytes.as_ref());
     let cipher = Aes256Gcm::new(key);
-    let nonce_bytes = sized_nonce(updated);
+    let nonce_bytes = sized_nonce(salt);
     let nonce = Nonce::from_slice(nonce_bytes.as_ref());
     match cipher.decrypt(nonce, &encrypted[..]) {
         Ok(result) => Ok(result),
-        Err(e) => Ok(e.to_string().into()),
+        Err(e) => Err(anyhow!(e)),
     }
 }
 
