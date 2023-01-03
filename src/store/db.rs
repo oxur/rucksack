@@ -69,14 +69,16 @@ impl DB {
         if store_hash == self.store_hash {
             return Ok(());
         }
-        let encrypted = encrypt(encoded, self.store_pwd(), self.salt());
-        let backup_name = format!(
-            "{}-{}",
-            self.path,
-            chrono::offset::Local::now().format("%Y%m%d-%H%M%S")
-        );
-        std::fs::copy(path, backup_name)?;
         fs::create_dir_all(path.parent().unwrap())?;
+        if std::path::Path::new(&self.path).exists() {
+            let backup_name = format!(
+                "{}-{}",
+                self.path,
+                chrono::offset::Local::now().format("%Y%m%d-%H%M%S")
+            );
+            std::fs::copy(path, backup_name)?;
+        }
+        let encrypted = encrypt(encoded, self.store_pwd(), self.salt());
         let mut file = std::fs::OpenOptions::new()
             .write(true)
             .create(true)
