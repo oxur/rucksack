@@ -90,6 +90,7 @@ fn cli() -> Command {
             )
             .arg(arg::db_arg())
             .arg(arg::pwd_arg())
+            .arg(arg::salt_arg())
     )
     .subcommand(
         Command::new("list")
@@ -98,12 +99,11 @@ fn cli() -> Command {
                 Arg::new("decrypt")
                     .help("using this flag causes all secrets to be listed with decrypted passwords")
                     .long("decrypt")
-                    .required(false)
-                    .num_args(0)
                     .action(ArgAction::SetTrue)
             )
             .arg(arg::db_arg())
             .arg(arg::pwd_arg())
+            .arg(arg::salt_arg())
     )
 }
 

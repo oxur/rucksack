@@ -17,6 +17,6 @@ pub fn setup_db(matches: &ArgMatches) -> Result<db::DB> {
         Some(flag_pwd) => SecretString::new(flag_pwd.to_owned()),
         None => prompt::secret("Enter db password: ").unwrap(),
     };
-    let now = chrono::offset::Local::now().to_rfc3339();
-    db::open(db_file, pwd.expose_secret().to_string(), now)
+    let salt = matches.get_one::<String>("salt").unwrap().to_string();
+    db::open(db_file, pwd.expose_secret().to_string(), salt)
 }

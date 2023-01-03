@@ -13,7 +13,7 @@ pub fn all(matches: &ArgMatches) -> Result<()> {
         None => encrypted_header(),
     }
     for i in db.iter() {
-        let record = i.value().decrypt(db.store_pwd())?;
+        let record = i.value().decrypt(db.store_pwd(), db.salt())?;
         match decrypt {
             Some(true) => {
                 let analyzed = analyzer::analyze(record.creds.password.clone());
