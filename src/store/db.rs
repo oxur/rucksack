@@ -11,6 +11,7 @@ use super::record::{DecryptedRecord, EncryptedRecord};
 #[derive(Clone, Default)]
 pub struct DB {
     path: String,
+    store_hash: u32,
     store_pwd: String,
     salt: String,
     bincode_cfg: bincode::config::Configuration,
@@ -24,22 +25,18 @@ pub fn init(path: String, store_pwd: String, updated: String) -> Result<()> {
 
 pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
     let mut hash_map: DashMap<String, EncryptedRecord> = DashMap::new();
+    let mut store_hash = 0;
     let bincode_cfg = config::standard();
     if std::path::Path::new(&path).exists() {
         let mut _len = 0;
         let encrypted = fs::read(path.clone())?;
         let decrypted = decrypt(encrypted, store_pwd.clone(), salt.clone())?;
+        store_hash = crc32fast::hash(decrypted.as_ref());
         (hash_map, _len) = bincode::serde::decode_from_slice(decrypted.as_ref(), bincode_cfg)?;
-        // XXX let's just do this on close or write ...
-        let backup_name = format!(
-            "{}-{}",
-            path,
-            chrono::offset::Local::now().format("%Y%m%d-%H%M%S")
-        );
-        std::fs::copy(&path, backup_name)?;
     }
     Ok(DB {
         path,
+        store_hash,
         store_pwd,
         salt,
         bincode_cfg,
@@ -68,7 +65,17 @@ impl DB {
         let path_name = &self.path();
         let path = std::path::Path::new(path_name);
         let encoded = bincode::serde::encode_to_vec(self.hash_map(), self.bincode_cfg).unwrap();
+        let store_hash = crc32fast::hash(encoded.as_ref());
+        if store_hash == self.store_hash {
+            return Ok(());
+        }
         let encrypted = encrypt(encoded, self.store_pwd(), self.salt());
+        let backup_name = format!(
+            "{}-{}",
+            self.path,
+            chrono::offset::Local::now().format("%Y%m%d-%H%M%S")
+        );
+        std::fs::copy(path, backup_name)?;
         fs::create_dir_all(path.parent().unwrap())?;
         let mut file = std::fs::OpenOptions::new()
             .write(true)
