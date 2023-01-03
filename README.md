@@ -60,7 +60,9 @@ New password: Esse-maius-amicitia,-nihil.-]9^,
 Password score: 100.00
 ```
 
-### Import Examples
+### Importing
+
+Import login data from Firefox Sync:
 
 ```shell
 ./bin/rucksack import \
