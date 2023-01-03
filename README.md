@@ -77,7 +77,10 @@ Show URL/accounts for all secrets:
 ```shell
 ./bin/rucksack list \
   --db ./data/creds.db \
-  --password abc123
+```
+
+```shell
+Enter db password:
 ```
 
 Show URLs, accounts, passwords, and password scores for all secrets:
@@ -85,9 +88,14 @@ Show URLs, accounts, passwords, and password scores for all secrets:
 ```shell
 ./bin/rucksack list \
   --db ./data/creds.db \
-  --password abc123 \
   --decrypt
 ```
+
+```shell
+Enter db password:
+```
+
+In both cases a password may be passed with the `--password` flag. By default, the salt is the value of the `USER` environment variable; it may be overridden with `--salt`.
 
 ## Other
 
