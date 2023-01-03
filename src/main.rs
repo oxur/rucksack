@@ -4,7 +4,8 @@ use anyhow::{Context, Result};
 use clap::builder::EnumValueParser;
 use clap::{Arg, ArgAction, ArgMatches, Command};
 
-use rucksack::cli::command::{arg, gen, import, list, util};
+use rucksack::cli::command::{arg, gen, import, list};
+use rucksack::util;
 
 const NAME: &str = env!("CARGO_PKG_NAME");
 const VERSION: &str = env!("CARGO_PKG_VERSION");
