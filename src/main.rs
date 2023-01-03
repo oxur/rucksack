@@ -103,6 +103,12 @@ fn cli() -> Command {
                     .action(ArgAction::SetTrue)
             )
             .arg(
+                Arg::new("filter")
+                    .help("show records where the user or the URL contain the given string")
+                    .short('f')
+                    .long("filter"),
+            )
+            .arg(
                 Arg::new("reveal")
                     .help("display the actual the passwords")
                     .long("reveal")
