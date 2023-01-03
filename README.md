@@ -75,8 +75,7 @@ Password score: 100.00
 Show URL/accounts for all secrets:
 
 ```shell
-./bin/rucksack list \
-  --db ./data/creds.db \
+./bin/rucksack list --db ./data/creds.db
 ```
 
 ```shell
@@ -86,9 +85,7 @@ Enter db password:
 Show URLs, accounts, passwords, and password scores for all secrets:
 
 ```shell
-./bin/rucksack list \
-  --db ./data/creds.db \
-  --decrypt
+./bin/rucksack list --db ./data/creds.db --decrypt
 ```
 
 ```shell
