@@ -124,7 +124,7 @@ https://portal-hexapod.testing.app       | alice@example.com              | ****
 http://localhost:3000                    | alice@example.com              | **********           | 30
 ```
 
-You may sort on `score` (strength), `user`, or `url`. If not provided, `url` sorting is used.
+You may sort on `score` (strength), `user`, or `url`. If not provided, `url` sorting is used. Also note that `order-by` is provided as an alias for `sort-by`.
 
 ## Other
 

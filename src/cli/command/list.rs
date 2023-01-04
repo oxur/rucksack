@@ -83,7 +83,7 @@ fn display_results(sorted: Vec<ListResult>, decrypted: Option<&bool>) {
 const URL_HEADER: &str = "URL";
 const USER_HEADER: &str = "User / Account";
 const PWD_HEADER: &str = "Password";
-const SCORE_HEADER: &str = "Strength";
+const SCORE_HEADER: &str = "Score / Strength";
 
 fn decrypted_header() {
     println!(
@@ -95,7 +95,7 @@ fn decrypted_header() {
         "-".repeat(40),
         "-".repeat(30),
         "-".repeat(20),
-        "-".repeat(10)
+        "-".repeat(16)
     )
 }
 
