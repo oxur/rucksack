@@ -119,6 +119,7 @@ fn cli() -> Command {
                     .help("display the actual the passwords")
                     .short('s')
                     .long("sort-by")
+                    .alias("order-by")
                     .default_value("url")
                     .value_parser(["score", "url", "user"]),
             )
