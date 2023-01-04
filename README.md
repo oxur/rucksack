@@ -118,7 +118,7 @@ URL                                      | User / Account                 | Pass
 https://www.bugworld.com                 | hexapod123                     | **********           | 93
 https://accounts.cloud.com               | hexapod@thing.systems          | **********           | 90
 https://entymology.slack.com             | 6pod@example.com               | **********           | 86
-https://bugs.slack.com                   | Alice Roberts                  | **********           | 85
+https://bugs.slack.com                   | Alice "Hexapod" Roberts        | **********           | 85
 https://twitter.com                      | TheOtherHexapod                | **********           | 83
 https://portal-hexapod.testing.app       | alice@example.com              | **********           | 58
 http://localhost:3000                    | alice@example.com              | **********           | 30
