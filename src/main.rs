@@ -38,7 +38,7 @@ fn cli() -> Command {
                     .help("the type of generator to use")
                     .short('t')
                     .long("type")
-                    .default_value("random")
+                    .default_value("uuid++")
                     .value_parser(["lipsum", "random", "uuid", "uuid+", "uuid++", ]),
             )
             .arg(
