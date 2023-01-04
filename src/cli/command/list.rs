@@ -31,13 +31,10 @@ pub fn all(matches: &ArgMatches) -> Result<()> {
     for i in db.iter() {
         let record = i.value().decrypt(db.store_pwd(), db.salt())?;
         let mut result = new_result(record.user(), record.metadata().url);
-        match filter {
-            Some(check) => {
-                if !result.user.clone().contains(check) && !result.url.clone().contains(check) {
-                    continue;
-                }
+        if let Some(check) = filter {
+            if !result.user.clone().contains(check) && !result.url.clone().contains(check) {
+                continue;
             }
-            None => (),
         }
         let hidden = "*".repeat(10).to_string();
         match decrypt {
