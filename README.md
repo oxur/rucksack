@@ -145,8 +145,8 @@ Apache License, Version 2.0
 
 [logo]: resources/images/logo-v1-x250.png
 [logo-large]: resources/images/logo-v1-x1000.png
-[build]: https://github.com/oxur/rucksack/actions?query=workflow%3Abuild+
-[build-badge]: https://github.com/oxur/rucksack/workflows/build/badge.svg
+[build]: https://github.com/oxur/rucksack/actions/workflows/cicd.yml
+[build-badge]: https://github.com/oxur/rucksack/actions/workflows/cicd.yml/badge.svg
 [crate]: https://crates.io/crates/rucksack
 [crate-badge]: https://img.shields.io/crates/v/rucksack.svg
 [docs]: https://docs.rs/rucksack/
