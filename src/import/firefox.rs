@@ -1,8 +1,11 @@
+use std::io::{BufReader, Cursor};
+
 use anyhow::Result;
 use chrono::TimeZone;
 use serde::Deserialize;
 
 use crate::store;
+use crate::util;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -43,8 +46,8 @@ fn record_from_csv(csv: CSVRecord) -> store::record::DecryptedRecord {
 }
 
 pub fn from_csv(db: store::db::DB, csv_path: String) -> Result<(), anyhow::Error> {
-    let file = std::fs::File::open(csv_path.clone())?;
-    let reader = std::io::BufReader::new(file);
+    let bytes = util::read_file(csv_path.clone())?;
+    let reader = BufReader::new(Cursor::new(bytes));
     let mut rdr = csv::Reader::from_reader(reader);
     println!("Importing data from {}:", csv_path);
     for result in rdr.deserialize() {

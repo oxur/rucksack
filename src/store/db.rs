@@ -5,6 +5,8 @@ use anyhow::Result;
 use bincode::config;
 use dashmap::DashMap;
 
+use crate::util;
+
 use super::crypto::{decrypt, encrypt};
 use super::record::{DecryptedRecord, EncryptedRecord};
 
@@ -29,7 +31,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
     let bincode_cfg = config::standard();
     if std::path::Path::new(&path).exists() {
         let mut _len = 0;
-        let encrypted = fs::read(path.clone())?;
+        let encrypted = util::read_file(path.clone())?;
         let decrypted = decrypt(encrypted, store_pwd.clone(), salt.clone())?;
         store_hash = crc32fast::hash(decrypted.as_ref());
         (hash_map, _len) = bincode::serde::decode_from_slice(decrypted.as_ref(), bincode_cfg)?;

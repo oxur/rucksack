@@ -77,7 +77,7 @@ Import login data from Firefox Sync:
 Show URL/accounts for all secrets:
 
 ```shell
-./bin/rucksack list --db ./data/creds.db
+./bin/rucksack list
 ```
 
 ```shell
@@ -87,7 +87,7 @@ Enter db password:
 Show URLs, accounts, passwords, and password scores for all secrets:
 
 ```shell
-./bin/rucksack list --db ./data/creds.db --decrypt
+./bin/rucksack list --db  --decrypt
 ```
 
 ```shell
@@ -98,13 +98,14 @@ In both cases a password may be passed with the `--password` flag. By default, t
 
 Note that without `--decrypt`, only the user and URL are displayed. With `--decrypt`, those as well as masked password and password score are displayed. To unmask the password, one must also set `--reveal`.
 
+The default database location used is `./data/creds.db`. To use another location, the `--db` flag is available.
+
 ### Search / Filter Secrets
 
 Simple filtering is also possible (done using a flag with the `list` command, with or without sorting):
 
 ```shell
 ./bin/rucksack list \
-  --db ./data/creds.db \
   --password abc123 \
   --filter exa \
   --sort-by score \

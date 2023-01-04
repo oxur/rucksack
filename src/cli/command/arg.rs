@@ -5,6 +5,7 @@ pub fn db_arg() -> Arg {
         .help("path to the encrypted database to use")
         .short('d')
         .long("db")
+        .default_value("./data/creds.db")
 }
 
 pub fn pwd_arg() -> Arg {
