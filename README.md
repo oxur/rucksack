@@ -7,7 +7,7 @@
 
 [![][logo]][logo-large]
 
-*A terminal-based password manager, importer (Firefox Sync), and generator*
+*A terminal-based password manager, generator, and importer (Firefox, Chrome)*
 
 ## Features
 
