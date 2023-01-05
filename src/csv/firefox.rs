@@ -5,7 +5,7 @@ use crate::util;
 
 // This started as the Firefox login data struct, but it has more fields than
 // others, so it has become the default interim struct to which others convert
-// to.
+// for imports.
 #[derive(Debug, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Record {
@@ -53,12 +53,4 @@ impl Record {
         };
         store::record::DecryptedRecord { creds, metadata }
     }
-}
-
-pub fn print_report(count: usize, total: usize) {
-    println!();
-    println!(
-        "Imported {} records (total records in DB: {})",
-        count, total
-    )
 }
