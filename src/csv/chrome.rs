@@ -1,5 +1,7 @@
 use serde::Deserialize;
 
+use crate::store;
+
 use super::firefox;
 
 #[derive(Debug, Deserialize)]
@@ -11,11 +13,12 @@ pub struct Record {
 }
 
 impl Record {
-    pub fn to_firefox(&self) -> firefox::Record {
-        firefox::new_with_password(
+    pub fn to_decrypted(&self) -> store::DecryptedRecord {
+        let ffr = firefox::new_with_password(
             self.url.clone(),
             self.username.clone(),
             self.password.clone(),
-        )
+        );
+        ffr.to_decrypted()
     }
 }
