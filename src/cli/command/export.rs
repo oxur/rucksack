@@ -22,24 +22,44 @@ pub fn new(matches: &ArgMatches) -> Result<()> {
 
 fn to_chrome_csv(db: store::db::DB, csv_path: String) -> Result<(), anyhow::Error> {
     let mut wtr = writer::to_bytes()?;
+    let mut count = 0;
     for dr in db.collect_decrypted()? {
         wtr.serialize(chrome::from_decrypted(dr))?;
+        count += 1;
+        print!(".");
     }
     wtr.flush()?;
     match wtr.into_inner() {
-        Ok(data) => crate_util::write_file(data, csv_path),
+        Ok(data) => {
+            print_report(count, db.hash_map().len());
+            crate_util::write_file(data, csv_path)
+        }
         Err(e) => Err(anyhow!(e)),
     }
 }
 
 fn to_firefox_csv(db: store::db::DB, csv_path: String) -> Result<(), anyhow::Error> {
     let mut wtr = writer::to_bytes()?;
+    let mut count = 0;
     for dr in db.collect_decrypted()? {
         wtr.serialize(firefox::from_decrypted(dr))?;
+        count += 1;
+        print!(".");
     }
     wtr.flush()?;
     match wtr.into_inner() {
-        Ok(data) => crate_util::write_file(data, csv_path),
+        Ok(data) => {
+            print_report(count, db.hash_map().len());
+            crate_util::write_file(data, csv_path)
+        }
         Err(e) => Err(anyhow!(e)),
     }
+}
+
+fn print_report(count: usize, total: usize) {
+    println!();
+    println!(
+        "Exported {} records (total records in DB: {})",
+        count, total
+    )
 }
