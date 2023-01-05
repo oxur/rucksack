@@ -1,15 +1,13 @@
+use crate::time;
+
 use super::record::{Creds, DecryptedRecord, Kind, Metadata};
 
 pub fn store_pwd() -> String {
     "abc123".to_string()
 }
 
-pub fn now() -> String {
-    chrono::offset::Local::now().to_rfc3339()
-}
-
 pub fn plaintext_record() -> DecryptedRecord {
-    let date_time = now();
+    let date_time = time::now();
 
     DecryptedRecord {
         creds: Creds {

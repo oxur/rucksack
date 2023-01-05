@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use clap::builder::EnumValueParser;
 use clap::{Arg, ArgAction, ArgMatches, Command};
 
-use rucksack::cli::command::{arg, gen, import, list};
+use rucksack::cli::command::{arg, export, gen, import, list};
 use rucksack::util;
 
 const NAME: &str = env!("CARGO_PKG_NAME");
@@ -29,6 +29,27 @@ fn cli() -> Command {
             .short('v')
             .long("version")
             .action(ArgAction::SetTrue)
+    )
+    .subcommand(
+        Command::new("export")
+            .about("export the rucksack db")
+            .arg(
+                Arg::new("type")
+                    .help("the type of export to create")
+                    .short('t')
+                    .long("type")
+                    .default_value("firefox")
+                    .value_parser(["chrome", "firefox"]),
+            )
+            .arg(
+                Arg::new("file")
+                    .help("path to the file that will contain the exported data")
+                    .short('f')
+                    .long("file"),
+            )
+            .arg(arg::db_arg())
+            .arg(arg::pwd_arg())
+            .arg(arg::salt_arg())
     )
     .subcommand(
         Command::new("gen")
@@ -132,6 +153,7 @@ fn cli() -> Command {
 // fn run(matches: &ArgMatches, config: &kbs2::config::Config) -> Result<()> {
 fn run(matches: &ArgMatches) -> Result<()> {
     match matches.subcommand() {
+        Some(("export", matches)) => export::new(matches)?,
         Some(("gen", matches)) => gen::new(matches)?,
         Some(("import", matches)) => import::new(matches)?,
         Some(("list", matches)) => list::all(matches)?,

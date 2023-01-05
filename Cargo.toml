@@ -33,6 +33,7 @@ rpassword = "7.1"
 secrecy = "0.8.0"
 serde = { version = "1.0", features = ["derive"] }
 shellexpand = "3.0.0"
+url = "2.3.1"
 uuid = {version = "1.2.2",  features = ["v4"]}
 
 [dev-dependencies]

@@ -1,11 +1,10 @@
 use std::fs;
-use std::io::Write;
 
-use anyhow::Result;
+use anyhow::{Error, Result};
 use bincode::config;
 use dashmap::DashMap;
 
-use crate::util;
+use crate::{time, util};
 
 use super::crypto::{decrypt, encrypt};
 use super::record::{DecryptedRecord, EncryptedRecord};
@@ -73,22 +72,11 @@ impl DB {
         }
         fs::create_dir_all(path.parent().unwrap())?;
         if std::path::Path::new(&self.path).exists() {
-            let backup_name = format!(
-                "{}-{}",
-                self.path,
-                chrono::offset::Local::now().format("%Y%m%d-%H%M%S")
-            );
+            let backup_name = format!("{}-{}", self.path, time::simple_timestamp());
             std::fs::copy(path, backup_name)?;
         }
         let encrypted = encrypt(encoded, self.store_pwd(), self.salt());
-        let mut file = std::fs::OpenOptions::new()
-            .write(true)
-            .create(true)
-            .open(self.path())
-            .unwrap();
-        file.write_all(&encrypted[..])?;
-        file.sync_all()?;
-        Ok(())
+        util::write_file(encrypted, self.path())
     }
 
     pub fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord> {
@@ -105,18 +93,28 @@ impl DB {
     pub fn iter(&self) -> dashmap::iter::Iter<String, EncryptedRecord> {
         self.hash_map.iter()
     }
+
+    pub fn collect_decrypted(&self) -> Result<Vec<DecryptedRecord>, Error> {
+        let mut decrypted: Vec<DecryptedRecord> = Vec::new();
+        for i in self.iter() {
+            let record = i.value().decrypt(self.store_pwd(), self.salt())?;
+            decrypted.push(record);
+        }
+        Ok(decrypted)
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use crate::store::db;
     use crate::store::testing_data;
+    use crate::time;
     use tempfile::NamedTempFile;
 
     #[test]
     fn db_basics() {
         let pwd = testing_data::store_pwd();
-        let salt = testing_data::now();
+        let salt = time::now();
         let path = NamedTempFile::new()
             .unwrap()
             .path()
