@@ -60,7 +60,7 @@ New password: Esse-maius-amicitia,-nihil.-]9^,
 Password score: 100.00
 ```
 
-### Importing
+### Importing and Exporting
 
 Import login data from Firefox Sync:
 
@@ -72,7 +72,15 @@ Import login data from Firefox Sync:
   --file ~/Downloads/logins.csv
 ```
 
-The two types of importing currently supported are `firefox` and `chrome`.
+Logins may be exported to files that can then be used to import into browsers:
+
+```shell
+./bin/rucksack export \
+  --type chrome \
+  --file /tmp/exported-logins.csv
+```
+
+For both importing and exporting, there are currently two supported types: `firefox` and `chrome`.
 
 ### List Secrets
 
@@ -127,18 +135,6 @@ http://localhost:3000                    | alice@example.com              | ****
 ```
 
 You may sort on `score` (strength), `user`, or `url`. If not provided, `url` sorting is used. Also note that `order-by` is provided as an alias for `sort-by`.
-
-### Exporting
-
-Logins may be exported to files that can then be used to import into browsers:
-
-```shell
-./bin/rucksack export \
-  --type chrome \
-  --file /tmp/exported-logins.csv
-```
-
-The two types of exporting currently supported are `firefox` and `chrome`.
 
 ## Other
 
