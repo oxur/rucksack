@@ -1,6 +1,6 @@
-use rand::distributions::{Distribution, Uniform};
 use std::str;
 
+use rand::distributions::{Distribution, Uniform};
 use uuid::Uuid;
 
 use crate::util;

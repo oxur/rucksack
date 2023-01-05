@@ -1,9 +1,8 @@
-use rand::Rng;
 use std::fs;
+use std::io::Write;
 
 use anyhow::{anyhow, Result};
-use chrono::offset::Local;
-use chrono::{TimeZone, Utc};
+use rand::Rng;
 
 const SPECIALS: &[u8] = b"!@#%&*?=+:";
 
@@ -21,18 +20,24 @@ pub fn random_specials(count: usize) -> Vec<u8> {
     specials
 }
 
-pub fn now() -> String {
-    Local::now().to_rfc3339()
-}
-
-pub fn epoch_to_string(e: i64) -> String {
-    Utc.timestamp_opt(e, 0).unwrap().to_rfc3339()
-}
-
 pub fn read_file(path: String) -> Result<Vec<u8>> {
     let expanded = shellexpand::tilde(path.as_str());
     match fs::read(expanded.as_ref()) {
         Ok(bytes) => Ok(bytes),
+        Err(e) => Err(anyhow!(e)),
+    }
+}
+
+pub fn write_file(data: Vec<u8>, path: String) -> Result<()> {
+    let expanded = shellexpand::tilde(path.as_str());
+    let mut file = std::fs::OpenOptions::new()
+        .write(true)
+        .create(true)
+        .open(expanded.as_ref())
+        .unwrap();
+    file.write_all(&data[..])?;
+    match file.sync_all() {
+        Ok(x) => Ok(x),
         Err(e) => Err(anyhow!(e)),
     }
 }

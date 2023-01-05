@@ -32,7 +32,7 @@ pub fn all(matches: &ArgMatches) -> Result<()> {
         let record = i.value().decrypt(db.store_pwd(), db.salt())?;
         let mut result = new_result(record.user(), record.metadata().url);
         if let Some(check) = filter {
-            if !result.user.clone().contains(check) && !result.url.clone().contains(check) {
+            if !i.key().contains(check) {
                 continue;
             }
         }

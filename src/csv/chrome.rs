@@ -1,10 +1,11 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+use url::Url;
 
 use crate::store;
 
 use super::firefox;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Record {
     pub name: String,
     pub url: String,
@@ -20,5 +21,16 @@ impl Record {
             self.password.clone(),
         );
         ffr.to_decrypted()
+    }
+}
+
+pub fn from_decrypted(r: store::DecryptedRecord) -> Record {
+    let url = r.metadata().url;
+    let parsed = Url::parse(&url).unwrap();
+    Record {
+        name: parsed.host_str().unwrap().to_string(),
+        url,
+        username: r.user(),
+        password: r.password(),
     }
 }
