@@ -81,7 +81,7 @@ fn cli() -> Command {
                     .short('t')
                     .long("type")
                     .default_value("firefox")
-                    .value_parser(["firefox"]),
+                    .value_parser(["chrome", "firefox"]),
             )
             .arg(
                 Arg::new("file")
