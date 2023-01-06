@@ -61,11 +61,12 @@ pub fn all(matches: &ArgMatches) -> Result<()> {
         Some(&_) => (),
         None => (),
     };
-    display_results(results, decrypt);
+    print_results(&results, decrypt);
+    print_report(results.len(), db.hash_map().len());
     Ok(())
 }
 
-fn display_results(sorted: Vec<ListResult>, decrypted: Option<&bool>) {
+fn print_results(sorted: &Vec<ListResult>, decrypted: Option<&bool>) {
     match decrypted {
         Some(true) => decrypted_header(),
         Some(false) => encrypted_header(),
@@ -78,6 +79,10 @@ fn display_results(sorted: Vec<ListResult>, decrypted: Option<&bool>) {
             None => unreachable!(),
         }
     }
+}
+
+fn print_report(count: usize, total: usize) {
+    println!("\n{} records (of {} total)\n", count, total)
 }
 
 const URL_HEADER: &str = "URL";
@@ -104,13 +109,13 @@ fn encrypted_header() {
     println!("{: <40}-+-{}", "-".repeat(40), "-".repeat(30))
 }
 
-fn decrypted_result(r: ListResult) {
+fn decrypted_result(r: &ListResult) {
     println!(
         "{: <40} | {: <30} | {: <20} | {:.2}",
         r.url, r.user, r.pwd, r.score
     )
 }
 
-fn encrypted_result(r: ListResult) {
+fn encrypted_result(r: &ListResult) {
     println!("{: <40} | {}", r.url, r.user)
 }

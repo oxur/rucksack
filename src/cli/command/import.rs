@@ -48,9 +48,8 @@ fn from_firefox_csv(db: store::db::DB, csv_path: String) -> Result<(), anyhow::E
 }
 
 fn print_report(count: usize, total: usize) {
-    println!();
     println!(
-        "Imported {} records (total records in DB: {})",
+        "\nImported {} records (total records in DB: {})",
         count, total
     )
 }
