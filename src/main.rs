@@ -130,6 +130,14 @@ fn cli() -> Command {
                     .long("filter"),
             )
             .arg(
+                Arg::new("group-by")
+                    .help("group results that have the same value for the given field")
+                    .short('g')
+                    .long("group-by")
+                    .alias("partition")
+                    .value_parser(["password", "user"]),
+            )
+            .arg(
                 Arg::new("reveal")
                     .help("display the actual the passwords")
                     .long("reveal")
