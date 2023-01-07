@@ -138,7 +138,9 @@ http://localhost:3000                    | alice@example.com              | ****
 
 You may sort on `score` (strength), `user`, or `url`. If not provided, `url` sorting is used. Also note that `order-by` is provided as an alias for `sort-by`.
 
-### Grouping Results by Password
+### Grouping Results
+
+#### By Password
 
 For use in auditing, sites+user combinations that share the same password can be reported:
 
@@ -177,11 +179,17 @@ Password: ********** (Score: 93)
 Accounts using: 1
 Accounts:
 
-URL                                      | User / Account
------------------------------------------+-------------------------------
-https://www.hyperion-records.co.uk       | alice@example.com
+2 groups (with 7 records out of 16 total)
+```
 
-3 groups (with 8 total records)
+#### By User
+
+You may also group by user name (account name):
+
+```shell
+./bin/rucksack list \
+  --group-by user \
+  --decrypt
 ```
 
 ## Other
