@@ -154,7 +154,8 @@ For use in auditing, sites+user combinations that share the same password can be
 ```
 
 ```text
-+------------------------------------------------------------------------
++========================================================================
+
 Password: ********** (Score: 99)
 Accounts using: 5
 Accounts:
@@ -167,7 +168,8 @@ https://www.amazon.com                   | alice@example.com
 https://www.amazon.com/ap/signin         | alice@example.com
 https://mybank.com                       | alice@example.com
 
-+------------------------------------------------------------------------
++========================================================================
+
 Password: ********** (Score: 86)
 Accounts using: 2
 Accounts:
@@ -176,11 +178,6 @@ URL                                      | User / Account
 -----------------------------------------+-------------------------------
 https://blurp.com                        | alice
 https://bleep.net                        | alice
-
-+------------------------------------------------------------------------
-Password: ********** (Score: 93)
-Accounts using: 1
-Accounts:
 
 2 groups (with 7 records out of 16 total)
 ```
