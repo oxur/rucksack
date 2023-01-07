@@ -136,6 +136,8 @@ http://localhost:3000                    | alice@example.com              | ****
 7 records (of 7 total)
 ```
 
+It is also possible to perform negative filtering using `--exclude`. Additionally, `--include` is provided as an alias for `--filter`.
+
 You may sort on `score` (strength), `user`, or `url`. If not provided, `url` sorting is used. Also note that `order-by` is provided as an alias for `sort-by`.
 
 ### Grouping Results

@@ -127,7 +127,14 @@ fn cli() -> Command {
                 Arg::new("filter")
                     .help("show records where the user or the URL contain the given string")
                     .short('f')
-                    .long("filter"),
+                    .long("filter")
+                    .alias("include")
+            )
+            .arg(
+                Arg::new("exclude")
+                    .help("don't show records where the user or the URL contain the given string")
+                    .short('x')
+                    .long("exclude")
             )
             .arg(
                 Arg::new("group-by")
@@ -141,14 +148,14 @@ fn cli() -> Command {
                 Arg::new("max-score")
                     .help("limit results to secrets that do not exceed the given maximum score")
                     .long("max-score")
-                    .value_parser(clap::value_parser!(usize))
+                    .value_parser(clap::value_parser!(f64))
                     .default_value("100")
             )
             .arg(
                 Arg::new("min-score")
                     .help("limit results to secrets that are not less than the given minimum score")
                     .long("min-score")
-                    .value_parser(clap::value_parser!(usize))
+                    .value_parser(clap::value_parser!(f64))
                     .default_value("0")
             )
             .arg(
