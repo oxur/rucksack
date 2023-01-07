@@ -28,6 +28,9 @@ type GroupByString = HashMap<String, Vec<ListResult>>;
 pub fn all(matches: &ArgMatches) -> Result<()> {
     let decrypt = matches.get_one::<bool>("decrypt");
     let filter = matches.get_one::<String>("filter");
+    let exclude = matches.get_one::<String>("exclude");
+    let max_score = matches.get_one::<f64>("max-score");
+    let min_score = matches.get_one::<f64>("min-score");
     let reveal = matches.get_one::<bool>("reveal");
     let sort_by = matches.get_one::<String>("sort-by").map(|s| s.as_str());
     let group_by = matches.get_one::<String>("group-by").map(|s| s.as_str());
@@ -36,16 +39,31 @@ pub fn all(matches: &ArgMatches) -> Result<()> {
     let mut groups = GroupByString::new();
     for i in db.iter() {
         let record = i.value().decrypt(db.store_pwd(), db.salt())?;
+        let analyzed = analyzer::analyze(record.password());
+        let score = scorer::score(&analyzed);
         let mut result = new_result(record.user(), record.metadata().url);
         if let Some(check) = filter {
             if !i.key().contains(check) {
                 continue;
             }
         }
+        if let Some(check) = exclude {
+            if i.key().contains(check) {
+                continue;
+            }
+        }
+        if let Some(check) = max_score {
+            if &score.trunc() > check {
+                continue;
+            }
+        }
+        if let Some(check) = min_score {
+            if &score.trunc() < check {
+                continue;
+            }
+        }
         match decrypt {
             Some(true) => {
-                let analyzed = analyzer::analyze(record.password());
-                let score = scorer::score(&analyzed);
                 let pwd = match reveal {
                     Some(true) => record.password(),
                     Some(false) => hidden(),
