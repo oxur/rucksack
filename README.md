@@ -14,7 +14,7 @@
 * [x] Password generator
 * [x] Encrypted local storage
 * [x] Concurrent hashmap for use by daemons
-* [x] Supports Firefox Sync
+* [x] Supports Firefox and Chrome CSV formats (for importing and exporting)
 * [x] List secrets (encrypted and decrypted)
 * [x] Searching secrets (filtering)
 * [x] Reports (quality, duplicates, etc.)
