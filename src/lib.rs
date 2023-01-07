@@ -1,4 +1,5 @@
 pub mod cli;
+pub mod config;
 pub mod csv;
 pub mod generator;
 pub mod store;

@@ -1,3 +1,4 @@
+use log;
 use std::io;
 
 use anyhow::{Context, Result};
@@ -5,7 +6,7 @@ use clap::builder::EnumValueParser;
 use clap::{Arg, ArgAction, ArgMatches, Command};
 
 use rucksack::cli::command::{arg, export, gen, import, list};
-use rucksack::util;
+use rucksack::{config, util};
 
 const NAME: &str = env!("CARGO_PKG_NAME");
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -193,6 +194,15 @@ fn run(matches: &ArgMatches) -> Result<()> {
 }
 
 fn main() -> Result<()> {
+    let cfg = config::load();
+    match twyg::setup_logger(&cfg.logging) {
+        Ok(_) => {}
+        Err(error) => {
+            panic!("Could not setup logger: {:?}", error)
+        }
+    }
+    log::debug!("Config setup complete.");
+    log::debug!("Logger setup complete.");
     let mut rucksack = cli();
     let matches = rucksack.clone().get_matches();
 
