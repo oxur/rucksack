@@ -59,7 +59,7 @@ pub fn all(matches: &ArgMatches) -> Result<()> {
         }
         match group_by {
             Some("password") => {
-                let entry = groups.entry(result.pwd.clone()).or_default();
+                let entry = groups.entry(record.password()).or_default();
                 entry.push(result.clone());
             }
             Some(&_) => (),
@@ -70,9 +70,8 @@ pub fn all(matches: &ArgMatches) -> Result<()> {
     sort(&mut results, sort_by);
     match group_by {
         Some("password") => {
-            let count = groups.len();
-            print_group(groups, decrypt, reveal, sort_by);
-            print_group_report(count, db.hash_map().len());
+            let (group_count, record_count) = print_group(groups, decrypt, reveal, sort_by);
+            print_group_report(group_count, record_count, db.hash_map().len());
         }
         Some(&_) => (),
         None => {
@@ -108,20 +107,31 @@ fn print_group(
     decrypted: Option<&bool>,
     reveal: Option<&bool>,
     sort_by: Option<&str>,
-) {
+) -> (i32, usize) {
+    let mut group_count = 0;
+    let mut record_count = 0;
     for (_, mut group) in groups {
+        if group.len() == 1 {
+            continue;
+        }
+        group_count += 1;
         sort(&mut group, sort_by);
         password_section(&group[0], decrypted, reveal);
         println!("Accounts using: {}\nAccounts:", group.len());
         encrypted_header();
+        record_count += group.len();
         for r in group {
             encrypted_result(&r)
         }
     }
+    (group_count, record_count)
 }
 
-fn print_group_report(count: usize, total: usize) {
-    println!("\n{} groups (with {} total records)\n", count, total)
+fn print_group_report(count: i32, records: usize, total: usize) {
+    println!(
+        "\n{} groups (with {} records out of {} total)\n",
+        count, records, total
+    )
 }
 
 const URL_HEADER: &str = "URL";
@@ -156,7 +166,7 @@ fn decrypted_result(r: &ListResult) {
 }
 
 fn password_section(r: &ListResult, decrypted: Option<&bool>, reveal: Option<&bool>) {
-    println!("\n\n+{}", "-".repeat(80));
+    println!("\n\n+{}", "-".repeat(40 + 30 - 1));
     match decrypted {
         Some(true) => match reveal {
             Some(true) => println!("Password: {} (Score: {})", r.pwd, r.score),
