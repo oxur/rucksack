@@ -18,7 +18,14 @@ pub fn pwd_arg() -> Arg {
 pub fn salt_arg() -> Arg {
     Arg::new("salt")
         .help("the salt to use for encrypting the database")
-        .default_value(env!("USER"))
+        .default_value(default_salt())
         .short('s')
         .long("salt")
+}
+
+fn default_salt() -> String {
+    match std::env::var("USER") {
+        Ok(user) => user,
+        Err(_) => "rucksack".to_string(),
+    }
 }
