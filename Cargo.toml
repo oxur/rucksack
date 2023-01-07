@@ -1,6 +1,6 @@
 [package]
 name = "rucksack"
-description = "A terminal-based password manager, generator, and importer (Firefox, Chrome)"
+description = "A terminal-based password manager, generator, and importer (Firefox, Chrome) backed with a concurrent hashmap"
 version = "0.6.0-dev"
 license = "Apache-2.0"
 authors = ["Duncan McGreggor <oubiwann@gmail.com>"]
