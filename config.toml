@@ -1,0 +1,4 @@
+[logging]
+coloured = true
+level = "debug"
+report_caller = true
