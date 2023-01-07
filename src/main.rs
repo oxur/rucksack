@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use clap::builder::EnumValueParser;
 use clap::{Arg, ArgAction, ArgMatches, Command};
 
-use rucksack::cli::command::{arg, export, gen, import, list};
+use rucksack::cli::command::{arg, export, gen, import, list, setup_db};
 use rucksack::{config, util};
 
 const NAME: &str = env!("CARGO_PKG_NAME");
@@ -180,11 +180,13 @@ fn cli() -> Command {
 }
 
 // fn run(matches: &ArgMatches, config: &kbs2::config::Config) -> Result<()> {
-fn run(matches: &ArgMatches) -> Result<()> {
+fn run(matches: &ArgMatches, cfg: config::Config) -> Result<()> {
+    let db = setup_db(matches)?;
+    let app = rucksack::app::App { cfg, db };
     match matches.subcommand() {
         Some(("export", matches)) => export::new(matches)?,
         Some(("gen", matches)) => gen::new(matches)?,
-        Some(("import", matches)) => import::new(matches)?,
+        Some(("import", matches)) => import::new(matches, &app)?,
         Some(("list", matches)) => list::all(matches)?,
         Some((&_, _)) => todo!(),
         None => todo!(),
@@ -224,5 +226,5 @@ fn main() -> Result<()> {
     }
 
     // match run(&matches, &config) {
-    run(&matches)
+    run(&matches, cfg)
 }
