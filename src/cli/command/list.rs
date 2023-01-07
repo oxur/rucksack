@@ -62,6 +62,10 @@ pub fn all(matches: &ArgMatches) -> Result<()> {
                 let entry = groups.entry(record.password()).or_default();
                 entry.push(result.clone());
             }
+            Some("user") => {
+                let entry = groups.entry(record.user()).or_default();
+                entry.push(result.clone());
+            }
             Some(&_) => (),
             None => (),
         }
@@ -70,7 +74,12 @@ pub fn all(matches: &ArgMatches) -> Result<()> {
     sort(&mut results, sort_by);
     match group_by {
         Some("password") => {
-            let (group_count, record_count) = print_group(groups, decrypt, reveal, sort_by);
+            let (group_count, record_count) =
+                print_password_group(groups, decrypt, reveal, sort_by);
+            print_group_report(group_count, record_count, db.hash_map().len());
+        }
+        Some("user") => {
+            let (group_count, record_count) = print_user_group(groups, decrypt, sort_by);
             print_group_report(group_count, record_count, db.hash_map().len());
         }
         Some(&_) => (),
@@ -102,7 +111,7 @@ fn print_report(count: usize, total: usize) {
     println!("\n{} records (of {} total)\n", count, total)
 }
 
-fn print_group(
+fn print_password_group(
     groups: GroupByString,
     decrypted: Option<&bool>,
     reveal: Option<&bool>,
@@ -122,6 +131,38 @@ fn print_group(
         record_count += group.len();
         for r in group {
             encrypted_result(&r)
+        }
+    }
+    (group_count, record_count)
+}
+
+fn print_user_group(
+    groups: GroupByString,
+    decrypted: Option<&bool>,
+    sort_by: Option<&str>,
+) -> (i32, usize) {
+    let mut group_count = 0;
+    let mut record_count = 0;
+    for (_, mut group) in groups {
+        if group.len() == 1 {
+            continue;
+        }
+        group_count += 1;
+        sort(&mut group, sort_by);
+        user_section(&group[0], decrypted);
+        println!("Accounts using: {}\nAccounts:", group.len());
+        match decrypted {
+            Some(true) => decrypted_no_user_header(),
+            Some(false) => encrypted_no_user_header(),
+            None => unreachable!(),
+        }
+        record_count += group.len();
+        for r in group {
+            match decrypted {
+                Some(true) => decrypted_no_user_result(&r),
+                Some(false) => encrypted_no_user_result(&r),
+                None => unreachable!(),
+            }
         }
     }
     (group_count, record_count)
@@ -153,9 +194,27 @@ fn decrypted_header() {
     )
 }
 
+fn decrypted_no_user_header() {
+    println!(
+        "\n{: <40} | {: <20} | {}",
+        URL_HEADER, PWD_HEADER, SCORE_HEADER
+    );
+    println!(
+        "{: <40}-+-{: <20}-+-{}",
+        "-".repeat(40),
+        "-".repeat(20),
+        "-".repeat(16)
+    )
+}
+
 fn encrypted_header() {
     println!("\n{: <40} | {: <30}", URL_HEADER, USER_HEADER);
     println!("{: <40}-+-{}", "-".repeat(40), "-".repeat(30))
+}
+
+fn encrypted_no_user_header() {
+    println!("\n{}", URL_HEADER);
+    println!("{}", "-".repeat(40))
 }
 
 fn decrypted_result(r: &ListResult) {
@@ -166,20 +225,42 @@ fn decrypted_result(r: &ListResult) {
 }
 
 fn password_section(r: &ListResult, decrypted: Option<&bool>, reveal: Option<&bool>) {
-    println!("\n\n+{}", "-".repeat(40 + 30 - 1));
+    println!("\n\n+{}\n", "=".repeat(40 + 30 + 2));
     match decrypted {
         Some(true) => match reveal {
             Some(true) => println!("Password: {} (Score: {})", r.pwd, r.score),
             Some(false) => println!("Password: {} (Score: {})", hidden(), r.score),
             None => unreachable!(),
         },
-        Some(false) => println!("\nPassword Group"),
+        Some(false) => println!("Password Group"),
+        None => unreachable!(),
+    }
+}
+
+fn user_section(r: &ListResult, decrypted: Option<&bool>) {
+    match decrypted {
+        Some(true) => {
+            println!("\n\n+{}\n", "=".repeat(40 + 20 + 16 + 5));
+            println!("User: {}", r.user)
+        }
+        Some(false) => {
+            println!("\n\n+{}\n", "=".repeat(40 - 1));
+            println!("User: {}", r.user)
+        }
         None => unreachable!(),
     }
 }
 
 fn encrypted_result(r: &ListResult) {
     println!("{: <40} | {}", r.url, r.user)
+}
+
+fn decrypted_no_user_result(r: &ListResult) {
+    println!("{: <40} | {: <20} | {:.2}", r.url, r.pwd, r.score)
+}
+
+fn encrypted_no_user_result(r: &ListResult) {
+    println!("{}", r.url)
 }
 
 fn hidden() -> String {
