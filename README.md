@@ -132,9 +132,57 @@ https://bugs.slack.com                   | Alice "Hexapod" Roberts        | ****
 https://twitter.com                      | TheOtherHexapod                | **********           | 83
 https://portal-hexapod.testing.app       | alice@example.com              | **********           | 58
 http://localhost:3000                    | alice@example.com              | **********           | 30
+
+7 records (of 7 total)
 ```
 
 You may sort on `score` (strength), `user`, or `url`. If not provided, `url` sorting is used. Also note that `order-by` is provided as an alias for `sort-by`.
+
+### Grouping Results by Password
+
+For use in auditing, sites+user combinations that share the same password can be reported:
+
+```shell
+./bin/rucksack list \
+  --group-by password \
+  --decrypt
+```
+
+```text
++------------------------------------------------------------------------
+Password: ********** (Score: 99)
+Accounts using: 5
+Accounts:
+
+URL                                      | User / Account
+-----------------------------------------+-------------------------------
+https://smile.amazon.com                 | alice@example.com
+https://smile.amazon.com/ap/signin       | alice@example.com
+https://www.amazon.com                   | alice@example.com
+https://www.amazon.com/ap/signin         | alice@example.com
+https://mybank.com                       | alice@example.com
+
++------------------------------------------------------------------------
+Password: ********** (Score: 86)
+Accounts using: 2
+Accounts:
+
+URL                                      | User / Account
+-----------------------------------------+-------------------------------
+https://blurp.com                        | alice
+https://bleep.net                        | alice
+
++------------------------------------------------------------------------
+Password: ********** (Score: 93)
+Accounts using: 1
+Accounts:
+
+URL                                      | User / Account
+-----------------------------------------+-------------------------------
+https://www.hyperion-records.co.uk       | alice@example.com
+
+3 groups (with 8 total records)
+```
 
 ## Other
 
