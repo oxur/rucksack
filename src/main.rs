@@ -138,6 +138,20 @@ fn cli() -> Command {
                     .value_parser(["password", "user"]),
             )
             .arg(
+                Arg::new("max-score")
+                    .help("limit results to secrets that do not exceed the given maximum score")
+                    .long("max-score")
+                    .value_parser(clap::value_parser!(usize))
+                    .default_value("100")
+            )
+            .arg(
+                Arg::new("min-score")
+                    .help("limit results to secrets that are not less than the given minimum score")
+                    .long("min-score")
+                    .value_parser(clap::value_parser!(usize))
+                    .default_value("0")
+            )
+            .arg(
                 Arg::new("reveal")
                     .help("display the actual the passwords")
                     .long("reveal")
