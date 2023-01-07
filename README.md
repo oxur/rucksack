@@ -17,7 +17,8 @@
 * [x] Supports Firefox Sync
 * [x] List secrets (encrypted and decrypted)
 * [x] Searching secrets (filtering)
-* [ ] Reports (quality, duplicates, etc.)
+* [x] Reports (quality, duplicates, etc.)
+* [ ] Add new records to the DB via CLI command
 * [ ] Local network sync
 
 ## Usage
