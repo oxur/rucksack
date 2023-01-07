@@ -19,8 +19,7 @@ pub fn string_to_epoch(stamp: String) -> i64 {
     match DateTime::parse_from_rfc3339(&stamp) {
         Ok(dt) => dt.timestamp_millis(),
         Err(e) => {
-            // TODO: change to debug logging
-            println!("{:?}", e);
+            log::debug!("{:?}", e);
             Local::now().timestamp_millis()
         }
     }

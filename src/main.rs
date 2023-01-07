@@ -1,4 +1,3 @@
-use log;
 use std::io;
 
 use anyhow::{Context, Result};
