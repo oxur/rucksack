@@ -18,7 +18,7 @@
 * [x] List secrets (encrypted and decrypted)
 * [x] Searching secrets (filtering)
 * [x] Reports (quality, duplicates, etc.)
-* [ ] Add new records to the DB via CLI command
+* [ ] Add new records to the DB via CLI subcommand
 * [ ] Local network sync
 
 ## Usage
@@ -68,7 +68,6 @@ Import login data from Firefox Sync:
 ```shell
 ./bin/rucksack import \
   --type firefox \
-  --db ./data/creds.db \
   --password abc123 \
   --file ~/Downloads/logins.csv
 ```
@@ -78,6 +77,7 @@ Logins may be exported to files that can then be used to import into browsers:
 ```shell
 ./bin/rucksack export \
   --type chrome \
+  --password abc123 \
   --file /tmp/exported-logins.csv
 ```
 
@@ -192,7 +192,7 @@ You may also group by user name (account name):
   --decrypt
 ```
 
-## Other
+## Related
 
 [Here](https://crates.io/keywords/password-manager?sort=downloads) are other cargo projects tagged with "password manager" ...
 
