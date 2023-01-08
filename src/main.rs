@@ -179,15 +179,14 @@ fn cli() -> Command {
     )
 }
 
-// fn run(matches: &ArgMatches, config: &kbs2::config::Config) -> Result<()> {
 fn run(matches: &ArgMatches, cfg: config::Config) -> Result<()> {
     let db = setup_db(matches)?;
     let app = rucksack::app::App { cfg, db };
     match matches.subcommand() {
-        Some(("export", matches)) => export::new(matches)?,
+        Some(("export", matches)) => export::new(matches, &app)?,
         Some(("gen", matches)) => gen::new(matches)?,
         Some(("import", matches)) => import::new(matches, &app)?,
-        Some(("list", matches)) => list::all(matches)?,
+        Some(("list", matches)) => list::all(matches, &app)?,
         Some((&_, _)) => todo!(),
         None => todo!(),
     }
@@ -225,6 +224,5 @@ fn main() -> Result<()> {
             .with_context(|| "failed to print help".to_string());
     }
 
-    // match run(&matches, &config) {
     run(&matches, cfg)
 }
