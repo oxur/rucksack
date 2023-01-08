@@ -4,7 +4,7 @@ use anyhow::Result;
 use clap::ArgMatches;
 use passwords::{analyzer, scorer};
 
-use crate::app;
+use crate::app::App;
 
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
 struct ListResult {
@@ -25,7 +25,7 @@ fn new_result(user: String, url: String) -> ListResult {
 
 type GroupByString = HashMap<String, Vec<ListResult>>;
 
-pub fn all(matches: &ArgMatches, app: &app::App) -> Result<()> {
+pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
     let decrypt = matches.get_one::<bool>("decrypt");
     let filter = matches.get_one::<String>("filter");
     let exclude = matches.get_one::<String>("exclude");

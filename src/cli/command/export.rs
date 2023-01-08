@@ -1,13 +1,13 @@
 use anyhow::{anyhow, Result};
 use clap::ArgMatches;
 
-use crate::app;
+use crate::app::App;
 use crate::csv::writer;
 use crate::csv::{chrome, firefox};
-use crate::store;
+use crate::store::db::DB;
 use crate::util::write_file;
 
-pub fn new(matches: &ArgMatches, app: &app::App) -> Result<()> {
+pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     let export_file = matches.get_one::<String>("file").unwrap().to_string();
     match matches.get_one::<String>("type").map(|s| s.as_str()) {
         Some("chrome") => to_chrome_csv(&app.db, export_file)?,
@@ -18,7 +18,7 @@ pub fn new(matches: &ArgMatches, app: &app::App) -> Result<()> {
     Ok(())
 }
 
-fn to_chrome_csv(db: &store::db::DB, csv_path: String) -> Result<(), anyhow::Error> {
+fn to_chrome_csv(db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
     let mut wtr = writer::to_bytes()?;
     let mut count = 0;
     for dr in db.collect_decrypted()? {
@@ -36,7 +36,7 @@ fn to_chrome_csv(db: &store::db::DB, csv_path: String) -> Result<(), anyhow::Err
     }
 }
 
-fn to_firefox_csv(db: &store::db::DB, csv_path: String) -> Result<(), anyhow::Error> {
+fn to_firefox_csv(db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
     let mut wtr = writer::to_bytes()?;
     let mut count = 0;
     for dr in db.collect_decrypted()? {
