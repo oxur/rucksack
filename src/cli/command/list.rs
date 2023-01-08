@@ -4,7 +4,7 @@ use anyhow::Result;
 use clap::ArgMatches;
 use passwords::{analyzer, scorer};
 
-use super::util;
+use crate::app;
 
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
 struct ListResult {
@@ -25,7 +25,7 @@ fn new_result(user: String, url: String) -> ListResult {
 
 type GroupByString = HashMap<String, Vec<ListResult>>;
 
-pub fn all(matches: &ArgMatches) -> Result<()> {
+pub fn all(matches: &ArgMatches, app: &app::App) -> Result<()> {
     let decrypt = matches.get_one::<bool>("decrypt");
     let filter = matches.get_one::<String>("filter");
     let exclude = matches.get_one::<String>("exclude");
@@ -34,11 +34,10 @@ pub fn all(matches: &ArgMatches) -> Result<()> {
     let reveal = matches.get_one::<bool>("reveal");
     let sort_by = matches.get_one::<String>("sort-by").map(|s| s.as_str());
     let group_by = matches.get_one::<String>("group-by").map(|s| s.as_str());
-    let db = util::setup_db(matches)?;
     let mut results: Vec<ListResult> = Vec::new();
     let mut groups = GroupByString::new();
-    for i in db.iter() {
-        let record = i.value().decrypt(db.store_pwd(), db.salt())?;
+    for i in app.db.iter() {
+        let record = i.value().decrypt(app.db.store_pwd(), app.db.salt())?;
         let analyzed = analyzer::analyze(record.password());
         let score = scorer::score(&analyzed);
         let mut result = new_result(record.user(), record.metadata().url);
@@ -94,16 +93,16 @@ pub fn all(matches: &ArgMatches) -> Result<()> {
         Some("password") => {
             let (group_count, record_count) =
                 print_password_group(groups, decrypt, reveal, sort_by);
-            print_group_report(group_count, record_count, db.hash_map().len());
+            print_group_report(group_count, record_count, app.db.hash_map().len());
         }
         Some("user") => {
             let (group_count, record_count) = print_user_group(groups, decrypt, sort_by);
-            print_group_report(group_count, record_count, db.hash_map().len());
+            print_group_report(group_count, record_count, app.db.hash_map().len());
         }
         Some(&_) => (),
         None => {
             print_results(&results, decrypt);
-            print_report(results.len(), db.hash_map().len());
+            print_report(results.len(), app.db.hash_map().len());
         }
     }
 

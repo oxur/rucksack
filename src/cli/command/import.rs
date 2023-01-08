@@ -1,11 +1,10 @@
 use anyhow::Result;
 use clap::ArgMatches;
 
+use crate::app;
 use crate::csv;
 use crate::csv::{chrome, firefox};
 use crate::store;
-
-use crate::app;
 
 pub fn new(matches: &ArgMatches, app: &app::App) -> Result<()> {
     let import_file = matches.get_one::<String>("file").unwrap().to_string();
