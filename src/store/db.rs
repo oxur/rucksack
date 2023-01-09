@@ -7,7 +7,7 @@ use dashmap::DashMap;
 use crate::{time, util};
 
 use super::crypto::{decrypt, encrypt};
-use super::record::{DecryptedRecord, EncryptedRecord};
+use super::record::{DecryptedRecord, EncryptedRecord, Metadata};
 
 #[derive(Clone, Default)]
 pub struct DB {
@@ -80,14 +80,43 @@ impl DB {
     }
 
     pub fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord> {
+        let key = record.key();
+        log::debug!("Inserting record with key {} ...", key);
         self.hash_map
-            .insert(record.key(), record.encrypt(self.store_pwd(), self.salt()))
+            .insert(key, record.encrypt(self.store_pwd(), self.salt()))
     }
 
     pub fn get(&self, key: String) -> Option<DecryptedRecord> {
+        log::debug!("Getting record with key {} ...", key);
         self.hash_map
             .get(&key)
             .map(|encrypted| encrypted.decrypt(self.store_pwd(), self.salt()).unwrap())
+    }
+
+    pub fn get_metadata(&self, key: String) -> Option<Metadata> {
+        log::debug!("Getting metadata of record with key {} ...", key);
+        match self.get(key.clone()) {
+            Some(r) => Some(r.metadata()),
+            None => {
+                log::debug!("key {:} not found", key);
+                None
+            }
+        }
+    }
+
+    pub fn update_metadata(&self, key: String, metadata: Metadata) {
+        log::debug!("Updating metadata on record with key {} ...", key);
+        match self.hash_map.try_entry(key) {
+            Some(entry) => {
+                entry.and_modify(|r| r.metadata = metadata);
+                log::debug!("updated!")
+            }
+            None => {
+                let msg = "Couldn't get lock for update";
+                log::error!("{}", msg);
+                panic!("{}", msg)
+            }
+        }
     }
 
     pub fn iter(&self) -> dashmap::iter::Iter<String, EncryptedRecord> {

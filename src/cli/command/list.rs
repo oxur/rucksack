@@ -5,6 +5,7 @@ use clap::ArgMatches;
 use passwords::{analyzer, scorer};
 
 use crate::app::App;
+use crate::time;
 
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
 struct ListResult {
@@ -22,6 +23,12 @@ fn new_result(id: String, user: String, url: String) -> ListResult {
         url,
 
         ..Default::default()
+    }
+}
+
+impl ListResult {
+    pub fn id(&self) -> String {
+        self.id.clone()
     }
 }
 
@@ -107,7 +114,19 @@ pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
             print_report(results.len(), app.db.hash_map().len());
         }
     }
-
+    for r in results {
+        match reveal {
+            Some(true) => {
+                if let Some(mut metadata) = app.db.get_metadata(r.id()) {
+                    metadata.last_used = time::now();
+                    metadata.access_count += 1;
+                    app.db.update_metadata(r.id(), metadata);
+                }
+            }
+            Some(false) => (),
+            None => unreachable!(),
+        }
+    }
     Ok(())
 }
 
