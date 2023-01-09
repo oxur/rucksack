@@ -179,9 +179,7 @@ fn cli() -> Command {
     )
 }
 
-fn run(matches: &ArgMatches, cfg: config::Config) -> Result<()> {
-    let db = setup_db(matches)?;
-    let app = rucksack::app::App { cfg, db };
+fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
     match matches.subcommand() {
         Some(("export", matches)) => export::new(matches, &app)?,
         Some(("gen", matches)) => gen::new(matches)?,
@@ -224,5 +222,7 @@ fn main() -> Result<()> {
             .with_context(|| "failed to print help".to_string());
     }
 
-    run(&matches, cfg)
+    let db = setup_db(&matches)?;
+    let app = rucksack::app::App { cfg, db };
+    run(&matches, &app)
 }

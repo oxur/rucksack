@@ -1,6 +1,5 @@
-use crate::{config, store};
+use crate::config;
 
 pub struct App {
     pub cfg: config::Config,
-    pub db: store::db::DB,
 }
