@@ -66,18 +66,18 @@ Password score: 100.00
 Import login data from Firefox Sync:
 
 ```shell
-./bin/rucksack import \
+./bin/rucksack --password abc123 \
+  import \
   --type firefox \
-  --password abc123 \
   --file ~/Downloads/logins.csv
 ```
 
 Logins may be exported to files that can then be used to import into browsers:
 
 ```shell
-./bin/rucksack export \
+./bin/rucksack --password abc123 \
+  export \
   --type chrome \
-  --password abc123 \
   --file /tmp/exported-logins.csv
 ```
 
@@ -98,7 +98,7 @@ Enter db password:
 Show URLs, accounts, passwords, and password scores for all secrets:
 
 ```shell
-./bin/rucksack list --db  --decrypt
+./bin/rucksack list --decrypt
 ```
 
 ```shell
@@ -111,13 +111,15 @@ Note that without `--decrypt`, only the user and URL are displayed. With `--decr
 
 The default database location used is `./data/creds.db`. To use another location, the `--db` flag is available.
 
+The flags `--db`, `--password`, and `--salt` must be set at the top-level, before any subcommands.
+
 ### Search / Filter Secrets
 
 Simple filtering is also possible (done using a flag with the `list` command, with or without sorting):
 
 ```shell
-./bin/rucksack list \
-  --password abc123 \
+./bin/rucksack --password abc123 \
+  list \
   --filter exa \
   --sort-by score \
   --decrypt
