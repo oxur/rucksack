@@ -181,10 +181,10 @@ fn cli() -> Command {
 
 fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
     match matches.subcommand() {
-        Some(("export", matches)) => export::new(matches, &app)?,
+        Some(("export", matches)) => export::new(matches, app)?,
         Some(("gen", matches)) => gen::new(matches)?,
-        Some(("import", matches)) => import::new(matches, &app)?,
-        Some(("list", matches)) => list::all(matches, &app)?,
+        Some(("import", matches)) => import::new(matches, app)?,
+        Some(("list", matches)) => list::all(matches, app)?,
         Some((&_, _)) => todo!(),
         None => todo!(),
     }
