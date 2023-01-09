@@ -4,17 +4,15 @@ use clap::ArgMatches;
 use crate::app::App;
 use crate::csv::writer;
 use crate::csv::{chrome, firefox};
-use crate::store::db::DB;
 use crate::util::write_file;
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Running 'export' subcommand ...");
     let export_type = matches.get_one::<String>("type").map(|s| s.as_str());
-    match export_type {
-        Some("debug") => to_stdout(app),
-        Some(_) => Ok(()),
-        None => Ok(()),
-    }?;
+    if export_type.is_some() {
+        to_stdout(app)?;
+        return Ok(());
+    }
     let export_file = matches.get_one::<String>("file").unwrap().to_string();
     match export_type {
         Some("chrome") => to_chrome_csv(app, export_file),
@@ -23,10 +21,25 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
         None => todo!(),
     }
 }
-fn to_chrome_csv(db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
+
+fn to_stdout(app: &App) -> Result<()> {
+    match app.db.collect_decrypted() {
+        Ok(rs) => {
+            for r in rs {
+                println!("{:?}", r)
+            }
+        }
+        Err(e) => {
+            log::error!("{:?}", e)
+        }
+    }
+    Ok(())
+}
+
+fn to_chrome_csv(app: &App, csv_path: String) -> Result<(), anyhow::Error> {
     let mut wtr = writer::to_bytes()?;
     let mut count = 0;
-    for dr in db.collect_decrypted()? {
+    for dr in app.db.collect_decrypted()? {
         wtr.serialize(chrome::from_decrypted(dr))?;
         count += 1;
         print!(".");
@@ -34,17 +47,17 @@ fn to_chrome_csv(db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
     wtr.flush()?;
     match wtr.into_inner() {
         Ok(data) => {
-            print_report(count, db.hash_map().len());
+            print_report(count, app.db.hash_map().len());
             write_file(data, csv_path)
         }
         Err(e) => Err(anyhow!(e)),
     }
 }
 
-fn to_firefox_csv(db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
+fn to_firefox_csv(app: &App, csv_path: String) -> Result<(), anyhow::Error> {
     let mut wtr = writer::to_bytes()?;
     let mut count = 0;
-    for dr in db.collect_decrypted()? {
+    for dr in app.db.collect_decrypted()? {
         wtr.serialize(firefox::from_decrypted(dr))?;
         count += 1;
         print!(".");
@@ -52,7 +65,7 @@ fn to_firefox_csv(db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
     wtr.flush()?;
     match wtr.into_inner() {
         Ok(data) => {
-            print_report(count, db.hash_map().len());
+            print_report(count, app.db.hash_map().len());
             write_file(data, csv_path)
         }
         Err(e) => Err(anyhow!(e)),
