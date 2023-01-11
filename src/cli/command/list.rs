@@ -117,7 +117,7 @@ pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
         }
     }
     // With the dash_map iteration finished, the lock is gone, and we can
-    // now update records:
+    // now update all the records whose passwords were revealed:
     for r in results {
         match reveal {
             Some(true) => {
