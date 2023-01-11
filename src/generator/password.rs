@@ -2,8 +2,7 @@ use rand::Rng;
 use std::str;
 
 use anyhow::Result;
-use base64::engine::general_purpose as b64;
-use base64::Engine;
+use base64::{engine::general_purpose as b64, Engine};
 use passwords::{analyzer, scorer, PasswordGenerator};
 
 use crate::util;
