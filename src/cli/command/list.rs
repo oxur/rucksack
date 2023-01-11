@@ -116,6 +116,8 @@ pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
             print_report(results.len(), app.db.hash_map().len());
         }
     }
+    // With the dash_map iteration finished, the lock is gone, and we can
+    // now update records:
     for r in results {
         match reveal {
             Some(true) => {
@@ -129,6 +131,7 @@ pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
             None => unreachable!(),
         }
     }
+    app.db.close()?;
     Ok(())
 }
 
