@@ -75,8 +75,8 @@ Password score: 100.00
 Import login data from Firefox Sync:
 
 ```shell
-./bin/rucksack --password abc123 \
-  import \
+./bin/rucksack import \
+  --password abc123 \
   --type firefox \
   --file ~/Downloads/logins.csv
 ```
@@ -84,8 +84,8 @@ Import login data from Firefox Sync:
 Logins may be exported to files that can then be used to import into browsers:
 
 ```shell
-./bin/rucksack --password abc123 \
-  export \
+./bin/rucksack export \
+  --password abc123 \
   --type chrome \
   --file /tmp/exported-logins.csv
 ```
@@ -127,8 +127,8 @@ The flags `--db`, `--password`, and `--salt` must be set at the top-level, befor
 Simple filtering is also possible (done using a flag with the `list` command, with or without sorting):
 
 ```shell
-./bin/rucksack --password abc123 \
-  list \
+./bin/rucksack list \
+  --password abc123 \
   --filter exa \
   --sort-by score \
   --decrypt
