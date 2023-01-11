@@ -1,4 +1,4 @@
 [logging]
 coloured = true
-level = "debug"
+level = "trace"
 report_caller = true

@@ -94,20 +94,20 @@ impl DB {
 
     pub fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord> {
         let key = record.key();
-        log::debug!("Inserting record with key {} ...", key);
+        log::trace!("Inserting record with key {} ...", key);
         self.hash_map
             .insert(key, record.encrypt(self.store_pwd(), self.salt()))
     }
 
     pub fn get(&self, key: String) -> Option<DecryptedRecord> {
-        log::debug!("Getting record with key {} ...", key);
+        log::trace!("Getting record with key {} ...", key);
         self.hash_map
             .get(&key)
             .map(|encrypted| encrypted.decrypt(self.store_pwd(), self.salt()).unwrap())
     }
 
     pub fn get_metadata(&self, key: String) -> Option<Metadata> {
-        log::debug!("Getting metadata of record with key {} ...", key);
+        log::trace!("Getting metadata of record with key {} ...", key);
         match self.get(key.clone()) {
             Some(r) => Some(r.metadata()),
             None => {
@@ -118,11 +118,11 @@ impl DB {
     }
 
     pub fn update_metadata(&self, key: String, metadata: Metadata) {
-        log::debug!("Updating metadata on record with key {} ...", key);
+        log::trace!("Updating metadata on record with key {} ...", key);
         match self.hash_map.try_entry(key) {
             Some(entry) => {
                 entry.and_modify(|r| r.metadata = metadata);
-                log::debug!("updated!")
+                log::trace!("updated!")
             }
             None => {
                 let msg = "Couldn't get lock for update";
