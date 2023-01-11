@@ -30,9 +30,6 @@ fn cli() -> Command {
             .long("version")
             .action(ArgAction::SetTrue)
     )
-    .arg(arg::db_arg())
-    .arg(arg::pwd_arg())
-    .arg(arg::salt_arg())
     .subcommand(
         Command::new("export")
             .about("export the rucksack db")
@@ -50,6 +47,9 @@ fn cli() -> Command {
                     .short('f')
                     .long("file"),
             )
+            .arg(arg::db_arg())
+            .arg(arg::pwd_arg())
+            .arg(arg::salt_arg())
     )
     .subcommand(
         Command::new("gen")
@@ -117,6 +117,9 @@ fn cli() -> Command {
                     .short('f')
                     .long("file"),
             )
+            .arg(arg::db_arg())
+            .arg(arg::pwd_arg())
+            .arg(arg::salt_arg())
     )
     .subcommand(
         Command::new("list")
@@ -177,6 +180,9 @@ fn cli() -> Command {
                     .default_value("url")
                     .value_parser(["score", "url", "user"]),
             )
+            .arg(arg::db_arg())
+            .arg(arg::pwd_arg())
+            .arg(arg::salt_arg())
     )
 }
 
@@ -223,7 +229,8 @@ fn main() -> Result<()> {
             .with_context(|| "failed to print help".to_string());
     }
 
-    let db = setup_db(&matches)?;
+    let (_, subcmd_matches) = matches.subcommand().unwrap();
+    let db = setup_db(subcmd_matches)?;
     let app = rucksack::app::App { cfg, db };
     run(&matches, &app)
 }

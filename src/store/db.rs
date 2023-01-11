@@ -17,11 +17,18 @@ pub struct DB {
     salt: String,
     bincode_cfg: bincode::config::Configuration,
     hash_map: DashMap<String, EncryptedRecord>,
+    enabled: bool,
 }
 
 pub fn init(path: String, store_pwd: String, updated: String) -> Result<()> {
     let db = open(path, store_pwd, updated).unwrap();
     db.close()
+}
+
+pub fn new() -> DB {
+    DB {
+        ..Default::default()
+    }
 }
 
 pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
@@ -35,6 +42,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
         store_hash = crc32fast::hash(decrypted.as_ref());
         (hash_map, _len) = bincode::serde::decode_from_slice(decrypted.as_ref(), bincode_cfg)?;
     }
+    let enabled = true;
     Ok(DB {
         path,
         store_hash,
@@ -42,10 +50,15 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
         salt,
         bincode_cfg,
         hash_map,
+        enabled,
     })
 }
 
 impl DB {
+    pub fn enabled(&self) -> bool {
+        self.enabled
+    }
+
     pub fn path(&self) -> String {
         self.path.clone()
     }
