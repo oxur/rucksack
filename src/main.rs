@@ -91,6 +91,13 @@ fn cli() -> Command {
                     .short('d')
                     .long("delimiter")
                     .default_value("-"),
+            )
+            .arg(
+                Arg::new("encode")
+                    .help("encode the generated password (uses base64)")
+                    .short('e')
+                    .long("encode")
+                    .action(ArgAction::SetTrue),
             ),
     )
     .subcommand(

@@ -18,6 +18,7 @@ name = "rucksack"
 aead = "0.5.1"
 aes-gcm = "0.10.1"
 anyhow = "1.0"
+base64 = "0.21"
 bincode = { version = "2.0.0-rc.2", features = ["serde"] }
 chrono = "0.4.23"
 clap = "4.0.32"
