@@ -13,6 +13,7 @@ struct ListResult {
     user: String,
     url: String,
     pwd: String,
+    access_count: u64,
     score: i64,
 }
 
@@ -78,6 +79,7 @@ pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
                     None => unreachable!(),
                 };
                 result.pwd = pwd;
+                result.access_count = record.metadata().access_count;
                 result.score = score.trunc() as i64;
             }
             Some(false) => result.pwd = hidden(),
@@ -217,18 +219,20 @@ const URL_HEADER: &str = "URL";
 const USER_HEADER: &str = "User / Account";
 const PWD_HEADER: &str = "Password";
 const SCORE_HEADER: &str = "Score / Strength";
+const COUNT_HEADER: &str = "Access Count";
 
 fn decrypted_header() {
     println!(
-        "\n{: <40} | {: <30} | {: <20} | {}",
-        URL_HEADER, USER_HEADER, PWD_HEADER, SCORE_HEADER
+        "\n{: <40} | {: <30} | {: <20} | {: <15} | {}",
+        URL_HEADER, USER_HEADER, PWD_HEADER, SCORE_HEADER, COUNT_HEADER
     );
     println!(
-        "{: <40}-+-{: <30}-+-{: <20}-+-{}",
+        "{: <40}-+-{: <30}-+-{: <20}-+-{: <15}-+-{}",
         "-".repeat(40),
         "-".repeat(30),
         "-".repeat(20),
-        "-".repeat(16)
+        "-".repeat(16),
+        "-".repeat(12),
     )
 }
 
@@ -246,19 +250,27 @@ fn decrypted_no_user_header() {
 }
 
 fn encrypted_header() {
-    println!("\n{: <40} | {: <30}", URL_HEADER, USER_HEADER);
-    println!("{: <40}-+-{}", "-".repeat(40), "-".repeat(30))
+    println!(
+        "\n{: <40} | {: <30} | {}",
+        URL_HEADER, USER_HEADER, COUNT_HEADER
+    );
+    println!(
+        "{:40}-+-{:30}-+-{}",
+        "-".repeat(40),
+        "-".repeat(30),
+        "-".repeat(12)
+    )
 }
 
 fn encrypted_no_user_header() {
-    println!("\n{}", URL_HEADER);
-    println!("{}", "-".repeat(40))
+    println!("\n{: <40} | {}", URL_HEADER, COUNT_HEADER);
+    println!("{:40}-+-{}", "-".repeat(40), "-".repeat(12))
 }
 
 fn decrypted_result(r: &ListResult) {
     println!(
-        "{: <40} | {: <30} | {: <20} | {:.2}",
-        r.url, r.user, r.pwd, r.score
+        "{: <40} | {: <30} | {: <20} | {: ^16.2} | {: ^12}",
+        r.url, r.user, r.pwd, r.score, r.access_count
     )
 }
 
@@ -290,15 +302,18 @@ fn user_section(r: &ListResult, decrypted: Option<&bool>) {
 }
 
 fn encrypted_result(r: &ListResult) {
-    println!("{: <40} | {}", r.url, r.user)
+    println!("{: <40} | {: <30} | {: ^12}", r.url, r.user, r.access_count)
 }
 
 fn decrypted_no_user_result(r: &ListResult) {
-    println!("{: <40} | {: <20} | {:.2}", r.url, r.pwd, r.score)
+    println!(
+        "{: <40} | {: <20} | {: ^16.2} | {}",
+        r.url, r.pwd, r.score, r.access_count
+    )
 }
 
 fn encrypted_no_user_result(r: &ListResult) {
-    println!("{}", r.url)
+    println!("{: <40} | {: ^12}", r.url, r.access_count)
 }
 
 fn hidden() -> String {
