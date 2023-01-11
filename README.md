@@ -7,7 +7,7 @@
 
 [![][logo]][logo-large]
 
-*A terminal-based password manager, generator, and importer (Firefox, Chrome) backed with a concurrent hashmap*
+*A terminal-based password manager, generator, and importer/exporter (Firefox, Chrome) backed with a concurrent hashmap*
 
 ## Features
 
