@@ -2,12 +2,22 @@ use rand::Rng;
 use std::str;
 
 use anyhow::Result;
+use base64::engine::general_purpose as b64;
+use base64::Engine;
 use passwords::{analyzer, scorer, PasswordGenerator};
 
 use crate::util;
 
-pub fn display_scored(pwd: &str) -> Result<()> {
-    let analyzed = analyzer::analyze(pwd);
+pub fn display_scored(mut pwd: String, encode: Option<&bool>) -> Result<()> {
+    match encode {
+        Some(true) => {
+            let bytes = pwd.as_bytes();
+            pwd = b64::URL_SAFE_NO_PAD.encode(bytes);
+        }
+        Some(false) => (),
+        None => (),
+    }
+    let analyzed = analyzer::analyze(pwd.clone());
     let score = scorer::score(&analyzed);
     let msg = format!("\nNew password: {}\nPassword score: {:.2}\n", pwd, score);
     util::display(&msg)
