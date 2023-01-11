@@ -61,6 +61,15 @@ New password: Esse-maius-amicitia,-nihil.-]9^,
 Password score: 100.00
 ```
 
+Some systems can't handle special characters, so a flag is available for encoding with base64, with the generated encoding getting scored:
+
+```shell
+./bin/rucksack gen --type lipsum --encode
+
+New password: VmVydW0sLW9waW5vciwtc2NyaXB0b3JlbS10YW1lbi4tLjYrfQ
+Password score: 100.00
+```
+
 ### Importing and Exporting
 
 Import login data from Firefox Sync:
