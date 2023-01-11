@@ -88,8 +88,7 @@ impl DB {
         if std::path::Path::new(&self.path).exists() {
             let backup_name = format!("{}-{}", self.path, time::simple_timestamp());
             log::debug!(
-                "Backing up db from {} to {:} ...",
-                path.display(),
+                "Path to db already exists; backing up to {} ...",
                 backup_name
             );
             std::fs::copy(path, backup_name)?;
