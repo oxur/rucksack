@@ -81,11 +81,17 @@ impl DB {
         let encoded = bincode::serde::encode_to_vec(self.hash_map(), self.bincode_cfg).unwrap();
         let store_hash = crc32fast::hash(encoded.as_ref());
         if store_hash == self.store_hash {
+            log::debug!("No change in store hash; not persisting ...");
             return Ok(());
         }
         fs::create_dir_all(path.parent().unwrap())?;
         if std::path::Path::new(&self.path).exists() {
             let backup_name = format!("{}-{}", self.path, time::simple_timestamp());
+            log::debug!(
+                "Backing up db from {} to {:} ...",
+                path.display(),
+                backup_name
+            );
             std::fs::copy(path, backup_name)?;
         }
         let encrypted = encrypt(encoded, self.store_pwd(), self.salt());

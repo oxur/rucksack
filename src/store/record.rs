@@ -13,7 +13,7 @@ pub enum Kind {
     Password,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub struct Metadata {
     pub kind: Kind,
     pub url: String,
@@ -31,7 +31,7 @@ pub struct Creds {
     pub password: String,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub struct EncryptedRecord {
     pub key: String,
     pub value: Vec<u8>,
