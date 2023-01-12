@@ -19,8 +19,9 @@
 * [x] Searching secrets via filtering (0.4.0)
 * [x] Reports on password quality, duplicates, etc. (0.5.0)
 * [x] Add new records to the DB (and support updates) via CLI subcommands (0.6.0)
-* [ ] [Database restores](https://github.com/oxur/rucksack/issues/44)
-* [ ] [Local network sync](https://github.com/oxur/rucksack/issues/41)
+* [ ] [Database restores](https://github.com/oxur/rucksack/milestone/9)
+* [ ] [Local network sync](https://github.com/oxur/rucksack/milestone/10)
+* [ ] [Firefox Account Syncing](https://github.com/oxur/rucksack/milestone/11)
 
 ## Usage
 
