@@ -2,9 +2,9 @@ use anyhow::Result;
 use clap::ArgMatches;
 use secrecy::{ExposeSecret, SecretString};
 
-use super::prompt;
-
 use crate::store::db;
+
+use super::prompt;
 
 pub fn setup_db(matches: &ArgMatches) -> Result<db::DB> {
     match matches.get_one::<String>("db") {
