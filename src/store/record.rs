@@ -10,6 +10,8 @@ use super::crypto::{decrypt, encrypt};
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub enum Kind {
     #[default]
+    Account,
+    Credential,
     Password,
 }
 

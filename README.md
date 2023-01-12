@@ -76,7 +76,7 @@ Import login data from Firefox Sync:
 
 ```shell
 ./bin/rucksack import \
-  --password abc123 \
+  --db-pass abc123 \
   --type firefox \
   --file ~/Downloads/logins.csv
 ```
@@ -85,7 +85,7 @@ Logins may be exported to files that can then be used to import into browsers:
 
 ```shell
 ./bin/rucksack export \
-  --password abc123 \
+  --db-pass abc123 \
   --type chrome \
   --file /tmp/exported-logins.csv
 ```
@@ -114,13 +114,13 @@ Show URLs, accounts, passwords, and password scores for all secrets:
 Enter db password:
 ```
 
-In both cases a password may be passed with the `--password` flag. By default, the salt is the value of the `USER` environment variable; it may be overridden with `--salt`.
+In both cases a password may be passed with the `--db-pass` flag. By default, the salt is the value of the `USER` environment variable, but it may be overridden with the `--salt` flag.
 
 Note that without `--decrypt`, only the user and URL are displayed. With `--decrypt`, those as well as masked password and password score are displayed. To unmask the password, one must also set `--reveal`.
 
 The default database location used is `./data/creds.db`. To use another location, the `--db` flag is available.
 
-The flags `--db`, `--password`, and `--salt` must be set at the top-level, before any subcommands.
+The flags `--db`, `--db-pass`, and `--salt` may be set for any subcommand that access the database.
 
 ### Search / Filter Secrets
 
@@ -128,7 +128,7 @@ Simple filtering is also possible (done using a flag with the `list` command, wi
 
 ```shell
 ./bin/rucksack list \
-  --password abc123 \
+  --db-pass abc123 \
   --filter exa \
   --sort-by score \
   --decrypt
@@ -160,7 +160,7 @@ For use in auditing, sites+user combinations that share the same password can be
 
 ```shell
 ./bin/rucksack list \
-  --group-by password \
+  --group-by db-pass \
   --decrypt
 ```
 
