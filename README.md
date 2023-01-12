@@ -92,6 +92,28 @@ Logins may be exported to files that can then be used to import into browsers:
 
 For both importing and exporting, there are currently two supported types: `firefox` and `chrome`.
 
+### Adding and Updating via Command
+
+To add a single record via the CLI:
+
+```shell
+./bin/rucksack add \
+  --url http://example.com \
+  --user shelly \
+  --password whyyyyyy
+```
+
+Note that `--user`, `--password`, and `--url` are all required when adding a new record.
+
+```shell
+./bin/rucksack update \
+  --url http://example.com \
+  --user shelly \
+  --password whyyyyyyyyyyyyyyyyyyyzzz
+```
+
+When updating a record, only the `--user` and `--url` flags are required (these comprise the key). Time stamps are managed automatically, so the amount of data that may be manually set is limited. Finer-grained control should use CSV file imports.
+
 ### List Secrets
 
 Show URL/accounts for all secrets:
