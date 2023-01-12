@@ -9,7 +9,7 @@ use crate::store::db;
 pub fn setup_db(matches: &ArgMatches) -> Result<db::DB> {
     match matches.get_one::<String>("db") {
         Some(db_file) => {
-            let pwd = match matches.get_one::<String>("password") {
+            let pwd = match matches.get_one::<String>("db-pass") {
                 Some(flag_pwd) => SecretString::new(flag_pwd.to_owned()),
                 None => prompt::secret("Enter db password: ").unwrap(),
             };

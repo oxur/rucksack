@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use clap::builder::EnumValueParser;
 use clap::{Arg, ArgAction, ArgMatches, Command};
 
-use rucksack::cli::command::{arg, export, gen, import, list, setup_db};
+use rucksack::cli::command::{add, arg, export, gen, import, list, setup_db, update};
 use rucksack::{config, util};
 
 const NAME: &str = env!("CARGO_PKG_NAME");
@@ -29,6 +29,17 @@ fn cli() -> Command {
             .short('v')
             .long("version")
             .action(ArgAction::SetTrue)
+    )
+    .subcommand(
+        Command::new("add")
+            .about("add a new secret")
+            .arg(arg::account_type())
+            .arg(arg::account_user())
+            .arg(arg::account_pass())
+            .arg(arg::account_url())
+            .arg(arg::db_arg())
+            .arg(arg::pwd_arg())
+            .arg(arg::salt_arg())
     )
     .subcommand(
         Command::new("export")
@@ -184,14 +195,27 @@ fn cli() -> Command {
             .arg(arg::pwd_arg())
             .arg(arg::salt_arg())
     )
+    .subcommand(
+        Command::new("update")
+            .about("update an existing secret")
+            .arg(arg::account_type())
+            .arg(arg::account_user())
+            .arg(arg::account_pass())
+            .arg(arg::account_url())
+            .arg(arg::db_arg())
+            .arg(arg::pwd_arg())
+            .arg(arg::salt_arg())
+    )
 }
 
 fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
     match matches.subcommand() {
+        Some(("add", matches)) => add::new(matches, app)?,
         Some(("export", matches)) => export::new(matches, app)?,
         Some(("gen", matches)) => gen::new(matches)?,
         Some(("import", matches)) => import::new(matches, app)?,
         Some(("list", matches)) => list::all(matches, app)?,
+        Some(("update", matches)) => update::new(matches, app)?,
         Some((&_, _)) => todo!(),
         None => todo!(),
     }
