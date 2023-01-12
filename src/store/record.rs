@@ -68,7 +68,7 @@ impl std::fmt::Debug for Creds {
 
 impl DecryptedRecord {
     pub fn key(&self) -> String {
-        format!("{}:{}", self.creds.user, self.metadata.url)
+        key(&self.creds.user, &self.metadata.url)
     }
 
     pub fn metadata(&self) -> Metadata {
@@ -115,6 +115,14 @@ impl EncryptedRecord {
         })
     }
 }
+
+// Utility functions
+
+pub fn key(user: &str, url: &str) -> String {
+    format!("{}:{}", user, url)
+}
+
+// Tests
 
 #[cfg(test)]
 mod tests {

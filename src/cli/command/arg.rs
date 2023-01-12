@@ -47,14 +47,12 @@ pub fn account_user() -> Arg {
         .help("the user, login, or account, identifier")
         .short('u')
         .long("user")
-        .required(true)
 }
 
 pub fn account_pass() -> Arg {
     Arg::new("password")
         .help("the account / login password")
         .long("password")
-        .required(true)
 }
 
 pub fn account_url() -> Arg {
