@@ -36,7 +36,7 @@ fn cli() -> Command {
             .arg(arg::account_type())
             .arg(arg::account_user().required(true))
             .arg(arg::account_pass().required(true))
-            .arg(arg::account_url())
+            .arg(arg::account_url().required(true))
             .arg(arg::db_arg())
             .arg(arg::pwd_arg())
             .arg(arg::salt_arg())
