@@ -1,9 +1,14 @@
 use anyhow::{anyhow, Result};
 use clap::ArgMatches;
+// TODO: Move this into 'set password'
+// use secrecy::{ExposeSecret, SecretString};
 
 use crate::app::App;
 use crate::store::record;
 use crate::time;
+
+// TODO: Move this into 'set password'
+// use super::prompt;
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Running 'update' subcommand ...");
@@ -14,6 +19,11 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     if dr.is_none() {
         return Err(anyhow!("no secret record for given key '{}'", key));
     }
+    // TODO: Move this into 'set password'
+    // let pwd = match matches.get_one::<String>("password") {
+    //     Some(flag_pwd) => SecretString::new(flag_pwd.to_owned()),
+    //     None => prompt::secret("Enter password for record: ").unwrap(),
+    // };
     let now = time::now();
     let mut record = dr.unwrap();
     let kind = match matches.get_one::<String>("type").map(|s| s.as_str()) {
@@ -25,15 +35,12 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
         None => record.metadata().kind,
     };
     record.metadata.kind = kind;
-    record.metadata.updated = now.clone();
-    let password = match matches.get_one::<String>("password") {
-        Some(pwd) => {
-            record.metadata.password_changed = now;
-            pwd.to_owned()
-        }
-        None => record.creds.password,
-    };
-    record.creds.password = password;
+    record.metadata.updated = now;
+    // TODO: Move this into 'set password'
+    // if pwd.expose_secret().to_string() != record.password() {
+    //     record.creds.password = pwd.expose_secret().to_string();
+    //     record.metadata.password_changed = now;
+    // }
     app.db.insert(record);
     app.db.close()?;
     Ok(())
