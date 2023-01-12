@@ -18,7 +18,7 @@
 * [x] List secrets (encrypted and decrypted)
 * [x] Searching secrets (filtering)
 * [x] Reports (quality, duplicates, etc.)
-* [ ] Add new records to the DB via CLI subcommand
+* [x] Add new records to the DB (and support updating them) via CLI subcommand
 * [ ] Local network sync
 
 ## Usage
