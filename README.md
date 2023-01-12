@@ -103,16 +103,77 @@ To add a single record via the CLI:
   --password whyyyyyy
 ```
 
-Note that `--user`, `--password`, and `--url` are all required when adding a new record.
+Note that `--user` and `--url` are required when adding a new record. A password is required, too: if one is not provided with `--password`, then you will be prompted:
 
 ```shell
-./bin/rucksack update \
+./bin/rucksack add \
   --url http://example.com \
-  --user shelly \
-  --password whyyyyyyyyyyyyyyyyyyyzzz
+  --user shelly
 ```
 
-When updating a record, only the `--user` and `--url` flags are required (these comprise the key). Time stamps are managed automatically, so the amount of data that may be manually set is limited. Finer-grained control should use CSV file imports.
+```shell
+Enter db password:
+```
+
+```shell
+Enter password for record:
+```
+
+There are several types of changes to records that can't be made via an "update" subcommand due to how the data is used in the database. That did't leave too much data left for an "update" command, so the "record type" update was moved into the "set" group, too. The total list of `set` operations is:
+
+* changing the password
+* changing the user (account name)
+* changing the URL
+* changing the type of record
+
+As such, these have their own sub commands (under `set`), as well as their flags and logic.
+
+Changing a password:
+
+```shell
+./bin/rucksack set password \
+  --url http://example.com \
+  --user shelly
+  --old-password whyyyyyyyyyyyyyyyyyyyzzz
+  --new-password whyyyyyyyyyyyyyyyyyyy
+```
+
+If one or both of the passwords isn't provided, you will be prompted at the terminal:
+
+```shell
+Enter OLD password for record:
+```
+
+```shell
+Enter NEW password for record:
+```
+
+Changing a user:
+
+```shell
+./bin/rucksack set user \
+  --url http://example.com \
+  --old-user shelly
+  --new-user clammy
+```
+
+Changing a URL:
+
+```shell
+./bin/rucksack set url \
+  --old-url http://example.com \
+  --new-url http://shelly.com \
+  --user clammy
+```
+
+Changing the record type:
+
+```shell
+./bin/rucksack set type \
+  --url http://example.com \
+  --user clammy
+  --type account
+```
 
 ### List Secrets
 
