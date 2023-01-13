@@ -50,7 +50,19 @@ pub fn url(matches: &ArgMatches, app: &App) -> Result<()> {
 
 pub fn user(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting account user ...");
-    log::warn!("Not implemented!\nmatches: {:?}", matches);
+    let old_user = util::user_old(matches);
+    let new_user = util::user_new(matches);
+    let url = util::url(matches);
+    let key = store::key(&old_user, &url);
+    let mut record = util::record_by_key(&app.db, key.clone())?;
+    record.creds.user = new_user;
+    record.metadata.updated = time::now();
+    match app.db.delete(key) {
+        Some(false) => log::error!("there was a problem deleting the record"),
+        Some(_) => (),
+        None => log::error!("there was a problem deleting the record"),
+    }
+    app.db.insert(record);
     app.db.close()?;
     Ok(())
 }
