@@ -21,8 +21,15 @@ pub fn setup_db(matches: &ArgMatches) -> Result<db::DB> {
     }
 }
 
-pub fn record(app_db: &db::DB, matches: &ArgMatches) -> Option<DecryptedRecord> {
-    app_db.get(key(matches))
+pub fn record(app_db: &db::DB, matches: &ArgMatches) -> Result<DecryptedRecord> {
+    match app_db.get(key(matches)) {
+        Some(dr) => Ok(dr),
+        None => {
+            let msg = format!("no secret record for given key '{}'", key(matches));
+            log::error!("{}", msg);
+            Err(anyhow!(msg))
+        }
+    }
 }
 
 pub fn user(matches: &ArgMatches) -> String {
