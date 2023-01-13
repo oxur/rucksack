@@ -49,6 +49,20 @@ pub fn account_user() -> Arg {
         .long("user")
 }
 
+pub fn account_user_old() -> Arg {
+    Arg::new("old-user")
+        .help("the old user login name")
+        .short('u')
+        .long("old-user")
+}
+
+pub fn account_user_new() -> Arg {
+    Arg::new("new-user")
+        .help("the new user login name to use")
+        .short('u')
+        .long("new-user")
+}
+
 pub fn account_pass() -> Arg {
     Arg::new("password")
         .help("the account / login password")
@@ -57,4 +71,16 @@ pub fn account_pass() -> Arg {
 
 pub fn account_url() -> Arg {
     Arg::new("url").help("the login URL").long("url")
+}
+
+pub fn account_url_old() -> Arg {
+    Arg::new("old-url")
+        .help("the old login URL")
+        .long("old-url")
+}
+
+pub fn account_url_new() -> Arg {
+    Arg::new("new-url")
+        .help("the new URL for the account / login")
+        .long("new-url")
 }

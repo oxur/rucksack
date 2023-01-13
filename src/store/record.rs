@@ -15,6 +15,8 @@ pub enum Kind {
     Password,
 }
 
+pub const DEFAULT_KIND: Kind = Kind::Password;
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub struct Metadata {
     pub kind: Kind,
