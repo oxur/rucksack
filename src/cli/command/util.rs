@@ -22,10 +22,14 @@ pub fn setup_db(matches: &ArgMatches) -> Result<db::DB> {
 }
 
 pub fn record(app_db: &db::DB, matches: &ArgMatches) -> Result<DecryptedRecord> {
-    match app_db.get(key(matches)) {
+    record_by_key(app_db, key(matches))
+}
+
+pub fn record_by_key(app_db: &db::DB, key: String) -> Result<DecryptedRecord> {
+    match app_db.get(key.clone()) {
         Some(dr) => Ok(dr),
         None => {
-            let msg = format!("no secret record for given key '{}'", key(matches));
+            let msg = format!("no secret record for given key '{}'", key);
             log::error!("{}", msg);
             Err(anyhow!(msg))
         }
@@ -38,6 +42,14 @@ pub fn user(matches: &ArgMatches) -> String {
 
 pub fn url(matches: &ArgMatches) -> String {
     matches.get_one::<String>("url").unwrap().to_string()
+}
+
+pub fn url_old(matches: &ArgMatches) -> String {
+    matches.get_one::<String>("old-url").unwrap().to_string()
+}
+
+pub fn url_new(matches: &ArgMatches) -> String {
+    matches.get_one::<String>("new-url").unwrap().to_string()
 }
 
 pub fn key(matches: &ArgMatches) -> String {
