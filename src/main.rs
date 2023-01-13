@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use clap::builder::EnumValueParser;
 use clap::{Arg, ArgAction, ArgMatches, Command};
 
-use rucksack::cli::command::{add, arg, export, gen, import, list, setup_db, update};
+use rucksack::cli::command::{add, arg, export, gen, import, list, set, setup_db};
 use rucksack::{config, util};
 
 const NAME: &str = env!("CARGO_PKG_NAME");
@@ -196,25 +196,57 @@ fn cli() -> Command {
             .arg(arg::salt_arg())
     )
     .subcommand(
-        Command::new("update")
-            .about("update an existing secret")
-            .arg(arg::account_type())
-            .arg(arg::account_user().required(true))
-            .arg(arg::account_url().required(true))
+        Command::new("set")
+            .about("perform various 'write' operations")
             .arg(arg::db_arg())
             .arg(arg::pwd_arg())
             .arg(arg::salt_arg())
+            .subcommand(
+                Command::new("password")
+                    .about("change the password for the given account")
+                    .arg(arg::account_pass())
+                    .arg(arg::account_user().required(true))
+                    .arg(arg::account_url().required(true))
+            )
+            .subcommand(
+                Command::new("url")
+                    .about("change the url for the given account")
+                    .arg(arg::account_url_old().required(true))
+                    .arg(arg::account_url_new().required(true))
+                    .arg(arg::account_user().required(true))
+            )
+            .subcommand(
+                Command::new("user")
+                    .about("change the user (login name) for the given account")
+                    .arg(arg::account_user_old().required(true))
+                    .arg(arg::account_user_new().required(true))
+                    .arg(arg::account_url().required(true))
+            )
+            .subcommand(
+                Command::new("type")
+                    .about("change the type of the given account")
+                    .arg(arg::account_type().required(true))
+                    .arg(arg::account_user().required(true))
+                    .arg(arg::account_url().required(true))
+            )
     )
 }
 
 fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
     match matches.subcommand() {
-        Some(("add", matches)) => add::new(matches, app)?,
-        Some(("export", matches)) => export::new(matches, app)?,
-        Some(("gen", matches)) => gen::new(matches)?,
-        Some(("import", matches)) => import::new(matches, app)?,
-        Some(("list", matches)) => list::all(matches, app)?,
-        Some(("update", matches)) => update::new(matches, app)?,
+        Some(("add", add_matches)) => add::new(add_matches, app)?,
+        Some(("export", export_matches)) => export::new(export_matches, app)?,
+        Some(("gen", gen_matches)) => gen::new(gen_matches)?,
+        Some(("import", import_matches)) => import::new(import_matches, app)?,
+        Some(("list", list_matches)) => list::all(list_matches, app)?,
+        Some(("set", set_matches)) => match set_matches.subcommand() {
+            Some(("password", password_matches)) => set::password(password_matches, app)?,
+            Some(("url", url_matches)) => set::url(url_matches, app)?,
+            Some(("user", user_matches)) => set::user(user_matches, app)?,
+            Some(("type", type_matches)) => set::account_type(type_matches, app)?,
+            Some((&_, _)) => todo!(),
+            None => todo!(),
+        },
         Some((&_, _)) => todo!(),
         None => todo!(),
     }

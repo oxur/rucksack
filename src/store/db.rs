@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fmt, fs};
 
 use anyhow::{Error, Result};
 use bincode::config;
@@ -18,6 +18,15 @@ pub struct DB {
     bincode_cfg: bincode::config::Configuration,
     hash_map: DashMap<String, EncryptedRecord>,
     enabled: bool,
+}
+
+impl fmt::Debug for DB {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("DB")
+            .field("path", &self.path)
+            .field("hash_map", &self.hash_map)
+            .finish()
+    }
 }
 
 pub fn init(path: String, store_pwd: String, updated: String) -> Result<()> {
