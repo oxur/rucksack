@@ -26,7 +26,8 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
         imported: now.clone(),
         updated: now.clone(),
         password_changed: now.clone(),
-        last_used: now,
+        last_used: now.clone(),
+        synced: now,
         access_count: 0,
     };
     let dr = DecryptedRecord { creds, metadata };

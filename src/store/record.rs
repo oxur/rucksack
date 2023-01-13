@@ -26,6 +26,7 @@ pub struct Metadata {
     pub updated: String,
     pub password_changed: String,
     pub last_used: String,
+    pub synced: String,
     pub access_count: u64,
 }
 

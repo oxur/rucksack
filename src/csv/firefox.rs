@@ -47,9 +47,10 @@ impl Record {
             url: self.url.clone(),
             created: time::epoch_to_string(self.time_created),
             imported: now.clone(),
-            updated: now,
+            updated: now.clone(),
             password_changed: time::epoch_to_string(self.time_password_changed),
             last_used: time::epoch_to_string(self.time_last_used),
+            synced: now,
             access_count: 0,
         };
         store::DecryptedRecord { creds, metadata }
