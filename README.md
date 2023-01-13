@@ -21,7 +21,7 @@
 * [x] Add new records to the DB (and support updates) via CLI subcommands (0.6.0)
 * [ ] [Database restores](https://github.com/oxur/rucksack/milestone/9)
 * [ ] [Local network sync](https://github.com/oxur/rucksack/milestone/10)
-* [ ] [Firefox Account Syncing](https://github.com/oxur/rucksack/milestone/11)
+* [ ] [Firefox Account Client Syncing](https://github.com/oxur/rucksack/milestone/11)
 
 ## Usage
 
@@ -136,18 +136,13 @@ Changing a password:
 ./bin/rucksack set password \
   --url http://example.com \
   --user shelly
-  --old-password whyyyyyyyyyyyyyyyyyyyzzz
-  --new-password whyyyyyyyyyyyyyyyyyyy
+  --password whyyyyyyyyyyyyyyyyyyy
 ```
 
-If one or both of the passwords isn't provided, you will be prompted at the terminal:
+If the password isn't provided, you will be prompted at the terminal:
 
 ```shell
-Enter OLD password for record:
-```
-
-```shell
-Enter NEW password for record:
+Enter account password:
 ```
 
 Changing a user:
@@ -176,6 +171,8 @@ Changing the record type:
   --user clammy
   --type account
 ```
+
+Note that for all of this, should you want to pass the DB pass, file, or salt, you will need to make sure those flags come after `set` but before the following subcommmand.
 
 ### List Secrets
 
