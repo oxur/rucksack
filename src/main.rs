@@ -228,6 +228,9 @@ fn cli() -> Command {
                     .arg(arg::account_type().required(true))
                     .arg(arg::account_user().required(true))
                     .arg(arg::account_url().required(true))
+                    .arg(arg::db_arg())
+                    .arg(arg::pwd_arg())
+                    .arg(arg::salt_arg())
             )
     )
 }
@@ -286,6 +289,6 @@ fn main() -> Result<()> {
 
     let (_, subcmd_matches) = matches.subcommand().unwrap();
     let db = setup_db(subcmd_matches)?;
-    let app = rucksack::app::App { cfg, db };
+    let app = rucksack::App { cfg, db };
     run(&matches, &app)
 }

@@ -17,14 +17,14 @@ pub fn password(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting account password ...");
     let dr = util::record(&app.db, matches);
     if dr.is_none() {
-        return Err(anyhow!(
-            "no secret record for given key '{}'",
-            util::key(matches)
-        ));
+        let msg = format!("no secret record for given key '{}'", util::key(matches));
+        log::error!("{}", msg);
+        return Err(anyhow!(msg));
     }
     let mut record = dr.unwrap();
     record.creds.password = util::account_pwd_revealed(matches);
     record.metadata.password_changed = time::now();
+    app.db.insert(record);
     app.db.close()?;
     Ok(())
 }
