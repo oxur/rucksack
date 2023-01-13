@@ -172,7 +172,7 @@ Changing the record type:
   --type account
 ```
 
-Note that for all of this, should you want to pass the DB pass, file, or salt, you will need to make sure those flags come after `set` but before the following subcommmand.
+Note that for all of this, should you want to pass the DB password, file, or salt, you will need to make sure those flags come after `set` but before the following subcommmand.
 
 ### List Secrets
 
