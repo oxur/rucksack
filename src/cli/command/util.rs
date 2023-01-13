@@ -40,6 +40,14 @@ pub fn user(matches: &ArgMatches) -> String {
     matches.get_one::<String>("user").unwrap().to_string()
 }
 
+pub fn user_old(matches: &ArgMatches) -> String {
+    matches.get_one::<String>("old-user").unwrap().to_string()
+}
+
+pub fn user_new(matches: &ArgMatches) -> String {
+    matches.get_one::<String>("new-user").unwrap().to_string()
+}
+
 pub fn url(matches: &ArgMatches) -> String {
     matches.get_one::<String>("url").unwrap().to_string()
 }
