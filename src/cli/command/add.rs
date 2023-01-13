@@ -9,7 +9,7 @@ use crate::time;
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Running 'add' subcommand ...");
-    if let Some(_dr) = util::record(&app.db, matches) {
+    if let Ok(_dr) = util::record(&app.db, matches) {
         return Err(anyhow!(
             "Record already exists -- please use the 'update' command"
         ));
