@@ -106,6 +106,14 @@ impl DB {
         util::write_file(encrypted, self.path())
     }
 
+    pub fn delete(&self, key: String) -> Option<bool> {
+        log::trace!("Deleting record with key {} ...", key);
+        match self.hash_map.remove(&key) {
+            Some(_) => Some(true),
+            None => Some(false),
+        }
+    }
+
     pub fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord> {
         let key = record.key();
         log::trace!("Inserting record with key {} ...", key);
