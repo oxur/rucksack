@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use clap::builder::EnumValueParser;
 use clap::{Arg, ArgAction, ArgMatches, Command};
 
-use rucksack::cli::command::{add, arg, export, gen, import, list, set, setup_db};
+use rucksack::cli::command::{add, arg, export, gen, import, list, rm, set, setup_db};
 use rucksack::{config, util};
 
 const NAME: &str = env!("CARGO_PKG_NAME");
@@ -196,6 +196,17 @@ fn cli() -> Command {
             .arg(arg::salt_arg())
     )
     .subcommand(
+        Command::new("rm")
+            .about("delete a single record")
+            .alias("remove")
+            .alias("delete")
+            .arg(arg::account_user().required(true))
+            .arg(arg::account_url().required(true))
+            .arg(arg::db_arg())
+            .arg(arg::pwd_arg())
+            .arg(arg::salt_arg())
+    )
+    .subcommand(
         Command::new("set")
             .about("perform various 'write' operations")
             .arg(arg::db_arg())
@@ -242,6 +253,7 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
         Some(("gen", gen_matches)) => gen::new(gen_matches)?,
         Some(("import", import_matches)) => import::new(import_matches, app)?,
         Some(("list", list_matches)) => list::all(list_matches, app)?,
+        Some(("rm", rm_matches)) => rm::one(rm_matches, app)?,
         Some(("set", set_matches)) => match set_matches.subcommand() {
             Some(("password", password_matches)) => set::password(password_matches, app)?,
             Some(("url", url_matches)) => set::url(url_matches, app)?,

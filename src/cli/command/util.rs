@@ -36,6 +36,22 @@ pub fn record_by_key(app_db: &db::DB, key: String) -> Result<DecryptedRecord> {
     }
 }
 
+pub fn remove(app_db: &db::DB, matches: &ArgMatches) -> Result<()> {
+    remove_by_key(app_db, key(matches))
+}
+
+pub fn remove_by_key(app_db: &db::DB, key: String) -> Result<()> {
+    match app_db.delete(key.clone()) {
+        Some(true) => Ok(()),
+        Some(false) => {
+            let msg = format!("could not delete record with given key '{}'", key);
+            log::error!("{}", msg);
+            Err(anyhow!(msg))
+        }
+        None => unreachable!(),
+    }
+}
+
 pub fn user(matches: &ArgMatches) -> String {
     matches.get_one::<String>("user").unwrap().to_string()
 }
