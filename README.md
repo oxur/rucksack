@@ -21,7 +21,7 @@
 * [x] Add new records to the DB (and support updates) via CLI subcommands (0.6.0)
 * [ ] [Database restores](https://github.com/oxur/rucksack/milestone/9)
 * [ ] [Local network sync](https://github.com/oxur/rucksack/milestone/10)
-* [ ] [Firefox Account Client Syncing](https://github.com/oxur/rucksack/milestone/11)
+* [ ] [Firefox Account Sync Client](https://github.com/oxur/rucksack/milestone/11)
 
 ## Usage
 
