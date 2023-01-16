@@ -20,6 +20,25 @@ pub struct DB {
     enabled: bool,
 }
 
+pub trait V1 {
+    fn close(&self) -> Result<()>;
+    fn collect_decrypted(&self) -> Result<Vec<DecryptedRecord>, Error>;
+    fn get(&self, key: String) -> Option<DecryptedRecord>;
+    fn get_metadata(&self, key: String) -> Option<Metadata>;
+    fn hash_map(&self) -> DashMap<String, EncryptedRecord>;
+    fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord>;
+    fn iter(&self) -> dashmap::iter::Iter<String, EncryptedRecord>;
+    fn path(&self) -> String;
+    fn salt(&self) -> String;
+    fn store_pwd(&self) -> String;
+    fn update_metadata(&self, key: String, metadata: Metadata);
+}
+
+pub trait V2: V1 {
+    fn delete(&self, key: String) -> Option<bool>;
+    fn enabled(&self) -> bool;
+}
+
 impl fmt::Debug for DB {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("DB")
@@ -64,26 +83,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
 }
 
 impl DB {
-    pub fn enabled(&self) -> bool {
-        self.enabled
-    }
-
-    pub fn path(&self) -> String {
-        self.path.clone()
-    }
-
-    pub fn store_pwd(&self) -> String {
-        self.store_pwd.clone()
-    }
-
-    pub fn salt(&self) -> String {
-        self.salt.clone()
-    }
-
-    pub fn hash_map(&self) -> DashMap<String, EncryptedRecord> {
-        self.hash_map.clone()
-    }
-
+    // V1
     pub fn close(&self) -> Result<()> {
         let path_name = &self.path();
         let path = std::path::Path::new(path_name);
@@ -106,19 +106,13 @@ impl DB {
         util::write_file(encrypted, self.path())
     }
 
-    pub fn delete(&self, key: String) -> Option<bool> {
-        log::trace!("Deleting record with key {} ...", key);
-        match self.hash_map.remove(&key) {
-            Some(_) => Some(true),
-            None => Some(false),
+    pub fn collect_decrypted(&self) -> Result<Vec<DecryptedRecord>, Error> {
+        let mut decrypted: Vec<DecryptedRecord> = Vec::new();
+        for i in self.iter() {
+            let record = i.value().decrypt(self.store_pwd(), self.salt())?;
+            decrypted.push(record);
         }
-    }
-
-    pub fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord> {
-        let key = record.key();
-        log::trace!("Inserting record with key {} ...", key);
-        self.hash_map
-            .insert(key, record.encrypt(self.store_pwd(), self.salt()))
+        Ok(decrypted)
     }
 
     pub fn get(&self, key: String) -> Option<DecryptedRecord> {
@@ -139,6 +133,33 @@ impl DB {
         }
     }
 
+    pub fn hash_map(&self) -> DashMap<String, EncryptedRecord> {
+        self.hash_map.clone()
+    }
+
+    pub fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord> {
+        let key = record.key();
+        log::trace!("Inserting record with key {} ...", key);
+        self.hash_map
+            .insert(key, record.encrypt(self.store_pwd(), self.salt()))
+    }
+
+    pub fn iter(&self) -> dashmap::iter::Iter<String, EncryptedRecord> {
+        self.hash_map.iter()
+    }
+
+    pub fn path(&self) -> String {
+        self.path.clone()
+    }
+
+    pub fn salt(&self) -> String {
+        self.salt.clone()
+    }
+
+    pub fn store_pwd(&self) -> String {
+        self.store_pwd.clone()
+    }
+
     pub fn update_metadata(&self, key: String, metadata: Metadata) {
         log::trace!("Updating metadata on record with key {} ...", key);
         match self.hash_map.try_entry(key) {
@@ -154,17 +175,17 @@ impl DB {
         }
     }
 
-    pub fn iter(&self) -> dashmap::iter::Iter<String, EncryptedRecord> {
-        self.hash_map.iter()
+    // V2
+    pub fn delete(&self, key: String) -> Option<bool> {
+        log::trace!("Deleting record with key {} ...", key);
+        match self.hash_map.remove(&key) {
+            Some(_) => Some(true),
+            None => Some(false),
+        }
     }
 
-    pub fn collect_decrypted(&self) -> Result<Vec<DecryptedRecord>, Error> {
-        let mut decrypted: Vec<DecryptedRecord> = Vec::new();
-        for i in self.iter() {
-            let record = i.value().decrypt(self.store_pwd(), self.salt())?;
-            decrypted.push(record);
-        }
-        Ok(decrypted)
+    pub fn enabled(&self) -> bool {
+        self.enabled
     }
 }
 
