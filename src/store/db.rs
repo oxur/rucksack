@@ -82,9 +82,8 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
     })
 }
 
-impl DB {
-    // V1
-    pub fn close(&self) -> Result<()> {
+impl V1 for DB {
+    fn close(&self) -> Result<()> {
         let path_name = &self.path();
         let path = std::path::Path::new(path_name);
         let encoded = bincode::serde::encode_to_vec(self.hash_map(), self.bincode_cfg).unwrap();
@@ -106,7 +105,7 @@ impl DB {
         util::write_file(encrypted, self.path())
     }
 
-    pub fn collect_decrypted(&self) -> Result<Vec<DecryptedRecord>, Error> {
+    fn collect_decrypted(&self) -> Result<Vec<DecryptedRecord>, Error> {
         let mut decrypted: Vec<DecryptedRecord> = Vec::new();
         for i in self.iter() {
             let record = i.value().decrypt(self.store_pwd(), self.salt())?;
@@ -115,14 +114,14 @@ impl DB {
         Ok(decrypted)
     }
 
-    pub fn get(&self, key: String) -> Option<DecryptedRecord> {
+    fn get(&self, key: String) -> Option<DecryptedRecord> {
         log::trace!("Getting record with key {} ...", key);
         self.hash_map
             .get(&key)
             .map(|encrypted| encrypted.decrypt(self.store_pwd(), self.salt()).unwrap())
     }
 
-    pub fn get_metadata(&self, key: String) -> Option<Metadata> {
+    fn get_metadata(&self, key: String) -> Option<Metadata> {
         log::trace!("Getting metadata of record with key {} ...", key);
         match self.get(key.clone()) {
             Some(r) => Some(r.metadata()),
@@ -133,34 +132,34 @@ impl DB {
         }
     }
 
-    pub fn hash_map(&self) -> DashMap<String, EncryptedRecord> {
+    fn hash_map(&self) -> DashMap<String, EncryptedRecord> {
         self.hash_map.clone()
     }
 
-    pub fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord> {
+    fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord> {
         let key = record.key();
         log::trace!("Inserting record with key {} ...", key);
         self.hash_map
             .insert(key, record.encrypt(self.store_pwd(), self.salt()))
     }
 
-    pub fn iter(&self) -> dashmap::iter::Iter<String, EncryptedRecord> {
+    fn iter(&self) -> dashmap::iter::Iter<String, EncryptedRecord> {
         self.hash_map.iter()
     }
 
-    pub fn path(&self) -> String {
+    fn path(&self) -> String {
         self.path.clone()
     }
 
-    pub fn salt(&self) -> String {
+    fn salt(&self) -> String {
         self.salt.clone()
     }
 
-    pub fn store_pwd(&self) -> String {
+    fn store_pwd(&self) -> String {
         self.store_pwd.clone()
     }
 
-    pub fn update_metadata(&self, key: String, metadata: Metadata) {
+    fn update_metadata(&self, key: String, metadata: Metadata) {
         log::trace!("Updating metadata on record with key {} ...", key);
         match self.hash_map.try_entry(key) {
             Some(entry) => {
@@ -174,9 +173,10 @@ impl DB {
             }
         }
     }
+}
 
-    // V2
-    pub fn delete(&self, key: String) -> Option<bool> {
+impl V2 for DB {
+    fn delete(&self, key: String) -> Option<bool> {
         log::trace!("Deleting record with key {} ...", key);
         match self.hash_map.remove(&key) {
             Some(_) => Some(true),
@@ -184,7 +184,7 @@ impl DB {
         }
     }
 
-    pub fn enabled(&self) -> bool {
+    fn enabled(&self) -> bool {
         self.enabled
     }
 }
@@ -192,6 +192,7 @@ impl DB {
 #[cfg(test)]
 mod tests {
     use crate::store::db;
+    use crate::store::db::V1;
     use crate::store::testing_data;
     use crate::time;
     use tempfile::NamedTempFile;

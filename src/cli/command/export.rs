@@ -4,6 +4,7 @@ use clap::ArgMatches;
 use crate::app::App;
 use crate::csv::writer;
 use crate::csv::{chrome, firefox};
+use crate::store::db::V1;
 use crate::util::write_file;
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
