@@ -50,8 +50,8 @@ impl Record {
             updated: now.clone(),
             password_changed: time::epoch_to_string(self.time_password_changed),
             last_used: time::epoch_to_string(self.time_last_used),
-            synced: now,
             access_count: 0,
+            synced: now,
         };
         store::DecryptedRecord { creds, metadata }
     }

@@ -28,8 +28,8 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
         updated: now.clone(),
         password_changed: now.clone(),
         last_used: now.clone(),
-        synced: now,
         access_count: 0,
+        synced: now,
     };
     let dr = DecryptedRecord { creds, metadata };
     app.db.insert(dr);
