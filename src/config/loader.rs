@@ -5,7 +5,7 @@ use super::{init, schema};
 use crate::util;
 
 pub fn load() -> schema::Config {
-    let config_file = util::default_config_file();
+    let config_file = util::config_file();
     let defaults = schema::defaults();
     match init::config(config_file.clone()) {
         Ok(_) => (),

@@ -42,14 +42,14 @@ pub fn write_file(data: Vec<u8>, path: String) -> Result<()> {
     }
 }
 
-pub fn default_config_dir() -> path::PathBuf {
+pub fn config_dir() -> path::PathBuf {
     let mut path = dirs::config_dir().unwrap();
     path.push(env!("CARGO_PKG_NAME"));
     path
 }
 
-pub fn default_config_file() -> String {
-    let mut path = default_config_dir();
+pub fn config_file() -> String {
+    let mut path = config_dir();
     path.push("config");
     path.set_extension("toml");
     path.to_str().unwrap().to_string()

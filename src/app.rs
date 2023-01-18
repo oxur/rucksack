@@ -15,13 +15,13 @@ impl App {
             path.push(self.cfg.rucksack.directory.clone());
             return path;
         }
-        util::default_config_dir()
+        util::config_dir()
     }
 
     pub fn config_file(&self) -> String {
         if self.cfg.rucksack.file != *"" {
             return self.cfg.rucksack.file.clone();
         }
-        util::default_config_file()
+        util::config_file()
     }
 }
