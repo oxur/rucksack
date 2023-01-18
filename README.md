@@ -39,7 +39,7 @@ rucksack help
 
 Output:
 
-```shell
+```text
 rucksack: A terminal-based password manager, generator, and importer/exporter (Firefox, Chrome) backed with a concurrent hashmap
 
 Usage: rucksack [OPTIONS] [COMMAND]

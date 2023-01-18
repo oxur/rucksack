@@ -22,6 +22,18 @@ jobs:
       run: make lint
     - name: Run tests
       run: make test
+    - name: Install rucksack
+      run: cargo install rucksack
+    - name: Run rucksack
+      run: |
+        rucksack help
+        rucksack gen --type uuid++ --encode
+        rucksack add --db-pass 1234 --url http://example.com --user shelly --password whyyyyyy
+        rucksack list --db-pass 1234
+        rucksack set --db-pass 1234 user --url http://example.com --old-user shelly --new-user clammy
+        rucksack list --db-pass 1234
+        rucksack list --db-pass 1234 --decrypt
+        rucksack list --db-pass 1234 --decrypt --reveal
     - name: Notify CI/CD Slack Channel
       uses: innocarpe/actions-slack@v1
       with:
