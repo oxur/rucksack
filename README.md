@@ -66,7 +66,7 @@ Options:
 Use a UUID:
 
 ```shell
-./bin/rucksack gen --type uuid
+rucksack gen --type uuid
 
 New password: 229ef9b4-b95b-4d91-a6ac-f6b7ef1cfc47
 Password score: 88.50
@@ -75,7 +75,7 @@ Password score: 88.50
 Augmented UUID:
 
 ```shell
-./bin/rucksack gen --type uuid++
+rucksack gen --type uuid++
 
 New password: 4C7360%E-4@60-4?03-b559-491C8A52E750
 Password score: 100.00
@@ -84,7 +84,7 @@ Password score: 100.00
 Random:
 
 ```shell
-./bin/rucksack gen --type random
+rucksack gen --type random
 
 New password: A&6YU?#xk.?)
 Password score: 91.22
@@ -93,7 +93,7 @@ Password score: 91.22
 Lorem-ipsum inspired:
 
 ```shell
-./bin/rucksack gen --type lipsum
+rucksack gen --type lipsum
 
 New password: Esse-maius-amicitia,-nihil.-]9^,
 Password score: 100.00
@@ -102,7 +102,7 @@ Password score: 100.00
 Some systems can't handle special characters, so a flag is available for encoding with base64, with the generated encoding getting scored:
 
 ```shell
-./bin/rucksack gen --type lipsum --encode
+rucksack gen --type lipsum --encode
 
 New password: VmVydW0sLW9waW5vciwtc2NyaXB0b3JlbS10YW1lbi4tLjYrfQ
 Password score: 100.00
@@ -113,7 +113,7 @@ Password score: 100.00
 Import login data from Firefox Sync:
 
 ```shell
-./bin/rucksack import \
+rucksack import \
   --db-pass abc123 \
   --type firefox \
   --file ~/Downloads/logins.csv
@@ -122,7 +122,7 @@ Import login data from Firefox Sync:
 Logins may be exported to files that can then be used to import into browsers:
 
 ```shell
-./bin/rucksack export \
+rucksack export \
   --db-pass abc123 \
   --type chrome \
   --file /tmp/exported-logins.csv
@@ -135,7 +135,7 @@ For both importing and exporting, there are currently two supported types: `fire
 To add a single record via the CLI:
 
 ```shell
-./bin/rucksack add \
+rucksack add \
   --url http://example.com \
   --user shelly \
   --password whyyyyyy
@@ -144,7 +144,7 @@ To add a single record via the CLI:
 Note that `--user` and `--url` are required when adding a new record. A password is required, too: if one is not provided with `--password`, then you will be prompted:
 
 ```shell
-./bin/rucksack add \
+rucksack add \
   --url http://example.com \
   --user shelly
 ```
@@ -169,7 +169,7 @@ As such, these have their own sub commands (under `set`), as well as their flags
 Changing a password:
 
 ```shell
-./bin/rucksack set password \
+rucksack set password \
   --url http://example.com \
   --user shelly
   --password whyyyyyyyyyyyyyyyyyyy
@@ -184,7 +184,7 @@ Enter account password:
 Changing a user:
 
 ```shell
-./bin/rucksack set user \
+rucksack set user \
   --url http://example.com \
   --old-user shelly
   --new-user clammy
@@ -193,7 +193,7 @@ Changing a user:
 Changing a URL:
 
 ```shell
-./bin/rucksack set url \
+rucksack set url \
   --old-url http://example.com \
   --new-url http://shelly.com \
   --user clammy
@@ -202,7 +202,7 @@ Changing a URL:
 Changing the record type:
 
 ```shell
-./bin/rucksack set type \
+rucksack set type \
   --url http://example.com \
   --user clammy
   --type account
@@ -215,7 +215,7 @@ Note that for all of this, should you want to pass the DB password, file, or sal
 Show URL/accounts for all secrets:
 
 ```shell
-./bin/rucksack list
+rucksack list
 ```
 
 ```shell
@@ -225,7 +225,7 @@ Enter db password:
 Show URLs, accounts, passwords, and password scores for all secrets:
 
 ```shell
-./bin/rucksack list --decrypt
+rucksack list --decrypt
 ```
 
 ```shell
@@ -236,7 +236,7 @@ In both cases a password may be passed with the `--db-pass` flag. By default, th
 
 Note that without `--decrypt`, only the user and URL are displayed. With `--decrypt`, those as well as masked password and password score are displayed. To unmask the password, one must also set `--reveal`.
 
-The default database location used is `./data/creds.db`. To use another location, the `--db` flag is available.
+The default database location depends upon operating system. To see the location for your system, you can run `rucksack show db-file`. To use another location, the `--db` flag is available.
 
 The flags `--db`, `--db-pass`, and `--salt` may be set for any subcommand that access the database.
 
@@ -245,7 +245,7 @@ The flags `--db`, `--db-pass`, and `--salt` may be set for any subcommand that a
 Simple filtering is also possible (done using a flag with the `list` command, with or without sorting):
 
 ```shell
-./bin/rucksack list \
+rucksack list \
   --db-pass abc123 \
   --filter exa \
   --sort-by score \
@@ -277,7 +277,7 @@ You may sort on `score` (strength), `user`, or `url`. If not provided, `url` sor
 For use in auditing, sites+user combinations that share the same password can be reported:
 
 ```shell
-./bin/rucksack list \
+rucksack list \
   --group-by db-pass \
   --decrypt
 ```
@@ -316,14 +316,14 @@ https://bleep.net                        | alice
 You may also group by user name (account name):
 
 ```shell
-./bin/rucksack list \
+rucksack list \
   --group-by user \
   --decrypt
 ```
 
 ## Related
 
-[Here](https://crates.io/keywords/password-manager?sort=downloads) are other cargo projects tagged with "password manager" ...
+[Other projects](https://crates.io/keywords/password-manager?sort=downloads) on crates.io tagged as `#password-manager"` ...
 
 Projects of particular interest:
 

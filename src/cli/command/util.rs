@@ -30,7 +30,7 @@ pub fn record_by_key(app_db: &db::DB, key: String) -> Result<DecryptedRecord> {
         Some(dr) => Ok(dr),
         None => {
             let msg = format!("no secret record for given key '{}'", key);
-            log::error!("{}", msg);
+            log::debug!("{}", msg);
             Err(anyhow!(msg))
         }
     }

@@ -21,6 +21,7 @@ pub fn setup() -> Command {
     .about(format!("{}: {}", NAME, DESC))
     .arg_required_else_help(true)
     .allow_external_subcommands(true)
+    .arg(config_arg())
     .arg(
         Arg::new("completions")
             .help("emit shell tab completions")
@@ -252,6 +253,9 @@ pub fn setup() -> Command {
     .subcommand(
         Command::new("show")
             .about("display rucksack-specific information")
+            .arg(db_arg())
+            .arg(pwd_arg())
+            .arg(salt_arg())
             .subcommand(
                 Command::new("config-file")
                     .about("display the location of the config file used by rucksack")
@@ -271,14 +275,25 @@ pub fn setup() -> Command {
     )
 }
 
+// Top-level Flags
+
+pub fn config_arg() -> Arg {
+    let config_file = crate::util::config_file();
+    Arg::new("config")
+        .help("the path to the config file to use or create")
+        .long("config")
+        .default_value(config_file)
+}
+
 // Database Flags
 
 pub fn db_arg() -> Arg {
+    let db_file = crate::util::db_file();
     Arg::new("db")
         .help("path to the encrypted database to use")
         .short('d')
         .long("db")
-        .default_value("./data/creds.db")
+        .default_value(db_file)
 }
 
 pub fn pwd_arg() -> Arg {
