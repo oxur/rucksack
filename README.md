@@ -23,7 +23,43 @@
 * [ ] [Local network sync](https://github.com/oxur/rucksack/milestone/10)
 * [ ] [Firefox Account Sync Client](https://github.com/oxur/rucksack/milestone/11)
 
+## Installation
+
+```shell
+cargo install rucksack
+```
+
 ## Usage
+
+Top-level help:
+
+```shell
+rucksack help
+```
+
+Output:
+
+```shell
+rucksack: A terminal-based password manager, generator, and importer/exporter (Firefox, Chrome) backed with a concurrent hashmap
+
+Usage: rucksack [OPTIONS] [COMMAND]
+
+Commands:
+  add     add a new secret
+  export  export the rucksack db
+  gen     generate a secret
+  import  pull in creds from other sources
+  list    list all secrets
+  rm      delete a single record
+  set     perform various 'write' operations
+  show    display rucksack-specific information
+  help    Print this message or the help of the given subcommand(s)
+
+Options:
+      --completions <SHELL>  emit shell tab completions [possible values: bash, elvish, fish, powershell, zsh]
+  -v, --version              Print version information
+  -h, --help                 Print help
+```
 
 ### Password Generator
 
