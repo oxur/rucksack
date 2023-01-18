@@ -4,7 +4,6 @@ use clap::ArgMatches;
 use super::util;
 
 use crate::app::App;
-use crate::store::db::V1;
 use crate::store::{Creds, DecryptedRecord, Metadata};
 use crate::time;
 

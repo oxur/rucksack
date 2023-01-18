@@ -2,7 +2,6 @@ use anyhow::Result;
 use clap::ArgMatches;
 
 use crate::app::App;
-use crate::store::db::V1;
 
 use super::util;
 

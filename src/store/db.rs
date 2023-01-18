@@ -27,25 +27,6 @@ struct VersionedDB {
     bytes: Vec<u8>,
 }
 
-pub trait V1 {
-    fn close(&self) -> Result<()>;
-    fn collect_decrypted(&self) -> Result<Vec<DecryptedRecord>, Error>;
-    fn get(&self, key: String) -> Option<DecryptedRecord>;
-    fn get_metadata(&self, key: String) -> Option<Metadata>;
-    fn hash_map(&self) -> DashMap<String, EncryptedRecord>;
-    fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord>;
-    fn iter(&self) -> dashmap::iter::Iter<String, EncryptedRecord>;
-    fn path(&self) -> String;
-    fn salt(&self) -> String;
-    fn store_pwd(&self) -> String;
-    fn update_metadata(&self, key: String, metadata: Metadata);
-}
-
-pub trait V2: V1 {
-    fn delete(&self, key: String) -> Option<bool>;
-    fn enabled(&self) -> bool;
-}
-
 impl fmt::Debug for DB {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("DB")
@@ -113,8 +94,8 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
     })
 }
 
-impl V1 for DB {
-    fn close(&self) -> Result<()> {
+impl DB {
+    pub fn close(&self) -> Result<()> {
         let path_name = &self.path();
         let path = std::path::Path::new(path_name);
         // Encode the hashmap
@@ -145,7 +126,7 @@ impl V1 for DB {
         util::write_file(encrypted, self.path())
     }
 
-    fn collect_decrypted(&self) -> Result<Vec<DecryptedRecord>, Error> {
+    pub fn collect_decrypted(&self) -> Result<Vec<DecryptedRecord>, Error> {
         let mut decrypted: Vec<DecryptedRecord> = Vec::new();
         for i in self.iter() {
             let record = i.value().decrypt(self.store_pwd(), self.salt())?;
@@ -154,14 +135,14 @@ impl V1 for DB {
         Ok(decrypted)
     }
 
-    fn get(&self, key: String) -> Option<DecryptedRecord> {
+    pub fn get(&self, key: String) -> Option<DecryptedRecord> {
         log::trace!("Getting record with key {} ...", key);
         self.hash_map
             .get(&key)
             .map(|encrypted| encrypted.decrypt(self.store_pwd(), self.salt()).unwrap())
     }
 
-    fn get_metadata(&self, key: String) -> Option<Metadata> {
+    pub fn get_metadata(&self, key: String) -> Option<Metadata> {
         log::trace!("Getting metadata of record with key {} ...", key);
         match self.get(key.clone()) {
             Some(r) => Some(r.metadata()),
@@ -172,34 +153,34 @@ impl V1 for DB {
         }
     }
 
-    fn hash_map(&self) -> DashMap<String, EncryptedRecord> {
+    pub fn hash_map(&self) -> DashMap<String, EncryptedRecord> {
         self.hash_map.clone()
     }
 
-    fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord> {
+    pub fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord> {
         let key = record.key();
         log::trace!("Inserting record with key {} ...", key);
         self.hash_map
             .insert(key, record.encrypt(self.store_pwd(), self.salt()))
     }
 
-    fn iter(&self) -> dashmap::iter::Iter<String, EncryptedRecord> {
+    pub fn iter(&self) -> dashmap::iter::Iter<String, EncryptedRecord> {
         self.hash_map.iter()
     }
 
-    fn path(&self) -> String {
+    pub fn path(&self) -> String {
         self.path.clone()
     }
 
-    fn salt(&self) -> String {
+    pub fn salt(&self) -> String {
         self.salt.clone()
     }
 
-    fn store_pwd(&self) -> String {
+    pub fn store_pwd(&self) -> String {
         self.store_pwd.clone()
     }
 
-    fn update_metadata(&self, key: String, metadata: Metadata) {
+    pub fn update_metadata(&self, key: String, metadata: Metadata) {
         log::trace!("Updating metadata on record with key {} ...", key);
         match self.hash_map.try_entry(key) {
             Some(entry) => {
@@ -213,10 +194,9 @@ impl V1 for DB {
             }
         }
     }
-}
 
-impl V2 for DB {
-    fn delete(&self, key: String) -> Option<bool> {
+    // V2 schema additions (rucksack v0.7.0)
+    pub fn delete(&self, key: String) -> Option<bool> {
         log::trace!("Deleting record with key {} ...", key);
         match self.hash_map.remove(&key) {
             Some(_) => Some(true),
@@ -224,7 +204,7 @@ impl V2 for DB {
         }
     }
 
-    fn enabled(&self) -> bool {
+    pub fn enabled(&self) -> bool {
         self.enabled
     }
 }
@@ -235,7 +215,6 @@ mod tests {
     use tempfile::NamedTempFile;
 
     use crate::store::db;
-    use crate::store::db::V1;
     use crate::store::testing_data;
     use crate::time;
 

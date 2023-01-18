@@ -4,7 +4,6 @@ use secrecy::{ExposeSecret, Secret, SecretString};
 
 use crate::store;
 use crate::store::db;
-use crate::store::db::{V1, V2};
 use crate::store::record;
 use crate::store::record::DecryptedRecord;
 

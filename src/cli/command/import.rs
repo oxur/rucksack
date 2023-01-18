@@ -4,7 +4,7 @@ use clap::ArgMatches;
 use crate::app::App;
 use crate::csv;
 use crate::csv::{chrome, firefox};
-use crate::store::db::{DB, V1};
+use crate::store::db::DB;
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     let import_file = matches.get_one::<String>("file").unwrap().to_string();

@@ -3,7 +3,6 @@ use clap::ArgMatches;
 
 use crate::app::App;
 use crate::store;
-use crate::store::db::{V1, V2};
 use crate::time;
 
 use super::util;

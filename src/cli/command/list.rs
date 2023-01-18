@@ -5,7 +5,6 @@ use clap::ArgMatches;
 use passwords::{analyzer, scorer};
 
 use crate::app::App;
-use crate::store::db::V1;
 use crate::time;
 
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
