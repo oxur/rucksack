@@ -72,6 +72,7 @@ pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
                 continue;
             }
         }
+        result.access_count = record.metadata().access_count;
         match decrypt {
             Some(true) => {
                 let pwd = match reveal {
@@ -80,7 +81,6 @@ pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
                     None => unreachable!(),
                 };
                 result.pwd = pwd;
-                result.access_count = record.metadata().access_count;
                 result.score = score.trunc() as i64;
             }
             Some(false) => result.pwd = hidden(),
