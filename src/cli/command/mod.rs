@@ -2,7 +2,6 @@ use clap::builder::EnumValueParser;
 use clap::{Arg, ArgAction, Command};
 
 pub mod add;
-pub mod arg;
 pub mod export;
 pub mod gen;
 pub mod import;
@@ -38,13 +37,13 @@ pub fn setup() -> Command {
     .subcommand(
         Command::new("add")
             .about("add a new secret")
-            .arg(arg::account_type())
-            .arg(arg::account_user().required(true))
-            .arg(arg::account_pass())
-            .arg(arg::account_url().required(true))
-            .arg(arg::db_arg())
-            .arg(arg::pwd_arg())
-            .arg(arg::salt_arg())
+            .arg(account_type())
+            .arg(account_user().required(true))
+            .arg(account_pass())
+            .arg(account_url().required(true))
+            .arg(db_arg())
+            .arg(pwd_arg())
+            .arg(salt_arg())
     )
     .subcommand(
         Command::new("export")
@@ -63,9 +62,9 @@ pub fn setup() -> Command {
                     .short('f')
                     .long("file"),
             )
-            .arg(arg::db_arg())
-            .arg(arg::pwd_arg())
-            .arg(arg::salt_arg())
+            .arg(db_arg())
+            .arg(pwd_arg())
+            .arg(salt_arg())
     )
     .subcommand(
         Command::new("gen")
@@ -133,9 +132,9 @@ pub fn setup() -> Command {
                     .short('f')
                     .long("file"),
             )
-            .arg(arg::db_arg())
-            .arg(arg::pwd_arg())
-            .arg(arg::salt_arg())
+            .arg(db_arg())
+            .arg(pwd_arg())
+            .arg(salt_arg())
     )
     .subcommand(
         Command::new("list")
@@ -196,57 +195,142 @@ pub fn setup() -> Command {
                     .default_value("url")
                     .value_parser(["score", "url", "user"]),
             )
-            .arg(arg::db_arg())
-            .arg(arg::pwd_arg())
-            .arg(arg::salt_arg())
+            .arg(db_arg())
+            .arg(pwd_arg())
+            .arg(salt_arg())
     )
     .subcommand(
         Command::new("rm")
             .about("delete a single record")
             .alias("remove")
             .alias("delete")
-            .arg(arg::account_user().required(true))
-            .arg(arg::account_url().required(true))
-            .arg(arg::db_arg())
-            .arg(arg::pwd_arg())
-            .arg(arg::salt_arg())
+            .arg(account_user().required(true))
+            .arg(account_url().required(true))
+            .arg(db_arg())
+            .arg(pwd_arg())
+            .arg(salt_arg())
     )
     .subcommand(
         Command::new("set")
             .about("perform various 'write' operations")
-            .arg(arg::db_arg())
-            .arg(arg::pwd_arg())
-            .arg(arg::salt_arg())
+            .arg(db_arg())
+            .arg(pwd_arg())
+            .arg(salt_arg())
             .subcommand(
                 Command::new("password")
                     .about("change the password for the given account")
-                    .arg(arg::account_pass())
-                    .arg(arg::account_user().required(true))
-                    .arg(arg::account_url().required(true))
+                    .arg(account_pass())
+                    .arg(account_user().required(true))
+                    .arg(account_url().required(true))
             )
             .subcommand(
                 Command::new("url")
                     .about("change the url for the given account")
-                    .arg(arg::account_url_old().required(true))
-                    .arg(arg::account_url_new().required(true))
-                    .arg(arg::account_user().required(true))
+                    .arg(account_url_old().required(true))
+                    .arg(account_url_new().required(true))
+                    .arg(account_user().required(true))
             )
             .subcommand(
                 Command::new("user")
                     .about("change the user (login name) for the given account")
-                    .arg(arg::account_user_old().required(true))
-                    .arg(arg::account_user_new().required(true))
-                    .arg(arg::account_url().required(true))
+                    .arg(account_user_old().required(true))
+                    .arg(account_user_new().required(true))
+                    .arg(account_url().required(true))
             )
             .subcommand(
                 Command::new("type")
                     .about("change the type of the given account")
-                    .arg(arg::account_type().required(true))
-                    .arg(arg::account_user().required(true))
-                    .arg(arg::account_url().required(true))
-                    .arg(arg::db_arg())
-                    .arg(arg::pwd_arg())
-                    .arg(arg::salt_arg())
+                    .arg(account_type().required(true))
+                    .arg(account_user().required(true))
+                    .arg(account_url().required(true))
+                    .arg(db_arg())
+                    .arg(pwd_arg())
+                    .arg(salt_arg())
             )
     )
+}
+
+// Database Flags
+
+pub fn db_arg() -> Arg {
+    Arg::new("db")
+        .help("path to the encrypted database to use")
+        .short('d')
+        .long("db")
+        .default_value("./data/creds.db")
+}
+
+pub fn pwd_arg() -> Arg {
+    Arg::new("db-pass")
+        .help("password used to encrypt the database")
+        .long("db-pass")
+}
+
+pub fn salt_arg() -> Arg {
+    Arg::new("salt")
+        .help("the salt to use for encrypting the database")
+        .default_value(default_salt())
+        .short('s')
+        .long("salt")
+}
+
+fn default_salt() -> String {
+    match std::env::var("USER") {
+        Ok(user) => user,
+        Err(_) => "rucksack".to_string(),
+    }
+}
+
+// Account Flags
+
+pub fn account_type() -> Arg {
+    Arg::new("type")
+        .help("the type of secret to add")
+        .short('t')
+        .long("type")
+        // These next have not yet been defined/refined:
+        .value_parser(["", "account", "credential", "creds", "password"])
+}
+
+pub fn account_user() -> Arg {
+    Arg::new("user")
+        .help("the user, login, or account, identifier")
+        .short('u')
+        .long("user")
+}
+
+pub fn account_user_old() -> Arg {
+    Arg::new("old-user")
+        .help("the old user login name")
+        .short('u')
+        .long("old-user")
+}
+
+pub fn account_user_new() -> Arg {
+    Arg::new("new-user")
+        .help("the new user login name to use")
+        .short('u')
+        .long("new-user")
+}
+
+pub fn account_pass() -> Arg {
+    Arg::new("password")
+        .help("the account / login password")
+        .long("password")
+}
+
+pub fn account_url() -> Arg {
+    Arg::new("url").help("the login URL").long("url")
+}
+
+pub fn account_url_old() -> Arg {
+    Arg::new("old-url")
+        .help("the old login URL")
+        .long("old-url")
+}
+
+pub fn account_url_new() -> Arg {
+    Arg::new("new-url")
+        .help("the new URL for the account / login")
+        .long("new-url")
 }
