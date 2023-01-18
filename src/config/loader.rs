@@ -1,8 +1,22 @@
 use confyg::Confygery;
 
-use super::schema;
+use super::{init, schema};
+
+use crate::util;
 
 pub fn load() -> schema::Config {
-    let cfg: schema::Config = Confygery::new().add_file("./config.toml").build().unwrap();
-    cfg
+    let config_file = util::default_config_file();
+    let defaults = schema::defaults();
+    match init::config(config_file.clone()) {
+        Ok(_) => (),
+        Err(e) => panic!("{}", e),
+    }
+    match Confygery::new()
+        .add_file(&config_file)
+        .add_struct(&defaults)
+        .build()
+    {
+        Ok(cfg) => cfg,
+        Err(e) => panic!("{}", e),
+    }
 }
