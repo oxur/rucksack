@@ -1,4 +1,0 @@
-[logging]
-coloured = true
-level = "trace"
-report_caller = true
