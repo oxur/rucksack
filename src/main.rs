@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use clap::ArgMatches;
 
 use rucksack::cli;
-use rucksack::cli::command::{add, export, gen, import, list, rm, set, setup_db};
+use rucksack::cli::command::{add, export, gen, import, list, rm, set, setup_db, show};
 use rucksack::{config, util};
 
 const NAME: &str = env!("CARGO_PKG_NAME");
@@ -23,6 +23,14 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
             Some(("url", url_matches)) => set::url(url_matches, app)?,
             Some(("user", user_matches)) => set::user(user_matches, app)?,
             Some(("type", type_matches)) => set::account_type(type_matches, app)?,
+            Some((&_, _)) => todo!(),
+            None => todo!(),
+        },
+        Some(("show", show_matches)) => match show_matches.subcommand() {
+            Some(("config-file", cfgfile_matches)) => show::config_file(cfgfile_matches, app)?,
+            Some(("config", cfg_matches)) => show::config(cfg_matches, app)?,
+            Some(("data-dir", datadir_matches)) => show::data_dir(datadir_matches, app)?,
+            Some(("db-file", dbfile_matches)) => show::db_file(dbfile_matches, app)?,
             Some((&_, _)) => todo!(),
             None => todo!(),
         },

@@ -8,6 +8,7 @@ pub mod import;
 pub mod list;
 pub mod rm;
 pub mod set;
+pub mod show;
 pub mod util;
 
 pub use util::setup_db;
@@ -246,6 +247,26 @@ pub fn setup() -> Command {
                     .arg(db_arg())
                     .arg(pwd_arg())
                     .arg(salt_arg())
+            )
+    )
+    .subcommand(
+        Command::new("show")
+            .about("display rucksack-specific information")
+            .subcommand(
+                Command::new("config-file")
+                    .about("display the location of the config file used by rucksack")
+            )
+            .subcommand(
+                Command::new("config")
+                    .about("display rucksack's current configuration")
+            )
+            .subcommand(
+                Command::new("data-dir")
+                    .about("display the location of the rucksack data directory")
+            )
+            .subcommand(
+                Command::new("db-file")
+                    .about("display the location of the rucksack database file")
             )
     )
 }
