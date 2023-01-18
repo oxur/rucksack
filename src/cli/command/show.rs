@@ -21,14 +21,12 @@ pub fn config(_matches: &ArgMatches, app: &App) -> Result<()> {
     Ok(())
 }
 
-pub fn data_dir(matches: &ArgMatches, app: &App) -> Result<()> {
-    log::info!("matches: {:?}; app: {:?}", matches, app);
-    log::warn!("not yet implemented");
+pub fn data_dir(_matches: &ArgMatches, app: &App) -> Result<()> {
+    println!("\n{}\n", app.data_dir().to_str().unwrap());
     Ok(())
 }
 
-pub fn db_file(matches: &ArgMatches, app: &App) -> Result<()> {
-    log::info!("matches: {:?}; app: {:?}", matches, app);
-    log::warn!("not yet implemented");
+pub fn db_file(_matches: &ArgMatches, app: &App) -> Result<()> {
+    println!("\n{}\n", app.db_file());
     Ok(())
 }

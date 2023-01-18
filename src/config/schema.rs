@@ -3,8 +3,10 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[allow(unused)]
 pub struct Rucksack {
-    pub directory: String,
-    pub file: String,
+    pub cfg_dir: String,
+    pub cfg_file: String,
+    pub data_dir: String,
+    pub db_file: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

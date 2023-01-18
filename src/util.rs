@@ -54,3 +54,17 @@ pub fn config_file() -> String {
     path.set_extension("toml");
     path.to_str().unwrap().to_string()
 }
+
+pub fn data_dir() -> path::PathBuf {
+    let mut path = dirs::data_dir().unwrap();
+    path.push(env!("CARGO_PKG_NAME"));
+    path.push("data");
+    path
+}
+
+pub fn db_file() -> String {
+    let mut path = data_dir();
+    path.push("secrets");
+    path.set_extension("db");
+    path.to_str().unwrap().to_string()
+}

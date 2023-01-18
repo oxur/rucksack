@@ -10,18 +10,34 @@ pub struct App {
 
 impl App {
     pub fn config_dir(&self) -> path::PathBuf {
-        if self.cfg.rucksack.directory != *"" {
+        if self.cfg.rucksack.cfg_dir != *"" {
             let mut path = path::PathBuf::new();
-            path.push(self.cfg.rucksack.directory.clone());
+            path.push(self.cfg.rucksack.cfg_dir.clone());
             return path;
         }
         util::config_dir()
     }
 
     pub fn config_file(&self) -> String {
-        if self.cfg.rucksack.file != *"" {
-            return self.cfg.rucksack.file.clone();
+        if self.cfg.rucksack.cfg_file != *"" {
+            return self.cfg.rucksack.cfg_file.clone();
         }
         util::config_file()
+    }
+
+    pub fn data_dir(&self) -> path::PathBuf {
+        if self.cfg.rucksack.data_dir != *"" {
+            let mut path = path::PathBuf::new();
+            path.push(self.cfg.rucksack.data_dir.clone());
+            return path;
+        }
+        util::data_dir()
+    }
+
+    pub fn db_file(&self) -> String {
+        if self.cfg.rucksack.db_file != *"" {
+            return self.cfg.rucksack.db_file.clone();
+        }
+        util::db_file()
     }
 }
