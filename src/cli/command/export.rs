@@ -10,7 +10,9 @@ use crate::util::write_file;
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Running 'export' subcommand ...");
     let export_type = matches.get_one::<String>("type").map(|s| s.as_str());
-    if export_type.is_some() {
+    // For non-debug types, we need the file option set; for the debug type, there
+    // is not file option, so we need to process that one and return right away.
+    if let Some("debug") = export_type {
         to_stdout(app)?;
         return Ok(());
     }
