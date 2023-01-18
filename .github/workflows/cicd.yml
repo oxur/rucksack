@@ -22,7 +22,24 @@ jobs:
       run: make lint
     - name: Run tests
       run: make test
-    - name: Install rucksack
+    - name: Run rucksack (locally)
+      run: |
+        ./bin/rucksack help
+        ./bin/rucksack gen --type uuid++ --encode
+        ./bin/rucksack show config-file
+        ./bin/rucksack show config
+        ./bin/rucksack show data-dir
+        ./bin/rucksack show db-file
+        ./bin/rucksack add --db-pass 1234 --url http://example.com --user shelly --password whyyyyyy
+        ./bin/rucksack list --db-pass 1234
+        ./bin/rucksack set --db-pass 1234 user --url http://example.com --old-user shelly --new-user clammy
+        ./bin/rucksack list --db-pass 1234
+        ./bin/rucksack list --db-pass 1234 --decrypt
+        ./bin/rucksack add --db-pass 1234 --url http://boo.co --user sully --password numb3r1fan
+        ./bin/rucksack list --db-pass 1234 --decrypt --reveal
+        ./bin/rucksack list --db-pass 1234 --decrypt  --reveal --filter exa
+        ./bin/rucksack list --db-pass 1234 --decrypt  --reveal --filter boo
+    - name: Install rucksack (crates.io)
       run: cargo install rucksack
     - name: Run rucksack
       run: |
@@ -33,8 +50,8 @@ jobs:
         rucksack set --db-pass 1234 user --url http://example.com --old-user shelly --new-user clammy
         rucksack list --db-pass 1234
         rucksack list --db-pass 1234 --decrypt
+        rucksack add --db-pass 1234 --url http://boo.co --user sully --password numb3r1fan
         rucksack list --db-pass 1234 --decrypt --reveal
-        rucksack add --db-pass 1234 --url http://boo.com --user sully --password numb3r1fan
         rucksack list --db-pass 1234 --decrypt  --reveal --filter exa
         rucksack list --db-pass 1234 --decrypt  --reveal --filter boo
     - name: Notify CI/CD Slack Channel
