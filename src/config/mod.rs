@@ -1,3 +1,4 @@
+pub mod init;
 pub mod loader;
 pub mod schema;
 
