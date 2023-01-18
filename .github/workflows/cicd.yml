@@ -34,6 +34,9 @@ jobs:
         rucksack list --db-pass 1234
         rucksack list --db-pass 1234 --decrypt
         rucksack list --db-pass 1234 --decrypt --reveal
+        rucksack add --db-pass 1234 --url http://boo.com --user sully --password numb3r1fan
+        rucksack list --db-pass 1234 --decrypt  --reveal --filter exa
+        rucksack list --db-pass 1234 --decrypt  --reveal --filter boo
     - name: Notify CI/CD Slack Channel
       uses: innocarpe/actions-slack@v1
       with:
