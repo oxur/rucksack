@@ -12,7 +12,7 @@ use super::record::{DecryptedRecord, EncryptedRecord, Metadata};
 
 #[derive(Clone, Default)]
 pub struct DB {
-    path: String,
+    pub path: String,
     store_hash: u32,
     store_pwd: String,
     salt: String,
@@ -82,7 +82,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
             }
         };
     };
-    let enabled = true;
+    log::debug!("Setting database path: {}", path);
     Ok(DB {
         path,
         store_hash,
@@ -90,7 +90,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
         salt,
         bincode_cfg,
         hash_map,
-        enabled,
+        enabled: true,
     })
 }
 

@@ -8,8 +8,22 @@ use crate::store::record;
 use crate::store::record::DecryptedRecord;
 
 pub fn setup_db(matches: &ArgMatches) -> Result<db::DB> {
-    match matches.get_one::<String>("db") {
+    let db = matches.get_one::<String>("db");
+    match matches.get_one::<bool>("db-needed") {
+        Some(false) => {
+            if let Some(db_file) = db {
+                let mut db = db::new();
+                db.path = db_file.to_string();
+                return Ok(db);
+            }
+            return Ok(db::new());
+        }
+        Some(true) => (),
+        None => (),
+    }
+    match db {
         Some(db_file) => {
+            log::debug!("Got database file from flag: {}", db_file);
             let pwd = match matches.get_one::<String>("db-pass") {
                 Some(flag_pwd) => SecretString::new(flag_pwd.to_owned()),
                 None => secret("Enter db password: ").unwrap(),
@@ -30,7 +44,7 @@ pub fn record_by_key(app_db: &db::DB, key: String) -> Result<DecryptedRecord> {
         Some(dr) => Ok(dr),
         None => {
             let msg = format!("no secret record for given key '{}'", key);
-            log::debug!("{}", msg);
+            log::info!("{}", msg);
             Err(anyhow!(msg))
         }
     }

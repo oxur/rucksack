@@ -68,3 +68,9 @@ pub fn db_file() -> String {
     path.set_extension("db");
     path.to_str().unwrap().to_string()
 }
+
+pub fn dir_parent(dir: String) -> String {
+    let mut parent: Vec<&str> = dir.split(std::path::MAIN_SEPARATOR).collect();
+    parent.pop();
+    parent.join(std::path::MAIN_SEPARATOR.to_string().as_str())
+}

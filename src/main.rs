@@ -34,24 +34,35 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
             Some((&_, _)) => todo!(),
             None => todo!(),
         },
-        Some((&_, _)) => todo!(),
+        Some((cmd, _)) => {
+            log::warn!("unknown command: {}", cmd);
+            todo!()
+        }
         None => todo!(),
     }
     Ok(())
 }
 
 fn main() -> Result<()> {
-    let cfg = config::load();
+    let mut rucksack = cli::command::setup();
+    let matches = rucksack.clone().get_matches();
+    let mut config_file = String::new();
+    if let Some(cfg_file) = matches.get_one::<String>("config-file") {
+        config_file = cfg_file.to_string();
+    }
+    let mut log_level = String::new();
+    if let Some(level) = matches.get_one::<String>("log-level") {
+        log_level = level.to_string();
+    }
+    let mut cfg = config::load(config_file, log_level);
     match twyg::setup_logger(&cfg.logging) {
         Ok(_) => {}
         Err(error) => {
             panic!("Could not setup logger: {:?}", error)
         }
     }
-    log::debug!("Config setup complete.");
-    log::debug!("Logger setup complete.");
-    let mut rucksack = cli::command::setup();
-    let matches = rucksack.clone().get_matches();
+    log::debug!("Config setup complete (using {})", cfg.rucksack.cfg_file);
+    log::debug!("Logger setup complete");
 
     // Shell completion generation is completely independent, so perform it before
     // any config or subcommand operations.
@@ -73,6 +84,8 @@ fn main() -> Result<()> {
 
     let (_, subcmd_matches) = matches.subcommand().unwrap();
     let db = setup_db(subcmd_matches)?;
+    cfg.rucksack.db_file = db.path();
+    cfg.rucksack.data_dir = util::dir_parent(db.path());
     let app = rucksack::App { cfg, db };
     run(&matches, &app)
 }

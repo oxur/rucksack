@@ -20,8 +20,9 @@ pub fn setup() -> Command {
     Command::new(NAME)
     .about(format!("{}: {}", NAME, DESC))
     .arg_required_else_help(true)
-    .allow_external_subcommands(true)
+    // .allow_external_subcommands(true)
     .arg(config_arg())
+    .arg(log_level_arg())
     .arg(
         Arg::new("completions")
             .help("emit shell tab completions")
@@ -71,6 +72,7 @@ pub fn setup() -> Command {
     .subcommand(
         Command::new("gen")
             .about("generate a secret")
+            .arg(db_not_needed())
             .arg(
                 Arg::new("type")
                     .help("the type of generator to use")
@@ -152,7 +154,7 @@ pub fn setup() -> Command {
                     .help("show records where the user or the URL contain the given string")
                     .short('f')
                     .long("filter")
-                    .alias("include")
+                    .visible_alias("include")
             )
             .arg(
                 Arg::new("exclude")
@@ -165,7 +167,7 @@ pub fn setup() -> Command {
                     .help("group results that have the same value for the given field")
                     .short('g')
                     .long("group-by")
-                    .alias("partition")
+                    .visible_alias("partition")
                     .value_parser(["password", "user"]),
             )
             .arg(
@@ -193,7 +195,7 @@ pub fn setup() -> Command {
                     .help("display the actual the passwords")
                     .short('s')
                     .long("sort-by")
-                    .alias("order-by")
+                    .visible_alias("order-by")
                     .default_value("url")
                     .value_parser(["score", "url", "user"]),
             )
@@ -204,8 +206,7 @@ pub fn setup() -> Command {
     .subcommand(
         Command::new("rm")
             .about("delete a single record")
-            .alias("remove")
-            .alias("delete")
+            .visible_aliases(["delete","remove"])
             .arg(account_user().required(true))
             .arg(account_url().required(true))
             .arg(db_arg())
@@ -254,8 +255,7 @@ pub fn setup() -> Command {
         Command::new("show")
             .about("display rucksack-specific information")
             .arg(db_arg())
-            .arg(pwd_arg())
-            .arg(salt_arg())
+            .arg(db_not_needed())
             .subcommand(
                 Command::new("config-file")
                     .about("display the location of the config file used by rucksack")
@@ -279,27 +279,37 @@ pub fn setup() -> Command {
 
 pub fn config_arg() -> Arg {
     let config_file = crate::util::config_file();
-    Arg::new("config")
+    Arg::new("config-file")
         .help("the path to the config file to use or create")
-        .long("config")
+        .long("config-file")
         .default_value(config_file)
+        .global(true)
+}
+
+pub fn log_level_arg() -> Arg {
+    Arg::new("log-level")
+        .help("override the configured log-level setting")
+        .long("log-level")
+        .default_value("")
+        .value_parser(["error", "warn", "info", "debug", "trace", ""])
+        .global(true)
 }
 
 // Database Flags
 
 pub fn db_arg() -> Arg {
-    let db_file = crate::util::db_file();
     Arg::new("db")
         .help("path to the encrypted database to use")
         .short('d')
         .long("db")
-        .default_value(db_file)
+        .global(true)
 }
 
 pub fn pwd_arg() -> Arg {
     Arg::new("db-pass")
         .help("password used to encrypt the database")
         .long("db-pass")
+        .global(true)
 }
 
 pub fn salt_arg() -> Arg {
@@ -308,6 +318,7 @@ pub fn salt_arg() -> Arg {
         .default_value(default_salt())
         .short('s')
         .long("salt")
+        .global(true)
 }
 
 fn default_salt() -> String {
@@ -369,4 +380,24 @@ pub fn account_url_new() -> Arg {
     Arg::new("new-url")
         .help("the new URL for the account / login")
         .long("new-url")
+}
+
+// Miscellaneous
+
+pub fn db_not_needed() -> Arg {
+    Arg::new("db-needed")
+        .hide(true)
+        .long("db-needed")
+        .value_parser(clap::builder::BoolValueParser::new())
+        .default_value("false")
+        .global(true)
+}
+
+pub fn db_needed() -> Arg {
+    Arg::new("db-needed")
+        .hide(true)
+        .long("db-needed")
+        .value_parser(clap::builder::BoolValueParser::new())
+        .default_value("true")
+        .global(true)
 }
