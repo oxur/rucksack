@@ -1,4 +1,5 @@
 #!/bin/bash
+
 make build
 
 . ./tests/common.sh || . ./common.sh

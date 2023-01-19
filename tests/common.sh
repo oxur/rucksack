@@ -7,5 +7,5 @@ YELLOW="\033[1;33m"
 END_COLOR="\033[0m"
 
 function header () {
-    echo " ${GREEN}>>${END_COLOR} ${YELLOW}${1}${END_COLOR}"
+    echo -e " ${GREEN}>>${END_COLOR} ${YELLOW}${1}${END_COLOR}"
 }
