@@ -103,8 +103,6 @@ fn hashmap_from_encoded(bytes: Vec<u8>) -> Result<DashMap<String, EncryptedRecor
 
 impl DB {
     pub fn close(&self) -> Result<()> {
-        let path_name = &self.path();
-        let path = std::path::Path::new(path_name);
         // Reverse the workflow of `open` ... encode the hashmap
         let encoded = self.serialise()?;
         // Create versioned data
@@ -119,8 +117,11 @@ impl DB {
         // Encrypt the versioned data
         let mut enc_db = encrypted::from_bytes(encoded, self.path(), self.store_pwd(), self.salt());
         enc_db.encrypt();
-        fs::create_dir_all(path.parent().unwrap())?;
+
         // TODO: refactor backup code
+        let path_name = &self.path();
+        let path = std::path::Path::new(path_name);
+        fs::create_dir_all(path.parent().unwrap())?;
         if std::path::Path::new(&self.path).exists() {
             let backup_name = format!("{}-{}", self.path, time::simple_timestamp());
             log::debug!(
@@ -129,6 +130,7 @@ impl DB {
             );
             std::fs::copy(path, backup_name)?;
         }
+        // Save the encrypted data
         enc_db.write()
     }
 
