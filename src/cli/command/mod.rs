@@ -272,6 +272,10 @@ pub fn setup() -> Command {
                 Command::new("db-file")
                     .about("display the location of the rucksack database file")
             )
+            .subcommand(
+                Command::new("db-version")
+                    .about("display the file schema version of a given database file")
+            )
     )
 }
 

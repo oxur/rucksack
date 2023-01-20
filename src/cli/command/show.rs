@@ -30,3 +30,8 @@ pub fn db_file(_matches: &ArgMatches, app: &App) -> Result<()> {
     println!("\n{}\n", app.db_file());
     Ok(())
 }
+
+pub fn db_version(_matches: &ArgMatches, app: &App) -> Result<()> {
+    println!("\n{}\n", app.db_file());
+    Ok(())
+}

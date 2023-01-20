@@ -2,6 +2,8 @@
 
 . ./tests/common.sh || . ./common.sh
 
+rm -f ~/.cargo/bin/rucksack
+
 echo
 header "Install rucksack"
 echo

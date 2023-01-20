@@ -1,14 +1,31 @@
+// Database encryption <-> decryption flow:
+//
+// When a rucksack database is serialised, the following happens:
+// * Its hashmap (DashMap) is bincoded to bytes
+// * The bytes are stored on a field of the VersionedDB struct
+// * The VersionDB struct is bincoded to bytes
+// * The bytes are stored on a field of the EncryptedDB struct
+// * The bytes are encrypted
+// * The encrypted bytes are saved to a file
+//
+// Then, in the reverse, when a database is read from disk, this is how it's done:
+// * The file is read into memory as bytes and stored on a field of the EncryptedDB struct
+// * The encrypted bytes are decrypted
+// * The decrypted bytes are then bincode-decoded (deserialised) to a VersionedDB struct
+// * The bytes of the VersionDB are bincode-decoded to a hashmap (DashMap)
+// * The hashmap is stored as a field on the DB struct
+//
 use std::{fmt, fs};
 
-use anyhow::{Error, Result};
-use bincode::{config, Decode, Encode};
+use anyhow::{anyhow, Error, Result};
+use bincode::config;
 use dashmap::DashMap;
-use serde::{Deserialize, Serialize};
 
-use crate::{time, util};
+use crate::store::record::{DecryptedRecord, EncryptedRecord, Metadata};
+use crate::time;
 
-use super::crypto::{decrypt, encrypt};
-use super::record::{DecryptedRecord, EncryptedRecord, Metadata};
+pub mod encrypted;
+pub mod versioned;
 
 #[derive(Clone, Default)]
 pub struct DB {
@@ -16,15 +33,9 @@ pub struct DB {
     store_hash: u32,
     store_pwd: String,
     salt: String,
-    bincode_cfg: bincode::config::Configuration,
     hash_map: DashMap<String, EncryptedRecord>,
     enabled: bool,
-}
-
-#[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
-struct VersionedDB {
     version: String,
-    bytes: Vec<u8>,
 }
 
 impl fmt::Debug for DB {
@@ -50,37 +61,18 @@ pub fn new() -> DB {
 pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
     let mut hash_map: DashMap<String, EncryptedRecord> = DashMap::new();
     let mut store_hash = 0;
-    let bincode_cfg = config::standard();
+    let mut version = env!("CARGO_PKG_VERSION").to_string();
     if std::path::Path::new(&path).exists() {
-        let _len: usize;
-        let encrypted = util::read_file(path.clone())?;
-        // Decrypt the versioned data
-        let decrypted = decrypt(encrypted, store_pwd.clone(), salt.clone())?;
-        // Get the hash for the versioned data
-        store_hash = crc32fast::hash(decrypted.as_ref());
-        let versioned: VersionedDB;
-        // Decode the versioned data
-        match bincode::serde::decode_from_slice(decrypted.as_ref(), bincode_cfg) {
-            Ok((result, _len)) => {
-                versioned = result;
-                log::debug!("decocded versioned DB bytes: {:?}", versioned);
-            }
-            Err(e) => {
-                let msg = format!("couldn't deserialise versioned database file: {:?}", e);
-                log::error!("{}", msg);
-                panic!("{}", msg);
-            }
-        };
+        // Decrypt the stored data
+        let mut enc_db = encrypted::from_file(path.clone(), store_pwd.clone(), salt.clone());
+        enc_db.read()?;
+        enc_db.decrypt()?;
+        // Decode the decrypted data as a VersionedDB
+        let vsn_db = versioned::from_encoded(enc_db.decrypted())?;
+        store_hash = vsn_db.hash();
+        version = vsn_db.version();
         // Decode the hashmap
-        let vsn_db_ref = versioned.bytes.as_ref();
-        match bincode::serde::decode_from_slice(vsn_db_ref, bincode_cfg) {
-            Ok((result, _len)) => hash_map = result,
-            Err(e) => {
-                let msg = format!("couldn't deserialise bincoded database bytes: {:?}", e);
-                log::error!("{}", msg);
-                panic!("{}", msg);
-            }
-        };
+        hash_map = hashmap_from_encoded(vsn_db.bytes())?;
     };
     log::debug!("Setting database path: {}", path);
     Ok(DB {
@@ -88,31 +80,47 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
         store_hash,
         store_pwd,
         salt,
-        bincode_cfg,
         hash_map,
         enabled: true,
+        version,
     })
+}
+
+fn hashmap_from_encoded(bytes: Vec<u8>) -> Result<DashMap<String, EncryptedRecord>> {
+    let hashmap: DashMap<String, EncryptedRecord>;
+    match bincode::serde::decode_from_slice(bytes.as_ref(), config::standard()) {
+        Ok((result, _len)) => {
+            hashmap = result;
+            Ok(hashmap)
+        }
+        Err(e) => {
+            let msg = format!("couldn't deserialise bincoded database bytes: {:?}", e);
+            log::error!("{}", msg);
+            Err(anyhow!(msg))
+        }
+    }
 }
 
 impl DB {
     pub fn close(&self) -> Result<()> {
         let path_name = &self.path();
         let path = std::path::Path::new(path_name);
-        // Encode the hashmap
-        let encoded = bincode::serde::encode_to_vec(self.hash_map(), self.bincode_cfg).unwrap();
+        // Reverse the workflow of `open` ... encode the hashmap
+        let encoded = self.serialise()?;
         // Create versioned data
-        let db_bytes = VersionedDB {
-            version: env!("CARGO_PKG_VERSION").to_string(),
-            bytes: encoded,
-        };
-        let versioned = bincode::serde::encode_to_vec(db_bytes, self.bincode_cfg).unwrap();
+        let vsn_db = versioned::from_bytes(encoded);
+        let encoded = vsn_db.serialise()?;
         // Get the hash for the versioned data
-        let store_hash = crc32fast::hash(versioned.as_ref());
+        let store_hash = vsn_db.hash();
         if store_hash == self.store_hash {
             log::debug!("No change in store hash; not persisting ...");
             return Ok(());
         }
+        // Encrypt the versioned data
+        let mut enc_db = encrypted::from_bytes(encoded, self.path(), self.store_pwd(), self.salt());
+        enc_db.encrypt();
         fs::create_dir_all(path.parent().unwrap())?;
+        // TODO: refactor backup code
         if std::path::Path::new(&self.path).exists() {
             let backup_name = format!("{}-{}", self.path, time::simple_timestamp());
             log::debug!(
@@ -121,9 +129,7 @@ impl DB {
             );
             std::fs::copy(path, backup_name)?;
         }
-        // Encrypt the versioned data
-        let encrypted = encrypt(versioned, self.store_pwd(), self.salt());
-        util::write_file(encrypted, self.path())
+        enc_db.write()
     }
 
     pub fn collect_decrypted(&self) -> Result<Vec<DecryptedRecord>, Error> {
@@ -133,6 +139,17 @@ impl DB {
             decrypted.push(record);
         }
         Ok(decrypted)
+    }
+
+    fn serialise(&self) -> Result<Vec<u8>> {
+        match bincode::serde::encode_to_vec(self.hash_map.clone(), config::standard()) {
+            Ok(bytes) => Ok(bytes),
+            Err(e) => {
+                let msg = format!("couldn't encode DB hashmap ({})", e);
+                log::error!("{}", msg);
+                Err(anyhow!("{}", msg))
+            }
+        }
     }
 
     pub fn get(&self, key: String) -> Option<DecryptedRecord> {
@@ -195,7 +212,7 @@ impl DB {
         }
     }
 
-    // V2 schema additions (rucksack v0.7.0)
+    // V2 schema additions (rucksack >= v0.7.0)
     pub fn delete(&self, key: String) -> Option<bool> {
         log::trace!("Deleting record with key {} ...", key);
         match self.hash_map.remove(&key) {
@@ -207,11 +224,14 @@ impl DB {
     pub fn enabled(&self) -> bool {
         self.enabled
     }
+
+    pub fn version(&self) -> String {
+        self.version.clone()
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use bincode::config;
     use tempfile::NamedTempFile;
 
     use crate::store::db;
@@ -239,15 +259,5 @@ mod tests {
         let read_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(read_dpr.creds.user, "alice@site.com");
         assert_eq!(read_dpr.creds.password, "4 s3kr1t");
-    }
-
-    #[test]
-    fn db_bytes() {
-        let tmp_db = db::VersionedDB {
-            version: "1.2.3".to_string(),
-            bytes: vec![1, 2, 3],
-        };
-        let encoded = bincode::serde::encode_to_vec(tmp_db, config::standard()).unwrap();
-        assert_eq!(encoded, vec![5, 49, 46, 50, 46, 51, 3, 1, 2, 3]);
     }
 }

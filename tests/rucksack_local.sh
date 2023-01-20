@@ -134,7 +134,7 @@ header "Remove an account (clammy)"
     --db "$DB_FILE" \
     --db-pass 1234 \
     --url http://example.com \
-    --user clammy
+    --user clammy --log-level trace
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \

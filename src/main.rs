@@ -31,6 +31,7 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
             Some(("config", cfg_matches)) => show::config(cfg_matches, app)?,
             Some(("data-dir", datadir_matches)) => show::data_dir(datadir_matches, app)?,
             Some(("db-file", dbfile_matches)) => show::db_file(dbfile_matches, app)?,
+            Some(("db-version", dbvsn_matches)) => show::db_version(dbvsn_matches, app)?,
             Some((&_, _)) => todo!(),
             None => todo!(),
         },
