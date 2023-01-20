@@ -59,17 +59,13 @@ impl VersionedDB {
 
 #[cfg(test)]
 mod tests {
-    use bincode::config;
-
-    use crate::store::db::versioned::VersionedDB;
+    use crate::store::db::versioned;
 
     #[test]
     fn db_bytes() {
-        let tmp_db = VersionedDB {
-            version: "1.2.3".to_string(),
-            bytes: vec![1, 2, 3],
-        };
-        let encoded = bincode::serde::encode_to_vec(tmp_db, config::standard()).unwrap();
-        assert_eq!(encoded, vec![5, 49, 46, 50, 46, 51, 3, 1, 2, 3]);
+        let tmp_db = versioned::new(vec![2, 4, 16], "1.2.3".to_string());
+        let encoded = tmp_db.serialise().unwrap();
+        let expected = vec![3, 2, 4, 16, 5, 49, 46, 50, 46, 51];
+        assert_eq!(encoded, expected);
     }
 }
