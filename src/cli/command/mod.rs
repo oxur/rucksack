@@ -275,6 +275,9 @@ pub fn setup() -> Command {
             .subcommand(
                 Command::new("db-version")
                     .about("display the file schema version of a given database file")
+                    .arg(db_needed())
+                    .arg(pwd_arg())
+                    .arg(salt_arg())
             )
     )
 }

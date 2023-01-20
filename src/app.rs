@@ -40,4 +40,8 @@ impl App {
         }
         util::db_file()
     }
+
+    pub fn db_version(&self) -> String {
+        self.db.version()
+    }
 }

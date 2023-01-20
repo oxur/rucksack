@@ -59,6 +59,13 @@ echo
     --db "$DB_FILE" \
     --db-pass 1234
 
+header "Show DB file format version"
+
+./bin/rucksack show db-version \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234
+
 header "Change the account user name"
 
 ./bin/rucksack set user \
