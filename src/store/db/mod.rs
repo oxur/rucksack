@@ -48,7 +48,7 @@ impl fmt::Debug for DB {
 }
 
 pub fn init(path: String, store_pwd: String, updated: String) -> Result<()> {
-    let db = open(path, store_pwd, updated).unwrap();
+    let db = open(path, store_pwd, updated)?;
     db.close()
 }
 
