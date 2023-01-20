@@ -44,7 +44,7 @@ echo
 
 rucksack add --db=$DB_FILE --db-pass 1234 \
     --url http://boo.co --user sully --password numb3r1fan
-./bin/rucksack list --db=$DB_FILE --db-pass 1234
+rucksack list --db=$DB_FILE --db-pass 1234
 
 header "List all accounts (with decrypted data and revealed passwords)"
 
