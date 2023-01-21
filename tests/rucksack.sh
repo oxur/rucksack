@@ -2,7 +2,7 @@
 
 . ./tests/common.sh || . ./common.sh
 
-rm -f ~/.cargo/bin/rucksack
+rm -f ~/.cargo/bin/rucksack ~/.cargo/registry/cache/github.com*/rucksack*
 
 echo
 header "Install rucksack"
