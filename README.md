@@ -321,6 +321,16 @@ rucksack list \
   --decrypt
 ```
 
+### Debugging
+
+If you need to see what version of the database file format your currently using:
+
+```shell
+rucksack show db-version
+```
+
+Note that this is not necessarily the version of rucksack you're running, rather it will correspond to the version of rucksack that was used when your secrets database was last updated.
+
 ## Related
 
 [Other projects](https://crates.io/keywords/password-manager?sort=downloads) on crates.io tagged as `#password-manager"` ...
