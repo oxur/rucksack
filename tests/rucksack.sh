@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This script is for integration tests of latest released version of rucksack.
+
 . ./tests/common.sh || . ./common.sh
 
 rm -f ~/.cargo/bin/rucksack ~/.cargo/registry/cache/github.com*/rucksack*

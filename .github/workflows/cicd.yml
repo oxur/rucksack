@@ -23,7 +23,7 @@ jobs:
     - name: Run tests
       run: make test
     - name: Run rucksack (locally)
-      run: ./tests/rucksack_local.sh
+      run: ./tests/rucksack_dev.sh
     - name: Install rucksack (crates.io)
       run: cargo install rucksack
     - name: Run rucksack

@@ -1,4 +1,4 @@
-export RUST_BACKTRACE=1
+export RUST_BACKTRACE=FULL
 TMP_DIR=/tmp/$(date +"%Y%m%d.%H%M%S")/rucksack
 DB_FILE=$TMP_DIR/data/secrets.db
 CFG_FILE=$TMP_DIR/config.toml

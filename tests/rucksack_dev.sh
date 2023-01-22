@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This script is for integration tests of unreleased versions of rucksack
+# that are still in-development.
+
 make build
 
 . ./tests/common.sh || . ./common.sh
