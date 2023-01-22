@@ -25,6 +25,7 @@ use crate::store::record::{DecryptedRecord, EncryptedRecord, Metadata};
 use crate::time;
 
 pub mod encrypted;
+pub mod old;
 pub mod versioned;
 
 #[derive(Clone, Default)]
@@ -68,7 +69,14 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
         enc_db.read()?;
         enc_db.decrypt()?;
         // Decode the decrypted data as a VersionedDB
-        let vsn_db = versioned::from_encoded(enc_db.decrypted())?;
+        match versioned::from_encoded(enc_db.decrypted()) {
+            Ok(vsn_db) => Ok(vsn_db),
+            Err(e) => {
+                log::info!("Given database appears to be non-versioned; attempting old format ...");
+                let old_db = ;
+                versioned::from_old(old_db)
+            }
+        }
         store_hash = vsn_db.hash();
         version = vsn_db.version();
         // Decode the hashmap
