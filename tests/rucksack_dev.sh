@@ -150,12 +150,21 @@ header "Filter accounts with 'boo' (decrypted data and revealed passwords)"
 #     --db "$DB_FILE" \
 #     --db-pass 1234
 
-header "Read an old database"
+header "Read an old database (v0.5.0)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
     --db ./tests/testing-data/secrets-v0.5.0.db \
-    --db-pass 1234
+    --db-pass 1234 \
+    --log-level trace
+
+header "Read an old database (v0.6.0)"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db ./tests/testing-data/secrets-v0.6.0.db \
+    --db-pass 1234 \
+    --log-level trace
 
 header "Debug: check the data directory"
 

@@ -4,8 +4,8 @@ use secrecy::{ExposeSecret, Secret, SecretString};
 
 use crate::store;
 use crate::store::db;
-use crate::store::record;
-use crate::store::record::DecryptedRecord;
+use crate::store::records;
+use crate::store::records::DecryptedRecord;
 
 pub fn setup_db(matches: &ArgMatches) -> Result<db::DB> {
     let db = matches.get_one::<String>("db");
@@ -122,15 +122,15 @@ pub fn reveal(pwd: SecretString) -> String {
     pwd.expose_secret().to_string()
 }
 
-pub fn account_kind(matches: &ArgMatches) -> record::Kind {
+pub fn account_kind(matches: &ArgMatches) -> records::Kind {
     let account_type = matches.get_one::<String>("type").map(|s| s.as_str());
     match account_type {
-        Some("account") => record::Kind::Account,
-        Some("creds") => record::Kind::Credential,
-        Some("credential") => record::Kind::Credential,
-        Some("password") => record::Kind::Password,
-        Some("") => record::DEFAULT_KIND,
+        Some("account") => records::Kind::Account,
+        Some("creds") => records::Kind::Credential,
+        Some("credential") => records::Kind::Credential,
+        Some("password") => records::Kind::Password,
+        Some("") => records::DEFAULT_KIND,
         Some(&_) => todo!(),
-        None => record::DEFAULT_KIND,
+        None => records::DEFAULT_KIND,
     }
 }
