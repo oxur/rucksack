@@ -142,11 +142,19 @@ header "Filter accounts with 'boo' (decrypted data and revealed passwords)"
 #     --db-pass 1234 \
 #     --url http://example.com \
 #     --user clammy --log-level trace
+# ./bin/rucksack list \
+#     --config-file "$CFG_FILE" \
+#     --db "$DB_FILE" \
+#     --db-pass 1234
+
+header "Read an old database"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
-    --db "$DB_FILE" \
+    --db ./tests/testing-data/secrets-v0.5.0.db \
     --db-pass 1234
+
+header "Debug: check the data directory"
 
 DIR=$(./bin/rucksack show data-dir --config-file "$CFG_FILE" --db "$DB_FILE")
 ls -l $(echo $DIR|xargs)
