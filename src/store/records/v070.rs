@@ -1,21 +1,13 @@
 use anyhow::Result;
 use bincode::{config, Decode, Encode};
-use secrecy::Zeroize;
 use serde::{Deserialize, Serialize};
 
-use super::crypto::{decrypt, encrypt};
+use crate::store::crypto::{decrypt, encrypt};
 
-// Structs and Enums
-
-#[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
-pub enum Kind {
-    #[default]
-    Account,
-    Credential,
-    Password,
-}
-
-pub const DEFAULT_KIND: Kind = Kind::Password;
+use super::v020::Creds;
+use super::v030;
+use super::v060;
+use super::v060::Kind;
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub struct Metadata {
@@ -30,17 +22,18 @@ pub struct Metadata {
     pub access_count: u64,
 }
 
-#[derive(Clone, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
-pub struct Creds {
-    pub user: String,
-    pub password: String,
-}
-
-#[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
-pub struct EncryptedRecord {
-    pub key: String,
-    pub value: Vec<u8>,
-    pub metadata: Metadata,
+pub fn migrate_metadata_from_v030(md: v030::Metadata) -> Metadata {
+    Metadata {
+        kind: v060::migrate_kind_from_v020(md.kind),
+        url: md.url,
+        created: md.created,
+        imported: md.imported,
+        updated: md.updated,
+        password_changed: md.password_changed,
+        last_used: md.last_used,
+        synced: String::new(),
+        access_count: md.access_count,
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
@@ -49,29 +42,9 @@ pub struct DecryptedRecord {
     pub metadata: Metadata,
 }
 
-// Traits and methods
-
-impl Zeroize for Creds {
-    fn zeroize(&mut self) {
-        self.password.zeroize();
-    }
-}
-
-impl std::fmt::Display for Creds {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Creds{{user: {}, password: *****}}", self.user)
-    }
-}
-
-impl std::fmt::Debug for Creds {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Creds{{user: {}, password: *****}}", self.user)
-    }
-}
-
 impl DecryptedRecord {
     pub fn key(&self) -> String {
-        key(&self.creds.user, &self.metadata.url)
+        format!("{}:{}", self.creds.user, self.metadata.url)
     }
 
     pub fn metadata(&self) -> Metadata {
@@ -98,6 +71,13 @@ impl DecryptedRecord {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
+pub struct EncryptedRecord {
+    pub key: String,
+    pub value: Vec<u8>,
+    pub metadata: Metadata,
+}
+
 impl EncryptedRecord {
     pub fn key(&self) -> String {
         self.key.clone()
@@ -118,14 +98,6 @@ impl EncryptedRecord {
         })
     }
 }
-
-// Utility functions
-
-pub fn key(user: &str, url: &str) -> String {
-    format!("{}:{}", user, url)
-}
-
-// Tests
 
 #[cfg(test)]
 mod tests {

@@ -1,6 +1,6 @@
 use crate::time;
 
-use super::record::{Creds, DecryptedRecord, Kind, Metadata};
+use super::records::{Creds, DecryptedRecord, Kind, Metadata};
 
 pub fn store_pwd() -> String {
     "abc123".to_string()

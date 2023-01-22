@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::store::record::Kind;
+use crate::store::records::Kind;
 use crate::{store, time};
 
 // This started as the Firefox login data struct, but it has more fields than

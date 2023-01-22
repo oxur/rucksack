@@ -21,7 +21,7 @@ use anyhow::{anyhow, Error, Result};
 use bincode::config;
 use dashmap::DashMap;
 
-use crate::store::record::{DecryptedRecord, EncryptedRecord, Metadata};
+use crate::store::records::{DecryptedRecord, EncryptedRecord, Metadata};
 use crate::time;
 
 pub mod encrypted;
@@ -63,6 +63,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
     let mut hash_map: DashMap<String, EncryptedRecord> = DashMap::new();
     let mut store_hash = 0;
     let mut version = env!("CARGO_PKG_VERSION").to_string();
+    let vsn_db: versioned::VersionedDB;
     if std::path::Path::new(&path).exists() {
         // Decrypt the stored data
         let mut enc_db = encrypted::from_file(path.clone(), store_pwd.clone(), salt.clone());
@@ -70,11 +71,14 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
         enc_db.decrypt()?;
         // Decode the decrypted data as a VersionedDB
         match versioned::from_encoded(enc_db.decrypted()) {
-            Ok(vsn_db) => Ok(vsn_db),
-            Err(e) => {
+            Ok(db) => {
+                vsn_db = db;
+            }
+            Err(_) => {
                 log::info!("Given database appears to be non-versioned; attempting old format ...");
-                let old_db = ;
-                versioned::from_old(old_db)
+                // let old_db = old::from_();
+                log::trace!("bytes: {:?}", enc_db.decrypted());
+                vsn_db = versioned::from_bytes(enc_db.decrypted());
             }
         }
         store_hash = vsn_db.hash();
@@ -102,7 +106,7 @@ fn hashmap_from_encoded(bytes: Vec<u8>) -> Result<DashMap<String, EncryptedRecor
             Ok(hashmap)
         }
         Err(e) => {
-            let msg = format!("couldn't deserialise bincoded database bytes: {:?}", e);
+            let msg = format!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
             log::error!("{}", msg);
             Err(anyhow!(msg))
         }
