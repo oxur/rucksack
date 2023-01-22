@@ -15,7 +15,7 @@
 * [x] Encrypted local storage (0.2.0)
 * [x] Concurrent hashmap for use by daemons (0.2.0)
 * [x] List secrets, both encrypted and decrypted (0.3.0)
-* [x] Supports Firefox and Chrome CSV formats (for importing, 0.3.0 and exporting, 0.5.0)
+* [x] Supports Firefox and Chrome CSV formats (importing, 0.3.0; exporting, 0.5.0)
 * [x] Searching secrets via filtering (0.4.0)
 * [x] Reports on password quality, duplicates, etc. (0.5.0)
 * [x] Add new records to the DB (and support updates) via CLI subcommands (0.6.0)
