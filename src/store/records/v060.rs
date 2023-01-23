@@ -16,6 +16,5 @@ pub const DEFAULT_KIND: Kind = Kind::Password;
 pub fn migrate_kind_from_v020(k: v020::Kind) -> Kind {
     match k {
         v020::Kind::Password => Kind::Password,
-        _ => Kind::Account,
     }
 }
