@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use bincode::{config, Decode, Encode};
 use serde::{Deserialize, Serialize};
 
@@ -9,6 +9,18 @@ pub use super::v060::{Creds, Kind, DEFAULT_KIND};
 
 pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
 
+pub fn migrate_hashmap_from_v060(hm_v060: v060::HashMap) -> HashMap {
+    let hm: HashMap = dashmap::DashMap::new();
+    for i in hm_v060.iter() {
+        let r = i.value();
+        let _ = hm.insert(
+            i.key().to_string(),
+            migrate_encrypted_record_from_v060(r.clone()),
+        );
+    }
+    hm
+}
+
 pub fn decode_hashmap(bytes: Vec<u8>) -> Result<HashMap> {
     let hashmap: HashMap;
     match bincode::serde::decode_from_slice(bytes.as_ref(), config::standard()) {
@@ -17,9 +29,10 @@ pub fn decode_hashmap(bytes: Vec<u8>) -> Result<HashMap> {
             Ok(hashmap)
         }
         Err(e) => {
-            let msg = format!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
-            log::error!("{}", msg);
-            Err(anyhow!(msg))
+            log::info!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
+            log::info!("Attempting to decode hashmap from previous version (0.6.0)");
+            let hm = v060::decode_hashmap(bytes)?;
+            Ok(migrate_hashmap_from_v060(hm))
         }
     }
 }
@@ -98,6 +111,10 @@ impl EncryptedRecord {
         self.key.clone()
     }
 
+    pub fn value(&self) -> Vec<u8> {
+        self.value.clone()
+    }
+
     pub fn metadata(&self) -> Metadata {
         self.metadata.clone()
     }
@@ -111,6 +128,14 @@ impl EncryptedRecord {
             creds: decoded,
             metadata: self.metadata(),
         })
+    }
+}
+
+pub fn migrate_encrypted_record_from_v060(er: v060::EncryptedRecord) -> EncryptedRecord {
+    EncryptedRecord {
+        key: er.key(),
+        value: er.value(),
+        metadata: migrate_metadata_from_v060(er.metadata()),
     }
 }
 
