@@ -21,6 +21,7 @@ use anyhow::{anyhow, Error, Result};
 use bincode::config;
 use dashmap::DashMap;
 
+use crate::store::records;
 use crate::store::records::{DecryptedRecord, EncryptedRecord, Metadata};
 use crate::time;
 
@@ -34,7 +35,7 @@ pub struct DB {
     store_hash: u32,
     store_pwd: String,
     salt: String,
-    hash_map: DashMap<String, EncryptedRecord>,
+    hash_map: records::HashMap,
     enabled: bool,
     version: String,
 }
@@ -60,7 +61,7 @@ pub fn new() -> DB {
 }
 
 pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
-    let mut hash_map: DashMap<String, EncryptedRecord> = DashMap::new();
+    let mut hash_map: records::HashMap = DashMap::new();
     let mut store_hash = 0;
     let mut version = env!("CARGO_PKG_VERSION").to_string();
     let vsn_db: versioned::VersionedDB;
@@ -84,7 +85,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
         store_hash = vsn_db.hash();
         version = vsn_db.version();
         // Decode the hashmap
-        hash_map = hashmap_from_encoded(vsn_db.bytes())?;
+        hash_map = decode_hashmap(vsn_db.bytes())?;
     };
     log::debug!("Setting database path: {}", path);
     Ok(DB {
@@ -98,17 +99,16 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
     })
 }
 
-fn hashmap_from_encoded(bytes: Vec<u8>) -> Result<DashMap<String, EncryptedRecord>> {
-    let hashmap: DashMap<String, EncryptedRecord>;
+fn decode_hashmap(bytes: Vec<u8>) -> Result<records::HashMap> {
+    let hashmap: records::HashMap;
     match bincode::serde::decode_from_slice(bytes.as_ref(), config::standard()) {
         Ok((result, _len)) => {
             hashmap = result;
             Ok(hashmap)
         }
         Err(e) => {
-            let msg = format!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
-            log::error!("{}", msg);
-            Err(anyhow!(msg))
+            log::info!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
+            records::decode_hashmap(bytes)
         }
     }
 }
@@ -184,7 +184,7 @@ impl DB {
         }
     }
 
-    pub fn hash_map(&self) -> DashMap<String, EncryptedRecord> {
+    pub fn hash_map(&self) -> records::HashMap {
         self.hash_map.clone()
     }
 

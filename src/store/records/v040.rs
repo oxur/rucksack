@@ -70,6 +70,10 @@ impl EncryptedRecord {
         self.key.clone()
     }
 
+    pub fn value(&self) -> Vec<u8> {
+        self.value.clone()
+    }
+
     pub fn metadata(&self) -> Metadata {
         self.metadata.clone()
     }

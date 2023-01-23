@@ -10,15 +10,12 @@
 // * performed a hash CRC on the decrypted bytes
 // * bincode-decoded the decrypted bytes to a hashmap (DashMap)
 //
-pub struct OldDB {
-    bytes: Vec<u8>,
-}
-
 // For the new database format, the point at which reading an older format would
 // fail would be right after the decryption. The hash is computed earlier in the
-// newer version, so the only thing the OldDB needs to do is bincode-decode
-impl OldDB {
-    pub fn bytes(&self) -> Vec<u8> {
-        self.bytes.clone()
-    }
-}
+// newer version, so the only part of the flow from above we need to do is bincode-
+// decode.
+//
+// However, that's only part of the story: we need to also determine what version
+// of the records are being used, and bincode-decode _that_. This involves the
+// following steps:
+// * init a hashmap var for the next version of the records to attempt
