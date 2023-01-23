@@ -1,7 +1,8 @@
 use bincode::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 
-use super::v020;
+use super::v050;
+pub use super::v050::{Creds, DecryptedRecord, EncryptedRecord, Metadata};
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub enum Kind {
@@ -13,8 +14,8 @@ pub enum Kind {
 
 pub const DEFAULT_KIND: Kind = Kind::Password;
 
-pub fn migrate_kind_from_v020(k: v020::Kind) -> Kind {
+pub fn migrate_kind_from_v050(k: v050::Kind) -> Kind {
     match k {
-        v020::Kind::Password => Kind::Password,
+        v050::Kind::Password => Kind::Password,
     }
 }

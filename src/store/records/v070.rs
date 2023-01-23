@@ -4,10 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::store::crypto::{decrypt, encrypt};
 
-use super::v020::Creds;
-use super::v030;
-use super::v060;
-use super::v060::Kind;
+pub use super::v060;
+pub use super::v060::{Creds, Kind};
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub struct Metadata {
@@ -22,9 +20,9 @@ pub struct Metadata {
     pub access_count: u64,
 }
 
-pub fn migrate_metadata_from_v030(md: v030::Metadata) -> Metadata {
+pub fn migrate_metadata_from_v060(md: v060::Metadata) -> Metadata {
     Metadata {
-        kind: v060::migrate_kind_from_v020(md.kind),
+        kind: v060::migrate_kind_from_v050(md.kind),
         url: md.url,
         created: md.created,
         imported: md.imported,

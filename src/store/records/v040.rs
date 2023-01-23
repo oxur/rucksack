@@ -4,8 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::store::crypto::{decrypt, encrypt};
 
-use super::v020::Creds;
-use super::v030::Metadata;
+pub use super::v030::{Creds, Kind, Metadata};
 
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
 pub struct DecryptedRecord {

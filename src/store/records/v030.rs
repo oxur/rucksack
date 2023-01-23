@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::store::crypto::{decrypt, encrypt};
 
 use super::v020;
-use super::v020::{Creds, Kind};
+pub use super::v020::{Creds, Kind};
 
 #[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub struct Metadata {
