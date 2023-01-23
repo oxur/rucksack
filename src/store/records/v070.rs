@@ -1,11 +1,28 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use bincode::{config, Decode, Encode};
 use serde::{Deserialize, Serialize};
 
 use crate::store::crypto::{decrypt, encrypt};
 
-pub use super::v060;
-pub use super::v060::{Creds, Kind};
+use super::v060;
+pub use super::v060::{Creds, Kind, DEFAULT_KIND};
+
+pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
+
+pub fn decode_hashmap(bytes: Vec<u8>) -> Result<HashMap> {
+    let hashmap: HashMap;
+    match bincode::serde::decode_from_slice(bytes.as_ref(), config::standard()) {
+        Ok((result, _len)) => {
+            hashmap = result;
+            Ok(hashmap)
+        }
+        Err(e) => {
+            let msg = format!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
+            log::error!("{}", msg);
+            Err(anyhow!(msg))
+        }
+    }
+}
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub struct Metadata {
