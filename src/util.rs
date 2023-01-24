@@ -54,3 +54,14 @@ pub fn default_config_file() -> String {
     path.set_extension("toml");
     path.to_str().unwrap().to_string()
 }
+
+pub type BincodeConfig = bincode::config::Configuration<
+    bincode::config::LittleEndian,
+    bincode::config::Fixint,
+    bincode::config::WriteFixedArrayLength,
+    bincode::config::NoLimit,
+>;
+
+pub fn bincode_cfg() -> BincodeConfig {
+    bincode::config::legacy()
+}
