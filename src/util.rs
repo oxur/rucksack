@@ -3,6 +3,7 @@ use std::{fs, path};
 
 use anyhow::{anyhow, Result};
 use rand::Rng;
+use versions::Versioning;
 
 const SPECIALS: &[u8] = b"!@#%&*?=+:";
 
@@ -82,4 +83,8 @@ pub fn bincode_cfg() -> bincode::config::Configuration<
     bincode::config::NoLimit,
 > {
     bincode::config::legacy()
+}
+
+pub fn version() -> Versioning {
+    versions::Versioning::new(env!("CARGO_PKG_VERSION")).unwrap()
 }

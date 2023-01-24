@@ -41,7 +41,7 @@ impl App {
         util::db_file()
     }
 
-    pub fn db_version(&self) -> String {
+    pub fn db_version(&self) -> versions::Versioning {
         self.db.version()
     }
 }

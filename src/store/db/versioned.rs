@@ -54,8 +54,8 @@ impl VersionedDB {
         crc32fast::hash(self.bytes.as_ref())
     }
 
-    pub fn version(&self) -> String {
-        self.version.clone()
+    pub fn version(&self) -> versions::Versioning {
+        versions::Versioning::new(self.version.as_str()).unwrap()
     }
 }
 
@@ -66,6 +66,12 @@ mod tests {
     #[test]
     fn db_bytes() {
         let tmp_db = versioned::new(vec![2, 4, 16], "1.2.3".to_string());
+        assert!(tmp_db.version() > versions::Versioning::new("0.3.0").unwrap());
+        assert_eq!(
+            tmp_db.version(),
+            versions::Versioning::new("1.2.3").unwrap()
+        );
+        assert!(tmp_db.version() < versions::Versioning::new("2.3.0").unwrap());
         let encoded = tmp_db.serialise().unwrap();
         let expected = vec![
             3, 0, 0, 0, 0, 0, 0, 0, 2, 4, 16, 5, 0, 0, 0, 0, 0, 0, 0, 49, 46, 50, 46, 51,
