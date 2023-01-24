@@ -18,12 +18,12 @@
 use std::{fmt, fs};
 
 use anyhow::{anyhow, Error, Result};
-use bincode::config;
 use dashmap::DashMap;
 
 use crate::store::records;
 use crate::store::records::{DecryptedRecord, EncryptedRecord, Metadata};
 use crate::time;
+use crate::util;
 
 pub mod encrypted;
 pub mod old;
@@ -101,7 +101,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
 
 fn decode_hashmap(bytes: Vec<u8>) -> Result<records::HashMap> {
     let hashmap: records::HashMap;
-    match bincode::serde::decode_from_slice(bytes.as_ref(), config::standard()) {
+    match bincode::serde::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
             hashmap = result;
             Ok(hashmap)
@@ -156,7 +156,7 @@ impl DB {
     }
 
     fn serialise(&self) -> Result<Vec<u8>> {
-        match bincode::serde::encode_to_vec(self.hash_map.clone(), config::standard()) {
+        match bincode::serde::encode_to_vec(self.hash_map.clone(), util::bincode_cfg()) {
             Ok(bytes) => Ok(bytes),
             Err(e) => {
                 let msg = format!("couldn't encode DB hashmap ({})", e);

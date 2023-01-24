@@ -1,6 +1,8 @@
 use anyhow::Result;
-use bincode::{config, Decode, Encode};
+use bincode::{Decode, Encode};
 use serde::{Deserialize, Serialize};
+
+use crate::util;
 
 use super::v050;
 pub use super::v050::{Creds, DecryptedRecord, EncryptedRecord, Metadata};
@@ -21,7 +23,7 @@ pub fn migrate_hashmap_from_v050(hm_v050: v050::HashMap) -> HashMap {
 
 pub fn decode_hashmap(bytes: Vec<u8>) -> Result<HashMap> {
     let hashmap: HashMap;
-    match bincode::serde::decode_from_slice(bytes.as_ref(), config::standard()) {
+    match bincode::serde::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
             hashmap = result;
             Ok(hashmap)
