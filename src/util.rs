@@ -74,3 +74,12 @@ pub fn dir_parent(dir: String) -> String {
     parent.pop();
     parent.join(std::path::MAIN_SEPARATOR.to_string().as_str())
 }
+
+pub fn bincode_cfg() -> bincode::config::Configuration<
+    bincode::config::LittleEndian,
+    bincode::config::Fixint,
+    bincode::config::WriteFixedArrayLength,
+    bincode::config::NoLimit,
+> {
+    bincode::config::legacy()
+}

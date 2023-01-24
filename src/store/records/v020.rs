@@ -1,15 +1,16 @@
 use anyhow::{anyhow, Result};
-use bincode::{config, Decode, Encode};
+use bincode::{Decode, Encode};
 use secrecy::Zeroize;
 use serde::{Deserialize, Serialize};
 
 use crate::store::crypto::{decrypt, encrypt};
+use crate::util;
 
 pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
 
 pub fn decode_hashmap(bytes: Vec<u8>) -> Result<HashMap> {
     let hashmap: HashMap;
-    match bincode::serde::decode_from_slice(bytes.as_ref(), config::standard()) {
+    match bincode::serde::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
             hashmap = result;
             Ok(hashmap)
@@ -81,7 +82,7 @@ impl std::fmt::Debug for Creds {
 
 impl DecryptedRecord {
     pub fn encrypt(&self, prime_pwd: String) -> EncryptedRecord {
-        let encoded = bincode::encode_to_vec(&self.value, config::standard()).unwrap();
+        let encoded = bincode::encode_to_vec(&self.value, util::bincode_cfg()).unwrap();
         let encrypted = encrypt(encoded, prime_pwd, self.metadata.updated.clone());
 
         EncryptedRecord {
@@ -97,7 +98,7 @@ impl EncryptedRecord {
         let decrypted =
             decrypt(self.value.clone(), prime_pwd, self.metadata.updated.clone()).unwrap();
         let (decoded, _len) =
-            bincode::decode_from_slice(&decrypted[..], config::standard()).unwrap();
+            bincode::decode_from_slice(&decrypted[..], util::bincode_cfg()).unwrap();
 
         DecryptedRecord {
             key: self.key.clone(),

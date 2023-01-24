@@ -1,8 +1,9 @@
 use anyhow::Result;
-use bincode::{config, Decode, Encode};
+use bincode::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 
 use crate::store::crypto::{decrypt, encrypt};
+use crate::util;
 
 use super::v060;
 pub use super::v060::{Creds, Kind, DEFAULT_KIND};
@@ -23,7 +24,7 @@ pub fn migrate_hashmap_from_v060(hm_v060: v060::HashMap) -> HashMap {
 
 pub fn decode_hashmap(bytes: Vec<u8>) -> Result<HashMap> {
     let hashmap: HashMap;
-    match bincode::serde::decode_from_slice(bytes.as_ref(), config::standard()) {
+    match bincode::serde::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
             hashmap = result;
             Ok(hashmap)
@@ -88,7 +89,7 @@ impl DecryptedRecord {
     }
 
     pub fn encrypt(&self, prime_pwd: String, salt: String) -> EncryptedRecord {
-        let encoded = bincode::encode_to_vec(&self.creds, config::standard()).unwrap();
+        let encoded = bincode::encode_to_vec(&self.creds, util::bincode_cfg()).unwrap();
         let encrypted = encrypt(encoded, prime_pwd, salt);
 
         EncryptedRecord {
@@ -122,7 +123,7 @@ impl EncryptedRecord {
     pub fn decrypt(&self, prime_pwd: String, salt: String) -> Result<DecryptedRecord> {
         let decrypted = decrypt(self.value.clone(), prime_pwd, salt)?;
         let (decoded, _len) =
-            bincode::decode_from_slice(&decrypted[..], config::standard()).unwrap();
+            bincode::decode_from_slice(&decrypted[..], util::bincode_cfg()).unwrap();
 
         Ok(DecryptedRecord {
             creds: decoded,
