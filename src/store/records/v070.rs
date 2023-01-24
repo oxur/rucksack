@@ -23,11 +23,15 @@ pub fn migrate_hashmap_from_v060(hm_v060: v060::HashMap) -> HashMap {
 }
 
 pub fn decode_hashmap(bytes: Vec<u8>) -> Result<HashMap> {
-    let hashmap: HashMap;
+    let hm: HashMap = dashmap::DashMap::new();
+    let sorted_vec: Vec<(String, EncryptedRecord)>;
     match bincode::serde::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
-            hashmap = result;
-            Ok(hashmap)
+            sorted_vec = result;
+            for (key, val) in sorted_vec {
+                if hm.insert(key.clone(), val).is_some() {}
+            }
+            Ok(hm)
         }
         Err(e) => {
             log::info!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
@@ -159,7 +163,7 @@ mod tests {
             "Creds{user: alice@site.com, password: *****}"
         );
         let epr = dpr.encrypt(pwd.clone(), salt.clone());
-        assert_eq!(40, epr.value.len());
+        assert_eq!(54, epr.value.len());
         let re_dpr = epr.decrypt(pwd, salt).unwrap();
         assert_eq!(re_dpr.creds.password, "4 s3kr1t");
     }
