@@ -1,7 +1,6 @@
 use std::fs;
 
 use anyhow::{Error, Result};
-use bincode::config;
 use dashmap::DashMap;
 
 use crate::{time, util};
@@ -15,7 +14,7 @@ pub struct DB {
     store_hash: u32,
     store_pwd: String,
     salt: String,
-    bincode_cfg: bincode::config::Configuration,
+    bincode_cfg: util::BincodeConfig,
     hash_map: DashMap<String, EncryptedRecord>,
 }
 
@@ -27,7 +26,7 @@ pub fn init(path: String, store_pwd: String, updated: String) -> Result<()> {
 pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
     let mut hash_map: DashMap<String, EncryptedRecord> = DashMap::new();
     let mut store_hash = 0;
-    let bincode_cfg = config::standard();
+    let bincode_cfg = util::bincode_cfg();
     if std::path::Path::new(&path).exists() {
         let mut _len = 0;
         let encrypted = util::read_file(path.clone())?;

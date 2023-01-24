@@ -41,3 +41,14 @@ pub fn write_file(data: Vec<u8>, path: String) -> Result<()> {
         Err(e) => Err(anyhow!(e)),
     }
 }
+
+pub type BincodeConfig = bincode::config::Configuration<
+    bincode::config::LittleEndian,
+    bincode::config::Fixint,
+    bincode::config::WriteFixedArrayLength,
+    bincode::config::NoLimit,
+>;
+
+pub fn bincode_cfg() -> BincodeConfig {
+    bincode::config::legacy()
+}
