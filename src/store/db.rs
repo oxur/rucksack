@@ -1,6 +1,6 @@
 use std::{fmt, fs};
 
-use anyhow::{Error, Result};
+use anyhow::{anyhow, Error, Result};
 use dashmap::DashMap;
 
 use crate::{time, util};
@@ -48,7 +48,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
         let encrypted = util::read_file(path.clone())?;
         let decrypted = decrypt(encrypted, store_pwd.clone(), salt.clone())?;
         store_hash = crc32fast::hash(decrypted.as_ref());
-        (hash_map, _len) = bincode::serde::decode_from_slice(decrypted.as_ref(), bincode_cfg)?;
+        hash_map = decode_hashmap(decrypted)?;
     }
     let enabled = true;
     Ok(DB {
@@ -83,10 +83,22 @@ impl DB {
         self.hash_map.clone()
     }
 
+    pub fn encode_hashmap(&self) -> Result<Vec<u8>> {
+        let mut data: Vec<(String, EncryptedRecord)> = Vec::new();
+        for i in self.iter() {
+            data.push((i.key().clone(), i.value().clone()))
+        }
+        data.sort_by_key(|k| k.0.clone());
+        match bincode::serde::encode_to_vec(data, self.bincode_cfg) {
+            Ok(encoded) => Ok(encoded),
+            Err(e) => Err(anyhow!("Couldn't encode hashmap ({:})", e)),
+        }
+    }
+
     pub fn close(&self) -> Result<()> {
         let path_name = &self.path();
         let path = std::path::Path::new(path_name);
-        let encoded = bincode::serde::encode_to_vec(self.hash_map(), self.bincode_cfg).unwrap();
+        let encoded = self.encode_hashmap()?;
         let store_hash = crc32fast::hash(encoded.as_ref());
         if store_hash == self.store_hash {
             log::debug!("No change in store hash; not persisting ...");
@@ -165,6 +177,19 @@ impl DB {
         }
         Ok(decrypted)
     }
+}
+
+// Support functions
+
+// Note that this operation is the inverse to DB.encode_hashmap.
+fn decode_hashmap(decrypted: Vec<u8>) -> Result<DashMap<String, EncryptedRecord>> {
+    let hm: DashMap<String, EncryptedRecord> = DashMap::new();
+    let (sorted_vec, _): (Vec<(String, EncryptedRecord)>, usize) =
+        bincode::serde::decode_from_slice(decrypted.as_ref(), util::bincode_cfg())?;
+    for (key, val) in sorted_vec {
+        if hm.insert(key.clone(), val).is_some() {}
+    }
+    Ok(hm)
 }
 
 #[cfg(test)]
