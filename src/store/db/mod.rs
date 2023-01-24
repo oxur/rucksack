@@ -39,7 +39,7 @@ pub struct DB {
     salt: String,
     hash_map: records::HashMap,
     enabled: bool,
-    version: String,
+    version: versions::Versioning,
 }
 
 impl fmt::Debug for DB {
@@ -65,7 +65,7 @@ pub fn new() -> DB {
 pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
     let mut hash_map: records::HashMap = DashMap::new();
     let mut store_hash = 0;
-    let mut version = env!("CARGO_PKG_VERSION").to_string();
+    let mut version = util::version();
     let vsn_db: versioned::VersionedDB;
     if std::path::Path::new(&path).exists() {
         // Decrypt the stored data
@@ -249,7 +249,7 @@ impl DB {
         self.enabled
     }
 
-    pub fn version(&self) -> String {
+    pub fn version(&self) -> versions::Versioning {
         self.version.clone()
     }
 }
@@ -273,6 +273,7 @@ mod tests {
             .unwrap()
             .to_string();
         let tmp_db = db::open(path.clone(), pwd.clone(), salt.clone()).unwrap();
+        assert!(tmp_db.version() > versions::Versioning::new("0.3.0").unwrap());
         let dpr = testing_data::plaintext_record();
         tmp_db.insert(dpr.clone());
         let re_dpr = tmp_db.get(dpr.key()).unwrap();

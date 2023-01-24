@@ -8,7 +8,6 @@ use rucksack::cli::command::{add, export, gen, import, list, rm, set, setup_db, 
 use rucksack::{config, util};
 
 const NAME: &str = env!("CARGO_PKG_NAME");
-const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
     match matches.subcommand() {
@@ -69,7 +68,7 @@ fn main() -> Result<()> {
     // any config or subcommand operations.
     if let Some(is_version) = matches.get_one::<bool>("version") {
         if *is_version {
-            return util::display(VERSION);
+            return util::display(util::version().to_string().as_str());
         }
     } else if let Some(shell) = matches.get_one::<clap_complete::Shell>("completions") {
         clap_complete::generate(*shell, &mut rucksack, NAME, &mut io::stdout());
