@@ -67,7 +67,9 @@ mod tests {
     fn db_bytes() {
         let tmp_db = versioned::new(vec![2, 4, 16], "1.2.3".to_string());
         let encoded = tmp_db.serialise().unwrap();
-        let expected = vec![3, 2, 4, 16, 5, 49, 46, 50, 46, 51];
+        let expected = vec![
+            3, 0, 0, 0, 0, 0, 0, 0, 2, 4, 16, 5, 0, 0, 0, 0, 0, 0, 0, 49, 46, 50, 46, 51,
+        ];
         assert_eq!(encoded, expected);
     }
 }

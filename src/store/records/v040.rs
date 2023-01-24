@@ -109,7 +109,7 @@ mod tests {
             "Creds{user: alice@site.com, password: *****}"
         );
         let epr = dpr.encrypt(pwd.clone(), salt.clone());
-        assert_eq!(40, epr.value.len());
+        assert_eq!(54, epr.value.len());
         let re_dpr = epr.decrypt(pwd, salt).unwrap();
         assert_eq!(re_dpr.creds.password, "4 s3kr1t");
     }

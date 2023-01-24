@@ -1,7 +1,8 @@
 // Database encryption <-> decryption flow:
 //
 // When a rucksack database is serialised, the following happens:
-// * Its hashmap (DashMap) is bincoded to bytes
+// * Its hashmap (DashMap) is converted to a sorted vec (for stable serialisation)
+// * the sorted vec is bincoded to bytes
 // * The bytes are stored on a field of the VersionedDB struct
 // * The VersionDB struct is bincoded to bytes
 // * The bytes are stored on a field of the EncryptedDB struct
@@ -12,7 +13,8 @@
 // * The file is read into memory as bytes and stored on a field of the EncryptedDB struct
 // * The encrypted bytes are decrypted
 // * The decrypted bytes are then bincode-decoded (deserialised) to a VersionedDB struct
-// * The bytes of the VersionDB are bincode-decoded to a hashmap (DashMap)
+// * The bytes of the VersionDB are bincode-decoded to a vector of (string, record) tuples
+// * The sorted vector of tuples is converted to a hashmap (DashMap)
 // * The hashmap is stored as a field on the DB struct
 //
 use std::{fmt, fs};
@@ -77,7 +79,6 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
             }
             Err(_) => {
                 log::info!("Given database appears to be non-versioned; attempting old format ...");
-                // let old_db = old::from_();
                 log::trace!("bytes: {:?}", enc_db.decrypted());
                 vsn_db = versioned::from_bytes(enc_db.decrypted());
             }
@@ -100,11 +101,15 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
 }
 
 fn decode_hashmap(bytes: Vec<u8>) -> Result<records::HashMap> {
-    let hashmap: records::HashMap;
+    let hm: records::HashMap = dashmap::DashMap::new();
+    let sorted_vec: Vec<(String, EncryptedRecord)>;
     match bincode::serde::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
-            hashmap = result;
-            Ok(hashmap)
+            sorted_vec = result;
+            for (key, val) in sorted_vec {
+                if hm.insert(key.clone(), val).is_some() {}
+            }
+            Ok(hm)
         }
         Err(e) => {
             log::info!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
@@ -156,10 +161,15 @@ impl DB {
     }
 
     fn serialise(&self) -> Result<Vec<u8>> {
-        match bincode::serde::encode_to_vec(self.hash_map.clone(), util::bincode_cfg()) {
-            Ok(bytes) => Ok(bytes),
+        let mut data: Vec<(String, EncryptedRecord)> = Vec::new();
+        for i in self.iter() {
+            data.push((i.key().clone(), i.value().clone()))
+        }
+        data.sort_by_key(|k| k.0.clone());
+        match bincode::serde::encode_to_vec(data, util::bincode_cfg()) {
+            Ok(encoded) => Ok(encoded),
             Err(e) => {
-                let msg = format!("couldn't encode DB hashmap ({})", e);
+                let msg = format!("couldn't encode DB hashmap ({:?})", e);
                 log::error!("{}", msg);
                 Err(anyhow!("{}", msg))
             }

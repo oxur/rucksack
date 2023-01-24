@@ -44,7 +44,7 @@ impl EncryptedDB {
     pub fn decrypt(&mut self) -> Result<()> {
         match crypto::decrypt(self.bytes.clone(), self.pwd(), self.salt()) {
             Ok(bytes) => {
-                log::debug!("decrypted bytes: {:?}", bytes);
+                log::trace!("decrypted bytes: {:?}", bytes);
                 self.decrypted = Secret::new(bytes);
                 Ok(())
             }
