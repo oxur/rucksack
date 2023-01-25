@@ -4,7 +4,7 @@ BIN = target/release/$(PROJ)
 
 default: all
 
-all: deps build lint test
+all: clean deps build lint test
 
 auth:
 	@echo "Copy and paste the following in the terminal where you"
@@ -27,6 +27,10 @@ lint:
 test:
 	@RUST_BACKTRACE=1 cargo test
 
+integration:
+	@./tests/rucksack_dev.sh
+	@./tests/rucksack.sh
+
 deps:
 	@cargo update
 
@@ -38,3 +42,12 @@ tag:
 	@git push --tags
 
 release: build lint test tag publish
+
+clean:
+	@cargo clean
+	@rm $(BIN_DIR)/$(PROJ)
+
+clean-all: clean
+	@rm .crates.toml .crates2.json Cargo.lock
+
+fresh-all: clean-all all
