@@ -27,7 +27,7 @@ pub fn from_encoded(bytes: Vec<u8>) -> Result<VersionedDB> {
 }
 
 pub fn from_bytes(bytes: Vec<u8>) -> VersionedDB {
-    new(bytes, env!("CARGO_PKG_VERSION").to_string())
+    new(bytes, util::version().to_string())
 }
 
 pub fn new(bytes: Vec<u8>, version: String) -> VersionedDB {
@@ -37,6 +37,10 @@ pub fn new(bytes: Vec<u8>, version: String) -> VersionedDB {
 impl VersionedDB {
     pub fn bytes(&self) -> Vec<u8> {
         self.bytes.clone()
+    }
+
+    pub fn hash(&self) -> u32 {
+        crc32fast::hash(self.bytes.as_ref())
     }
 
     pub fn serialise(&self) -> Result<Vec<u8>> {
@@ -50,10 +54,6 @@ impl VersionedDB {
         }
     }
 
-    pub fn hash(&self) -> u32 {
-        crc32fast::hash(self.bytes.as_ref())
-    }
-
     pub fn version(&self) -> versions::Versioning {
         versions::Versioning::new(self.version.as_str()).unwrap()
     }
@@ -65,14 +65,15 @@ mod tests {
 
     #[test]
     fn db_bytes() {
-        let tmp_db = versioned::new(vec![2, 4, 16], "1.2.3".to_string());
-        assert!(tmp_db.version() > versions::Versioning::new("0.3.0").unwrap());
+        let vsn_db = versioned::new(vec![2, 4, 16], "1.2.3".to_string());
+        assert!(vsn_db.version() > versions::Versioning::new("0.3.0").unwrap());
+        assert_eq!(vsn_db.hash(), 2233391132);
         assert_eq!(
-            tmp_db.version(),
+            vsn_db.version(),
             versions::Versioning::new("1.2.3").unwrap()
         );
-        assert!(tmp_db.version() < versions::Versioning::new("2.3.0").unwrap());
-        let encoded = tmp_db.serialise().unwrap();
+        assert!(vsn_db.version() < versions::Versioning::new("2.3.0").unwrap());
+        let encoded = vsn_db.serialise().unwrap();
         let expected = vec![
             3, 0, 0, 0, 0, 0, 0, 0, 2, 4, 16, 5, 0, 0, 0, 0, 0, 0, 0, 49, 46, 50, 46, 51,
         ];
