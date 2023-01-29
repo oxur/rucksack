@@ -17,7 +17,7 @@
 // * The sorted vector of tuples is converted to a hashmap (DashMap)
 // * The hashmap is stored as a field on the DB struct
 //
-use std::{fmt, fs};
+use std::fmt;
 
 use anyhow::{anyhow, Error, Result};
 use dashmap::DashMap;
@@ -63,29 +63,30 @@ pub fn new() -> DB {
 }
 
 pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
+    log::debug!("Opening database ...");
     let mut hash_map: records::HashMap = DashMap::new();
     let mut store_hash = 0;
     let mut version = util::version();
     let vsn_db: versioned::VersionedDB;
     if std::path::Path::new(&path).exists() {
-        // Decrypt the stored data
-        let mut enc_db = encrypted::from_file(path.clone(), store_pwd.clone(), salt.clone());
-        enc_db.read()?;
-        enc_db.decrypt()?;
-        // Decode the decrypted data as a VersionedDB
+        log::debug!("Creating encrypted DB ...");
+        let enc_db = encrypted::from_file(path.clone(), store_pwd.clone(), salt.clone())?;
+        log::debug!("Creating versioned DB ...");
         match versioned::from_encoded(enc_db.decrypted()) {
             Ok(db) => {
+                log::debug!("Database format is the latest version.");
                 vsn_db = db;
             }
             Err(_) => {
                 log::info!("Given database appears to be non-versioned; attempting old format ...");
-                log::trace!("bytes: {:?}", enc_db.decrypted());
+                log::trace!("Bytes: {:?}", enc_db.decrypted());
                 vsn_db = versioned::from_bytes(enc_db.decrypted());
             }
         }
+        log::debug!("Getting database hash ...");
         store_hash = vsn_db.hash();
         version = vsn_db.version();
-        // Decode the hashmap
+        // Decode the versioned DB's bytes to a hashmap
         hash_map = decode_hashmap(vsn_db.bytes())?;
     };
     log::debug!("Setting database path: {}", path);
@@ -101,11 +102,13 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
 }
 
 fn decode_hashmap(bytes: Vec<u8>) -> Result<records::HashMap> {
+    log::debug!("Decoding hashmap from stored bytes ...");
     let hm: records::HashMap = dashmap::DashMap::new();
     let sorted_vec: Vec<(String, EncryptedRecord)>;
     match bincode::serde::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
             sorted_vec = result;
+            log::debug!("Converting stored vector of tuples to hashmap ...");
             for (key, val) in sorted_vec {
                 if hm.insert(key.clone(), val).is_some() {}
             }
@@ -120,11 +123,42 @@ fn decode_hashmap(bytes: Vec<u8>) -> Result<records::HashMap> {
 
 impl DB {
     pub fn close(&self) -> Result<()> {
+        let path = util::create_parents(self.path())?;
+        if path.exists() {
+            let backup_name = format!("{}-{}", self.path, time::simple_timestamp());
+            log::debug!(
+                "Path to db already exists; backing up to {} ...",
+                backup_name
+            );
+            match std::fs::copy(path.clone(), backup_name) {
+                Ok(x) => Ok(x),
+                Err(e) => {
+                    let msg = "Could not copy file";
+                    log::error!("{} {:?} ({:})", msg, path, e);
+                    Err(anyhow!("{} {:?} ({:})", msg, path, e))
+                }
+            }?;
+        }
+
         // Reverse the workflow of `open` ... encode the hashmap
-        let encoded = self.serialise()?;
+        let srl = match self.serialise() {
+            Ok(x) => Ok(x),
+            Err(e) => {
+                let msg = "Could not serialise self";
+                log::error!("{} {:?} ({:})", msg, self.path(), e);
+                Err(anyhow!("{} {:?} ({:})", msg, self.path(), e))
+            }
+        }?;
         // Create versioned data
-        let vsn_db = versioned::from_bytes(encoded);
-        let encoded = vsn_db.serialise()?;
+        let vsn_db = versioned::from_bytes(srl);
+        let encoded = match vsn_db.serialise() {
+            Ok(x) => Ok(x),
+            Err(e) => {
+                let msg = "Could not serialise version db";
+                log::error!("{} {:?} ({:})", msg, self.path(), e);
+                Err(anyhow!("{} {:?} ({:})", msg, self.path(), e))
+            }
+        }?;
         // Get the hash for the versioned data
         let store_hash = vsn_db.hash();
         if store_hash == self.store_hash {
@@ -132,21 +166,10 @@ impl DB {
             return Ok(());
         }
         // Encrypt the versioned data
-        let mut enc_db = encrypted::from_bytes(encoded, self.path(), self.store_pwd(), self.salt());
+        let mut enc_db =
+            encrypted::from_decrypted(encoded, self.path(), self.store_pwd(), self.salt())?;
         enc_db.encrypt();
 
-        // TODO: refactor backup code
-        let path_name = &self.path();
-        let path = std::path::Path::new(path_name);
-        fs::create_dir_all(path.parent().unwrap())?;
-        if std::path::Path::new(&self.path).exists() {
-            let backup_name = format!("{}-{}", self.path, time::simple_timestamp());
-            log::debug!(
-                "Path to db already exists; backing up to {} ...",
-                backup_name
-            );
-            std::fs::copy(path, backup_name)?;
-        }
         // Save the encrypted data
         enc_db.write()
     }
@@ -279,7 +302,7 @@ mod tests {
         let re_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(re_dpr.creds.user, "alice@site.com");
         assert_eq!(re_dpr.creds.password, "4 s3kr1t");
-        tmp_db.close().unwrap();
+        assert!(tmp_db.close().is_ok());
         let tmp_db = db::open(path, pwd, salt).unwrap();
         let read_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(read_dpr.creds.user, "alice@site.com");

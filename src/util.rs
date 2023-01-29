@@ -1,7 +1,8 @@
 use std::io::Write;
-use std::{fs, path};
+use std::{env, fs, io, path};
 
 use anyhow::{anyhow, Result};
+use path_clean::PathClean;
 use rand::Rng;
 use versions::Versioning;
 
@@ -22,24 +23,68 @@ pub fn random_specials(count: usize) -> Vec<u8> {
 }
 
 pub fn read_file(path: String) -> Result<Vec<u8>> {
-    let expanded = shellexpand::tilde(path.as_str());
-    match fs::read(expanded.as_ref()) {
+    let expanded = expanded_path(path);
+    log::debug!("Reading file {:?} ...", expanded);
+    match fs::read(expanded) {
         Ok(bytes) => Ok(bytes),
         Err(e) => Err(anyhow!(e)),
     }
 }
 
-pub fn write_file(data: Vec<u8>, path: String) -> Result<()> {
+pub fn expanded_path(path: String) -> String {
     let expanded = shellexpand::tilde(path.as_str());
-    let mut file = std::fs::OpenOptions::new()
+    expanded.to_string()
+}
+
+pub fn abs_path(path: String) -> io::Result<path::PathBuf> {
+    let expanded = expanded_path(path);
+    let path = std::path::Path::new(expanded.as_str());
+    let absolute_path = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        env::current_dir()?.join(path)
+    };
+    absolute_path.clean();
+    Ok(absolute_path)
+}
+
+pub fn create_parents(path: String) -> Result<path::PathBuf> {
+    // Make sure the path is created
+    let ap = abs_path(path.clone())?;
+    match fs::create_dir_all(ap.parent().unwrap()) {
+        Ok(_) => Ok(ap),
+        Err(e) => {
+            let msg = "Could not create missing parent dirs for";
+            log::error!("{} {} ({:})", msg, path, e);
+            Err(anyhow!("{} {} ({:})", msg, path, e))
+        }
+    }
+}
+
+pub fn write_file(data: Vec<u8>, path: String) -> Result<()> {
+    let ap = create_parents(path.clone())?;
+    // Then write the file
+    log::debug!("Writing file {:?} ...", ap);
+    let mut file = match std::fs::OpenOptions::new()
         .write(true)
         .create(true)
-        .open(expanded.as_ref())
-        .unwrap();
+        .open(ap)
+    {
+        Ok(x) => Ok(x),
+        Err(e) => {
+            let msg = "Could not file options for";
+            log::error!("{} {} ({:})", msg, path, e);
+            Err(anyhow!("{} {} ({:})", msg, path, e))
+        }
+    }?;
     file.write_all(&data[..])?;
     match file.sync_all() {
         Ok(x) => Ok(x),
-        Err(e) => Err(anyhow!(e)),
+        Err(e) => {
+            let msg = "Could write file";
+            log::error!("{} {} ({:})", msg, path, e);
+            Err(anyhow!("{} {} ({:})", msg, path, e))
+        }
     }
 }
 

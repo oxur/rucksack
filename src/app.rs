@@ -8,6 +8,10 @@ pub struct App {
     pub db: store::db::DB,
 }
 
+pub fn new(cfg: config::Config, db: store::db::DB) -> App {
+    App { cfg, db }
+}
+
 impl App {
     pub fn config_dir(&self) -> path::PathBuf {
         if self.cfg.rucksack.cfg_dir != *"" {

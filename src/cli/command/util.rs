@@ -11,6 +11,7 @@ pub fn setup_db(matches: &ArgMatches) -> Result<db::DB> {
     let db = matches.get_one::<String>("db");
     match matches.get_one::<bool>("db-needed") {
         Some(false) => {
+            log::debug!("Database not needed for this command; skipping load ...");
             if let Some(db_file) = db {
                 let mut db = db::new();
                 db.path = db_file.to_string();
@@ -21,6 +22,7 @@ pub fn setup_db(matches: &ArgMatches) -> Result<db::DB> {
         Some(true) => (),
         None => (),
     }
+    log::debug!("Database is needed; preparing for read ...");
     match db {
         Some(db_file) => {
             log::debug!("Got database file from flag: {}", db_file);
@@ -31,7 +33,10 @@ pub fn setup_db(matches: &ArgMatches) -> Result<db::DB> {
             let salt = matches.get_one::<String>("salt").unwrap().to_string();
             db::open(db_file.to_owned(), pwd.expose_secret().to_string(), salt)
         }
-        None => Ok(db::new()),
+        None => {
+            log::debug!("No database found; creating new one ...");
+            Ok(db::new())
+        }
     }
 }
 

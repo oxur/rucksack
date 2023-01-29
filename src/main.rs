@@ -4,12 +4,13 @@ use anyhow::{Context, Result};
 use clap::ArgMatches;
 
 use rucksack::cli;
-use rucksack::cli::command::{add, export, gen, import, list, rm, set, setup_db, show};
+use rucksack::cli::command::{add, export, gen, import, list, rm, set, show};
 use rucksack::{config, util};
 
 const NAME: &str = env!("CARGO_PKG_NAME");
 
 fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
+    log::debug!("Preparing to dispatch based upon (sub)command ...");
     match matches.subcommand() {
         Some(("add", add_matches)) => add::new(add_matches, app)?,
         Some(("export", export_matches)) => export::new(export_matches, app)?,
@@ -40,6 +41,7 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
         }
         None => todo!(),
     }
+    log::debug!("Command execution complete.");
     Ok(())
 }
 
@@ -83,9 +85,11 @@ fn main() -> Result<()> {
     }
 
     let (_, subcmd_matches) = matches.subcommand().unwrap();
-    let db = setup_db(subcmd_matches)?;
+    log::debug!("Setting up database ...");
+    let db = cli::command::setup_db(subcmd_matches)?;
     cfg.rucksack.db_file = db.path();
     cfg.rucksack.data_dir = util::dir_parent(db.path());
-    let app = rucksack::App { cfg, db };
+    log::debug!("Setting up rucksack application ...");
+    let app = rucksack::app::new(cfg, db);
     run(&matches, &app)
 }
