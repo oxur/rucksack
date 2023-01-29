@@ -7,6 +7,8 @@ use crate::util;
 
 use super::crypto::{decrypt, encrypt};
 
+pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
+
 // Structs and Enums
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
