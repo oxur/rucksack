@@ -31,6 +31,7 @@ dirs = "4.0.0"
 lipsum = "0.8"
 log = "0.4"
 passwords = "3.1"
+path-clean = "0.1.0"
 rand = "0.8"
 rpassword = "7.1"
 secrecy = "0.8"
@@ -39,6 +40,7 @@ shellexpand = "3.0.0"
 twyg = "0.1.11"
 url = "2.3"
 uuid = {version = "1.2",  features = ["v4"]}
+versions = "4.1"
 
 [dev-dependencies]
 tempfile = "3"

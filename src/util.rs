@@ -1,8 +1,10 @@
 use std::io::Write;
-use std::{fs, path};
+use std::{env, fs, io, path};
 
 use anyhow::{anyhow, Result};
+use path_clean::PathClean;
 use rand::Rng;
+use versions::Versioning;
 
 const SPECIALS: &[u8] = b"!@#%&*?=+:";
 
@@ -64,4 +66,43 @@ pub type BincodeConfig = bincode::config::Configuration<
 
 pub fn bincode_cfg() -> BincodeConfig {
     bincode::config::legacy()
+}
+
+pub fn dir_parent(dir: String) -> String {
+    let mut parent: Vec<&str> = dir.split(std::path::MAIN_SEPARATOR).collect();
+    parent.pop();
+    parent.join(std::path::MAIN_SEPARATOR.to_string().as_str())
+}
+
+pub fn version() -> Versioning {
+    versions::Versioning::new(env!("CARGO_PKG_VERSION")).unwrap()
+}
+
+pub fn expanded_path(path: String) -> String {
+    let expanded = shellexpand::tilde(path.as_str());
+    expanded.to_string()
+}
+
+pub fn abs_path(path: String) -> io::Result<path::PathBuf> {
+    let expanded = expanded_path(path);
+    let path = std::path::Path::new(expanded.as_str());
+    let absolute_path = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        env::current_dir()?.join(path)
+    };
+    absolute_path.clean();
+    Ok(absolute_path)
+}
+
+pub fn create_parents(path: String) -> Result<path::PathBuf> {
+    // Make sure the path is created
+    let ap = abs_path(path.clone())?;
+    match fs::create_dir_all(ap.parent().unwrap()) {
+        Ok(_) => Ok(ap),
+        Err(e) => {
+            let msg = "Could not create missing parent dirs for";
+            Err(anyhow!("{} {} ({:})", msg, path, e))
+        }
+    }
 }
