@@ -12,28 +12,54 @@ pub struct EncryptedDB {
     salt: SecretString,
 }
 
-pub fn from_bytes(decrypted: Vec<u8>, path: String, pwd: String, salt: String) -> EncryptedDB {
-    new(Vec::new(), decrypted, path, pwd, salt)
-}
-
-pub fn from_file(path: String, pwd: String, salt: String) -> EncryptedDB {
-    from_bytes(Vec::new(), path, pwd, salt)
-}
-
-pub fn new(
-    bytes: Vec<u8>,
+pub fn from_decrypted(
     decrypted: Vec<u8>,
     path: String,
     pwd: String,
     salt: String,
-) -> EncryptedDB {
-    EncryptedDB {
-        bytes,
-        decrypted: Secret::new(decrypted),
+) -> Result<EncryptedDB> {
+    new(None, Some(decrypted), path, pwd, salt)
+}
+
+pub fn from_encrypted(
+    encrypted: Vec<u8>,
+    path: String,
+    pwd: String,
+    salt: String,
+) -> Result<EncryptedDB> {
+    new(Some(encrypted), None, path, pwd, salt)
+}
+
+pub fn from_file(path: String, pwd: String, salt: String) -> Result<EncryptedDB> {
+    new(None, None, path, pwd, salt)
+}
+
+pub fn new(
+    bytes: Option<Vec<u8>>,
+    decrypted: Option<Vec<u8>>,
+    path: String,
+    pwd: String,
+    salt: String,
+) -> Result<EncryptedDB> {
+    let mut edb = EncryptedDB {
+        bytes: Vec::new(),
+        decrypted: Secret::new(Vec::new()),
         path,
         pwd: SecretString::new(pwd),
         salt: SecretString::new(salt),
+    };
+    if bytes.is_none() && decrypted.is_none() {
+        log::debug!("No bytes provided; reading from file ...");
+        edb.read()?;
+        edb.decrypt()?;
+    } else if let Some(b) = bytes {
+        edb.bytes = b;
+        edb.decrypt()?;
+    } else if let Some(d) = decrypted {
+        edb.decrypted = Secret::new(d);
+        edb.encrypt();
     }
+    Ok(edb)
 }
 
 impl EncryptedDB {
@@ -42,14 +68,15 @@ impl EncryptedDB {
     }
 
     pub fn decrypt(&mut self) -> Result<()> {
+        log::debug!("Decrypting stored bytes ...");
         match crypto::decrypt(self.bytes.clone(), self.pwd(), self.salt()) {
             Ok(bytes) => {
-                log::trace!("decrypted bytes: {:?}", bytes);
+                log::trace!("Decrypted bytes: {:?}", bytes);
                 self.decrypted = Secret::new(bytes);
                 Ok(())
             }
             Err(e) => {
-                let msg = format!("could not decrypt data: {:?}", e);
+                let msg = format!("Could not decrypt data: {:?}", e);
                 log::error!("{}", msg);
                 Err(anyhow!("{}", msg))
             }

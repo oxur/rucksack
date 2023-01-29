@@ -108,6 +108,19 @@ New password: VmVydW0sLW9waW5vciwtc2NyaXB0b3JlbS10YW1lbi4tLjYrfQ
 Password score: 100.00
 ```
 
+Or how about a long random token, chock-a-block with tasty entropy?
+
+```shell
+rucksack gen --type random --length 256 --encode
+
+New password: VFdCQVM-MmVUUUNDTlEpbl4rLztrMlc0cHtMSjVodzs4OTRIK00kK2ZBc0dfcGpCe
+zlFIXouY19Hd1R-NSskLV1kXDMpTkQtX1EkcltUOFcyLDRQbmpobnJML1lxQmtDZjg0clhoPUg_JmVS
+Pz4pUDpGVjsseWZCPlx4JXtwZS1tekU4eUBHZGRhVlRwOi0oK1IsRHkzO0J0JSFOVSNbXSEsSDwjLFA
+ocjtCXT0-XFNYeHI0JkJQdEJ1X0E5YWZFa2Yhc0VSZnYvVyhROC45WF8kak05PWYzLk52UzQoPWQqc3
+YlJHpqbS85UXhzKnI6ZlhAPWdRLmZxcVZWQXM4fg
+Password score: 100.00
+```
+
 ### Importing and Exporting
 
 Import login data from Firefox Sync:

@@ -51,3 +51,5 @@ clean-all: clean
 	@rm .crates.toml .crates2.json Cargo.lock
 
 fresh-all: clean-all all
+
+fresh: clean all

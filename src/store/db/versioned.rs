@@ -11,6 +11,7 @@ pub struct VersionedDB {
 }
 
 pub fn from_encoded(bytes: Vec<u8>) -> Result<VersionedDB> {
+    log::debug!("Creating versioned DB from encoded bytes ...");
     let versioned: VersionedDB;
     match bincode::serde::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
