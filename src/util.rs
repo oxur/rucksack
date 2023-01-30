@@ -72,7 +72,7 @@ pub fn write_file(data: Vec<u8>, path: String) -> Result<()> {
     {
         Ok(x) => Ok(x),
         Err(e) => {
-            let msg = "Could not file options for";
+            let msg = "Could not set up file options for";
             log::error!("{} {} ({:})", msg, path, e);
             Err(anyhow!("{} {} ({:})", msg, path, e))
         }
@@ -81,7 +81,7 @@ pub fn write_file(data: Vec<u8>, path: String) -> Result<()> {
     match file.sync_all() {
         Ok(x) => Ok(x),
         Err(e) => {
-            let msg = "Could write file";
+            let msg = "Could not write file";
             log::error!("{} {} ({:})", msg, path, e);
             Err(anyhow!("{} {} ({:})", msg, path, e))
         }

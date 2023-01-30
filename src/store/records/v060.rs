@@ -24,7 +24,7 @@ pub fn migrate_hashmap_from_v050(hm_v050: v050::HashMap) -> HashMap {
 pub fn decode_hashmap(bytes: Vec<u8>) -> Result<HashMap> {
     let hm: HashMap = dashmap::DashMap::new();
     let sorted_vec: Vec<(String, EncryptedRecord)>;
-    match bincode::serde::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
+    match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
             sorted_vec = result;
             for (key, val) in sorted_vec {
