@@ -13,7 +13,7 @@ pub struct VersionedDB {
 pub fn from_encoded(bytes: Vec<u8>) -> Result<VersionedDB> {
     log::debug!("Creating versioned DB from encoded bytes ...");
     let versioned: VersionedDB;
-    match bincode::serde::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
+    match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
             versioned = result;
             log::debug!("deserialised versioned DB bytes: {:?}", versioned);
@@ -45,7 +45,7 @@ impl VersionedDB {
     }
 
     pub fn serialise(&self) -> Result<Vec<u8>> {
-        match bincode::serde::encode_to_vec(self, util::bincode_cfg()) {
+        match bincode::encode_to_vec(self, util::bincode_cfg()) {
             Ok(bytes) => Ok(bytes),
             Err(e) => {
                 let msg = format!("couldn't serialise versioned database ({})", e);

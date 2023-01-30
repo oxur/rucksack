@@ -23,9 +23,12 @@ pub fn migrate_hashmap_from_v060(hm_v060: v060::HashMap) -> HashMap {
 }
 
 pub fn decode_hashmap(bytes: Vec<u8>) -> Result<HashMap> {
+    log::debug!("Decoding hashmap from stored bytes ...");
     let hm: HashMap = dashmap::DashMap::new();
+    log::trace!("Created hashmap.");
     let sorted_vec: Vec<(String, EncryptedRecord)>;
-    match bincode::serde::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
+    log::trace!("Created vec for sorted data.");
+    match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
             sorted_vec = result;
             for (key, val) in sorted_vec {
@@ -92,9 +95,9 @@ impl DecryptedRecord {
         self.creds.user.clone()
     }
 
-    pub fn encrypt(&self, prime_pwd: String, salt: String) -> EncryptedRecord {
+    pub fn encrypt(&self, store_pwd: String, salt: String) -> EncryptedRecord {
         let encoded = bincode::encode_to_vec(&self.creds, util::bincode_cfg()).unwrap();
-        let encrypted = encrypt(encoded, prime_pwd, salt);
+        let encrypted = encrypt(encoded, store_pwd, salt);
 
         EncryptedRecord {
             key: self.key(),
@@ -124,8 +127,8 @@ impl EncryptedRecord {
         self.metadata.clone()
     }
 
-    pub fn decrypt(&self, prime_pwd: String, salt: String) -> Result<DecryptedRecord> {
-        let decrypted = decrypt(self.value.clone(), prime_pwd, salt)?;
+    pub fn decrypt(&self, store_pwd: String, salt: String) -> Result<DecryptedRecord> {
+        let decrypted = decrypt(self.value.clone(), store_pwd, salt)?;
         let (decoded, _len) =
             bincode::decode_from_slice(&decrypted[..], util::bincode_cfg()).unwrap();
 

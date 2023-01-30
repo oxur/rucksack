@@ -87,7 +87,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
         store_hash = vsn_db.hash();
         version = vsn_db.version();
         // Decode the versioned DB's bytes to a hashmap
-        hash_map = decode_hashmap(vsn_db.bytes())?;
+        hash_map = records::decode_hashmap(vsn_db.bytes())?;
     };
     log::debug!("Setting database path: {}", path);
     Ok(DB {
@@ -99,26 +99,6 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
         enabled: true,
         version,
     })
-}
-
-fn decode_hashmap(bytes: Vec<u8>) -> Result<records::HashMap> {
-    log::debug!("Decoding hashmap from stored bytes ...");
-    let hm: records::HashMap = dashmap::DashMap::new();
-    let sorted_vec: Vec<(String, EncryptedRecord)>;
-    match bincode::serde::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
-        Ok((result, _len)) => {
-            sorted_vec = result;
-            log::debug!("Converting stored vector of tuples to hashmap ...");
-            for (key, val) in sorted_vec {
-                if hm.insert(key.clone(), val).is_some() {}
-            }
-            Ok(hm)
-        }
-        Err(e) => {
-            log::info!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
-            records::decode_hashmap(bytes)
-        }
-    }
 }
 
 impl DB {
@@ -189,7 +169,7 @@ impl DB {
             data.push((i.key().clone(), i.value().clone()))
         }
         data.sort_by_key(|k| k.0.clone());
-        match bincode::serde::encode_to_vec(data, util::bincode_cfg()) {
+        match bincode::encode_to_vec(data, util::bincode_cfg()) {
             Ok(encoded) => Ok(encoded),
             Err(e) => {
                 let msg = format!("couldn't encode DB hashmap ({:?})", e);

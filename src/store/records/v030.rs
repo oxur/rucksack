@@ -11,11 +11,18 @@ pub use super::v020::{Creds, Kind};
 pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
 
 pub fn decode_hashmap(bytes: Vec<u8>) -> Result<HashMap> {
-    let hashmap: HashMap;
-    match bincode::serde::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
+    log::debug!("Decoding hashmap from stored bytes ...");
+    let hm: HashMap = dashmap::DashMap::new();
+    log::trace!("Created hashmap.");
+    let sorted_vec: Vec<(String, EncryptedRecord)>;
+    log::trace!("Created vec for sorted data.");
+    match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
-            hashmap = result;
-            Ok(hashmap)
+            sorted_vec = result;
+            for (key, val) in sorted_vec {
+                if hm.insert(key.clone(), val).is_some() {}
+            }
+            Ok(hm)
         }
         Err(e) => {
             let msg = format!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
@@ -72,9 +79,9 @@ impl DecryptedRecord {
         self.metadata.clone()
     }
 
-    pub fn encrypt(&self, prime_pwd: String) -> EncryptedRecord {
+    pub fn encrypt(&self, store_pwd: String) -> EncryptedRecord {
         let encoded = bincode::encode_to_vec(&self.creds, util::bincode_cfg()).unwrap();
-        let encrypted = encrypt(encoded, prime_pwd, self.metadata().updated);
+        let encrypted = encrypt(encoded, store_pwd, self.metadata().updated);
 
         EncryptedRecord {
             key: self.key(),
@@ -100,8 +107,8 @@ impl EncryptedRecord {
         self.metadata.clone()
     }
 
-    pub fn decrypt(&self, prime_pwd: String) -> Result<DecryptedRecord> {
-        let decrypted = decrypt(self.value.clone(), prime_pwd, self.metadata().updated)?;
+    pub fn decrypt(&self, store_pwd: String) -> Result<DecryptedRecord> {
+        let decrypted = decrypt(self.value.clone(), store_pwd, self.metadata().updated)?;
         let (decoded, _len) =
             bincode::decode_from_slice(&decrypted[..], util::bincode_cfg()).unwrap();
 
