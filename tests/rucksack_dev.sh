@@ -137,18 +137,19 @@ header "Filter accounts with 'boo' (decrypted data and revealed passwords)"
     --reveal \
     --filter boo
 
-# header "Remove an account (clammy)"
+header "Remove an account (clammy)"
 
-# ./bin/rucksack rm \
-#     --config-file "$CFG_FILE" \
-#     --db "$DB_FILE" \
-#     --db-pass 1234 \
-#     --url http://example.com \
-#     --user clammy --log-level trace
-# ./bin/rucksack list \
-#     --config-file "$CFG_FILE" \
-#     --db "$DB_FILE" \
-#     --db-pass 1234
+./bin/rucksack rm \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --url http://example.com \
+    --user clammy --log-level trace
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234
 
 header "Read an old database (v0.5.0)"
 
@@ -156,15 +157,12 @@ cp ./tests/testing-data/secrets-v0.5.0.db "$DB_FILE"
 ./bin/rucksack show db-version \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
-    --db-pass 1234 --log-level trace
-
-exit 1
+    --db-pass 1234
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
-    --db-pass 1234 \
-    --log-level trace
+    --db-pass 1234
 
 header "Read an old database (v0.6.0)"
 
@@ -177,10 +175,4 @@ cp ./tests/testing-data/secrets-v0.6.0.db "$DB_FILE"
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
-    --db-pass 1234 \
-    --log-level trace
-
-header "Debug: check the data directory"
-
-DIR=$(./bin/rucksack show data-dir --config-file "$CFG_FILE" --db "$DB_FILE")
-ls -l $(echo $DIR|xargs)
+    --db-pass 1234

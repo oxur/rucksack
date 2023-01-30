@@ -53,9 +53,11 @@ pub fn new(
         edb.read()?;
         edb.decrypt()?;
     } else if let Some(b) = bytes {
+        log::debug!("Got encrypted bytes; decrypting ...");
         edb.bytes = b;
         edb.decrypt()?;
     } else if let Some(d) = decrypted {
+        log::debug!("Got decrypted bytes; encrypting ...");
         edb.decrypted = Secret::new(d);
         edb.encrypt();
     }
@@ -69,6 +71,7 @@ impl EncryptedDB {
 
     pub fn decrypt(&mut self) -> Result<()> {
         log::debug!("Decrypting stored bytes ...");
+        log::trace!("{}, {}", self.pwd(), self.salt());
         match crypto::decrypt(self.bytes.clone(), self.pwd(), self.salt()) {
             Ok(bytes) => {
                 log::trace!("Decrypted bytes: {:?}", bytes);
@@ -88,7 +91,9 @@ impl EncryptedDB {
     }
 
     pub fn encrypt(&mut self) {
+        log::trace!("Byte len before: {}", self.bytes.len());
         self.bytes = crypto::encrypt(self.decrypted(), self.pwd(), self.salt());
+        log::trace!("Byte len after: {}", self.bytes.len());
     }
 
     pub fn path(&self) -> String {
@@ -100,7 +105,9 @@ impl EncryptedDB {
     }
 
     pub fn read(&mut self) -> Result<()> {
+        log::trace!("Byte len before: {}", self.bytes.len());
         self.bytes = util::read_file(self.path())?;
+        log::trace!("Byte len after: {}", self.bytes.len());
         Ok(())
     }
 
@@ -109,6 +116,7 @@ impl EncryptedDB {
     }
 
     pub fn write(&self) -> Result<()> {
+        log::debug!("Writing encrypted DB ...");
         util::write_file(self.bytes(), self.path())
     }
 }

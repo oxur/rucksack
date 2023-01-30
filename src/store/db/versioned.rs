@@ -10,13 +10,13 @@ pub struct VersionedDB {
     version: String,
 }
 
-pub fn from_encoded(bytes: Vec<u8>) -> Result<VersionedDB> {
-    log::debug!("Creating versioned DB from encoded bytes ...");
+pub fn deserialise(bytes: Vec<u8>) -> Result<VersionedDB> {
+    log::debug!("Creating versioned DB from previously serialised versioned DB ...");
     let versioned: VersionedDB;
     match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
             versioned = result;
-            log::debug!("deserialised versioned DB bytes: {:?}", versioned);
+            log::trace!("deserialised versioned DB bytes: {:?}", versioned);
             Ok(versioned)
         }
         Err(e) => {
@@ -28,6 +28,7 @@ pub fn from_encoded(bytes: Vec<u8>) -> Result<VersionedDB> {
 }
 
 pub fn from_bytes(bytes: Vec<u8>) -> VersionedDB {
+    log::debug!("Initialising versioned DB with encoded hashmap ...");
     new(bytes, util::version().to_string())
 }
 
@@ -45,6 +46,7 @@ impl VersionedDB {
     }
 
     pub fn serialise(&self) -> Result<Vec<u8>> {
+        log::debug!("Serialising versioned DB ...");
         match bincode::encode_to_vec(self, util::bincode_cfg()) {
             Ok(bytes) => Ok(bytes),
             Err(e) => {
@@ -55,8 +57,8 @@ impl VersionedDB {
         }
     }
 
-    pub fn version(&self) -> versions::Versioning {
-        versions::Versioning::new(self.version.as_str()).unwrap()
+    pub fn version(&self) -> versions::SemVer {
+        versions::SemVer::new(self.version.as_str()).unwrap()
     }
 }
 
@@ -67,13 +69,10 @@ mod tests {
     #[test]
     fn db_bytes() {
         let vsn_db = versioned::new(vec![2, 4, 16], "1.2.3".to_string());
-        assert!(vsn_db.version() > versions::Versioning::new("0.3.0").unwrap());
+        assert!(vsn_db.version() > versions::SemVer::new("0.3.0").unwrap());
         assert_eq!(vsn_db.hash(), 2233391132);
-        assert_eq!(
-            vsn_db.version(),
-            versions::Versioning::new("1.2.3").unwrap()
-        );
-        assert!(vsn_db.version() < versions::Versioning::new("2.3.0").unwrap());
+        assert_eq!(vsn_db.version(), versions::SemVer::new("1.2.3").unwrap());
+        assert!(vsn_db.version() < versions::SemVer::new("2.3.0").unwrap());
         let encoded = vsn_db.serialise().unwrap();
         let expected = vec![
             3, 0, 0, 0, 0, 0, 0, 0, 2, 4, 16, 5, 0, 0, 0, 0, 0, 0, 0, 49, 46, 50, 46, 51,

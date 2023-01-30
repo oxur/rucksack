@@ -45,7 +45,7 @@ impl App {
         util::db_file()
     }
 
-    pub fn db_version(&self) -> versions::Versioning {
+    pub fn db_version(&self) -> versions::SemVer {
         self.db.version()
     }
 }
