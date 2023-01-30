@@ -96,7 +96,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
 fn decode_hashmap(bytes: Vec<u8>) -> Result<record::HashMap> {
     let hm: record::HashMap = dashmap::DashMap::new();
     let sorted_vec: Vec<(String, EncryptedRecord)>;
-    match bincode::serde::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
+    match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
             sorted_vec = result;
             for (key, val) in sorted_vec {
@@ -168,7 +168,7 @@ impl DB {
             data.push((i.key().clone(), i.value().clone()))
         }
         data.sort_by_key(|k| k.0.clone());
-        match bincode::serde::encode_to_vec(data, util::bincode_cfg()) {
+        match bincode::encode_to_vec(data, util::bincode_cfg()) {
             Ok(encoded) => Ok(encoded),
             Err(e) => {
                 let msg = format!("couldn't encode DB hashmap ({:?})", e);
