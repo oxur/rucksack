@@ -4,7 +4,6 @@ use std::{env, fs, io, path};
 use anyhow::{anyhow, Result};
 use path_clean::PathClean;
 use rand::Rng;
-use versions::Versioning;
 
 const SPECIALS: &[u8] = b"!@#%&*?=+:";
 
@@ -130,6 +129,6 @@ pub fn bincode_cfg() -> bincode::config::Configuration<
     bincode::config::legacy()
 }
 
-pub fn version() -> Versioning {
-    versions::Versioning::new(env!("CARGO_PKG_VERSION")).unwrap()
+pub fn version() -> versions::SemVer {
+    versions::SemVer::new(env!("CARGO_PKG_VERSION")).unwrap()
 }

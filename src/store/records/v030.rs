@@ -8,10 +8,15 @@ use crate::util;
 use super::v020;
 pub use super::v020::{Creds, Kind};
 
+pub const VERSION: &str = "0.3.0";
+
 pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
 
-pub fn decode_hashmap(bytes: Vec<u8>) -> Result<HashMap> {
-    log::debug!("Decoding hashmap from stored bytes ...");
+pub fn decode_hashmap(bytes: Vec<u8>, version: versions::SemVer) -> Result<HashMap> {
+    log::debug!(
+        "Decoding hashmap from stored bytes (format version {:})...",
+        version
+    );
     let hm: HashMap = dashmap::DashMap::new();
     log::trace!("Created hashmap.");
     let sorted_vec: Vec<(String, EncryptedRecord)>;

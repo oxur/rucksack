@@ -1,12 +1,15 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use bincode::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 
 use crate::store::crypto::{decrypt, encrypt};
 use crate::util;
 
+use super::shared;
 use super::v060;
 pub use super::v060::{Creds, Kind, DEFAULT_KIND};
+
+pub const VERSION: &str = "0.7.0";
 
 pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
 
@@ -22,12 +25,22 @@ pub fn migrate_hashmap_from_v060(hm_v060: v060::HashMap) -> HashMap {
     hm
 }
 
-pub fn decode_hashmap(bytes: Vec<u8>) -> Result<HashMap> {
-    log::debug!("Decoding hashmap from stored bytes ...");
+pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<HashMap> {
+    log::debug!(
+        "Decoding hashmap from stored bytes (format version {:})...",
+        version
+    );
+    version = shared::trim_version(version);
     let hm: HashMap = dashmap::DashMap::new();
     log::trace!("Created hashmap.");
     let sorted_vec: Vec<(String, EncryptedRecord)>;
     log::trace!("Created vec for sorted data.");
+    if version < shared::version(VERSION) {
+        // version.
+        log::info!("Attempting to decode hashmap from previous version (0.6.0)");
+        let hm = v060::decode_hashmap(bytes, version)?;
+        return Ok(migrate_hashmap_from_v060(hm));
+    }
     match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
             sorted_vec = result;
@@ -38,9 +51,7 @@ pub fn decode_hashmap(bytes: Vec<u8>) -> Result<HashMap> {
         }
         Err(e) => {
             log::info!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
-            log::info!("Attempting to decode hashmap from previous version (0.6.0)");
-            let hm = v060::decode_hashmap(bytes)?;
-            Ok(migrate_hashmap_from_v060(hm))
+            Err(anyhow!(e))
         }
     }
 }
@@ -60,7 +71,7 @@ pub struct Metadata {
 
 pub fn migrate_metadata_from_v060(md: v060::Metadata) -> Metadata {
     Metadata {
-        kind: v060::migrate_kind_from_v050(md.kind),
+        kind: migrate_kind_from_v060(md.kind),
         url: md.url,
         created: md.created,
         imported: md.imported,
@@ -69,6 +80,14 @@ pub fn migrate_metadata_from_v060(md: v060::Metadata) -> Metadata {
         last_used: md.last_used,
         synced: String::new(),
         access_count: md.access_count,
+    }
+}
+
+pub fn migrate_kind_from_v060(k: v060::Kind) -> Kind {
+    match k {
+        v060::Kind::Account => Kind::Account,
+        v060::Kind::Credential => Kind::Credential,
+        v060::Kind::Password => Kind::Password,
     }
 }
 

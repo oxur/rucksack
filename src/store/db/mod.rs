@@ -39,7 +39,7 @@ pub struct DB {
     salt: String,
     hash_map: records::HashMap,
     enabled: bool,
-    version: versions::Versioning,
+    version: versions::SemVer,
 }
 
 impl fmt::Debug for DB {
@@ -72,13 +72,12 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
         log::debug!("Creating encrypted DB ...");
         let enc_db = encrypted::from_file(path.clone(), store_pwd.clone(), salt.clone())?;
         log::debug!("Creating versioned DB ...");
-        match versioned::from_encoded(enc_db.decrypted()) {
+        match versioned::deserialise(enc_db.decrypted()) {
             Ok(db) => {
-                log::debug!("Database format is the latest version.");
                 vsn_db = db;
             }
             Err(_) => {
-                log::info!("Given database appears to be non-versioned; attempting old format ...");
+                log::info!("Given database appears to be non-versioned; be sure to upgrade to the latest micro release of our old version before continuing ...");
                 log::trace!("Bytes: {:?}", enc_db.decrypted());
                 vsn_db = versioned::from_bytes(enc_db.decrypted());
             }
@@ -87,7 +86,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
         store_hash = vsn_db.hash();
         version = vsn_db.version();
         // Decode the versioned DB's bytes to a hashmap
-        hash_map = records::decode_hashmap(vsn_db.bytes())?;
+        hash_map = records::decode_hashmap(vsn_db.bytes(), version.clone())?;
     };
     log::debug!("Setting database path: {}", path);
     Ok(DB {
@@ -103,6 +102,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
 
 impl DB {
     pub fn close(&self) -> Result<()> {
+        log::debug!("Closing DB file ...");
         let path = util::create_parents(self.path())?;
         if path.exists() {
             let backup_name = format!("{}-{}", self.path, time::simple_timestamp());
@@ -146,9 +146,8 @@ impl DB {
             return Ok(());
         }
         // Encrypt the versioned data
-        let mut enc_db =
+        let enc_db =
             encrypted::from_decrypted(encoded, self.path(), self.store_pwd(), self.salt())?;
-        enc_db.encrypt();
 
         // Save the encrypted data
         enc_db.write()
@@ -164,13 +163,19 @@ impl DB {
     }
 
     fn serialise(&self) -> Result<Vec<u8>> {
+        log::debug!("Serialising data ...");
         let mut data: Vec<(String, EncryptedRecord)> = Vec::new();
         for i in self.iter() {
             data.push((i.key().clone(), i.value().clone()))
         }
+        log::trace!("Converted hashmap to vec.");
         data.sort_by_key(|k| k.0.clone());
+        log::trace!("Sorted vec.");
         match bincode::encode_to_vec(data, util::bincode_cfg()) {
-            Ok(encoded) => Ok(encoded),
+            Ok(encoded) => {
+                log::trace!("Encoded vector.");
+                Ok(encoded)
+            }
             Err(e) => {
                 let msg = format!("couldn't encode DB hashmap ({:?})", e);
                 log::error!("{}", msg);
@@ -252,7 +257,7 @@ impl DB {
         self.enabled
     }
 
-    pub fn version(&self) -> versions::Versioning {
+    pub fn version(&self) -> versions::SemVer {
         self.version.clone()
     }
 }
@@ -276,7 +281,7 @@ mod tests {
             .unwrap()
             .to_string();
         let tmp_db = db::open(path.clone(), pwd.clone(), salt.clone()).unwrap();
-        assert!(tmp_db.version() > versions::Versioning::new("0.3.0").unwrap());
+        assert!(tmp_db.version() > versions::SemVer::new("0.6.0").unwrap());
         let dpr = testing_data::plaintext_record();
         tmp_db.insert(dpr.clone());
         let re_dpr = tmp_db.get(dpr.key()).unwrap();
