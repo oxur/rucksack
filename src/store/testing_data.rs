@@ -24,6 +24,8 @@ pub fn plaintext_record() -> DecryptedRecord {
             last_used: date_time.clone(),
             access_count: 0,
             synced: date_time,
+            active: true,
+            deleted: false,
         },
     }
 }

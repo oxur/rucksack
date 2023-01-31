@@ -52,6 +52,8 @@ impl Record {
             last_used: time::epoch_to_string(self.time_last_used),
             access_count: 0,
             synced: now,
+            active: true,
+            deleted: false,
         };
         store::DecryptedRecord { creds, metadata }
     }

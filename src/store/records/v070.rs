@@ -67,6 +67,8 @@ pub struct Metadata {
     pub last_used: String,
     pub synced: String,
     pub access_count: u64,
+    pub active: bool,
+    pub deleted: bool,
 }
 
 pub fn migrate_metadata_from_v060(md: v060::Metadata) -> Metadata {
@@ -80,6 +82,8 @@ pub fn migrate_metadata_from_v060(md: v060::Metadata) -> Metadata {
         last_used: md.last_used,
         synced: String::new(),
         access_count: md.access_count,
+        active: true,
+        deleted: false,
     }
 }
 

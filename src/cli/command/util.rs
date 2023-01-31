@@ -60,6 +60,7 @@ pub fn remove(app_db: &db::DB, matches: &ArgMatches) -> Result<()> {
 }
 
 pub fn remove_by_key(app_db: &db::DB, key: String) -> Result<()> {
+    log::debug!("Removing record associated with {} ...", key);
     match app_db.delete(key.clone()) {
         Some(true) => Ok(()),
         Some(false) => {
