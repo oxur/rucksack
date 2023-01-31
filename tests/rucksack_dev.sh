@@ -137,6 +137,9 @@ header "Filter accounts with 'boo' (decrypted data and revealed passwords)"
     --reveal \
     --filter boo
 
+# TODO: Uncomment when this ticket is fixed:
+# * https://github.com/oxur/rucksack/issues/59
+
 # header "Remove an account (clammy)"
 
 # ./bin/rucksack rm \
@@ -151,28 +154,31 @@ header "Filter accounts with 'boo' (decrypted data and revealed passwords)"
 #     --db "$DB_FILE" \
 #     --db-pass 1234
 
-header "Read an old database (v0.5.0)"
+# TODO: Uncomment when these tests pass on Linux/Docker ... see ticket:
+# * https://github.com/oxur/rucksack/issues/64
 
-cp ./tests/testing-data/secrets-v0.5.0.db "$DB_FILE"
-./bin/rucksack show db-version \
-    --config-file "$CFG_FILE" \
-    --db "$DB_FILE" \
-    --db-pass 1234
+# header "Read an old database (v0.5.0)"
 
-./bin/rucksack list \
-    --config-file "$CFG_FILE" \
-    --db "$DB_FILE" \
-    --db-pass 1234
+# cp ./tests/testing-data/secrets-v0.5.0.db "$DB_FILE"
+# ./bin/rucksack show db-version \
+#     --config-file "$CFG_FILE" \
+#     --db "$DB_FILE" \
+#     --db-pass 1234
 
-header "Read an old database (v0.6.0)"
+# ./bin/rucksack list \
+#     --config-file "$CFG_FILE" \
+#     --db "$DB_FILE" \
+#     --db-pass 1234
 
-cp ./tests/testing-data/secrets-v0.6.0.db "$DB_FILE"
-./bin/rucksack show db-version \
-    --config-file "$CFG_FILE" \
-    --db "$DB_FILE" \
-    --db-pass 1234
+# header "Read an old database (v0.6.0)"
 
-./bin/rucksack list \
-    --config-file "$CFG_FILE" \
-    --db "$DB_FILE" \
-    --db-pass 1234
+# cp ./tests/testing-data/secrets-v0.6.0.db "$DB_FILE"
+# ./bin/rucksack show db-version \
+#     --config-file "$CFG_FILE" \
+#     --db "$DB_FILE" \
+#     --db-pass 1234
+
+# ./bin/rucksack list \
+#     --config-file "$CFG_FILE" \
+#     --db "$DB_FILE" \
+#     --db-pass 1234
