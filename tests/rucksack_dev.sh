@@ -137,19 +137,19 @@ header "Filter accounts with 'boo' (decrypted data and revealed passwords)"
     --reveal \
     --filter boo
 
-header "Remove an account (clammy)"
+# header "Remove an account (clammy)"
 
-./bin/rucksack rm \
-    --config-file "$CFG_FILE" \
-    --db "$DB_FILE" \
-    --db-pass 1234 \
-    --url http://example.com \
-    --user clammy --log-level trace
+# ./bin/rucksack rm \
+#     --config-file "$CFG_FILE" \
+#     --db "$DB_FILE" \
+#     --db-pass 1234 \
+#     --url http://example.com \
+#     --user clammy --log-level trace
 
-./bin/rucksack list \
-    --config-file "$CFG_FILE" \
-    --db "$DB_FILE" \
-    --db-pass 1234
+# ./bin/rucksack list \
+#     --config-file "$CFG_FILE" \
+#     --db "$DB_FILE" \
+#     --db-pass 1234
 
 header "Read an old database (v0.5.0)"
 
