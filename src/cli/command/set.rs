@@ -17,6 +17,17 @@ pub fn account_type(matches: &ArgMatches, app: &App) -> Result<()> {
     Ok(())
 }
 
+pub fn active(matches: &ArgMatches, app: &App) -> Result<()> {
+    log::debug!("Setting account 'active' flag ...");
+    let now = time::now();
+    let mut record = util::record(&app.db, matches)?;
+    record.metadata.active = util::account_active_state(matches);
+    record.metadata.updated = now;
+    app.db.insert(record);
+    app.db.close()?;
+    Ok(())
+}
+
 pub fn password(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting account password ...");
     let now = time::now();

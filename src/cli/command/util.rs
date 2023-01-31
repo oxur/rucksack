@@ -118,6 +118,13 @@ pub fn account_pwd_revealed(matches: &ArgMatches) -> String {
     reveal(account_pwd(matches))
 }
 
+pub fn account_active_state(matches: &ArgMatches) -> bool {
+    match matches.get_one::<bool>("active") {
+        Some(flag) => *flag,
+        None => false,
+    }
+}
+
 pub fn secret(prompt: &str) -> Result<SecretString> {
     rpassword::prompt_password(prompt)
         .map(SecretString::new)
