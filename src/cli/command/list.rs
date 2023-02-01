@@ -35,9 +35,11 @@ impl ListResult {
 
 type GroupByString = HashMap<String, Vec<ListResult>>;
 
+#[derive(Default)]
 pub struct Opts {
     pub skip_deleted: Option<bool>,
     pub only_deleted: Option<bool>,
+    pub with_status: Option<bool>,
 }
 
 // TODO: once there's config for it, pull from config and pass
@@ -49,6 +51,7 @@ pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
         Opts {
             skip_deleted: Some(true),
             only_deleted: None,
+            ..Default::default()
         },
     )
 }
@@ -62,11 +65,12 @@ pub fn deleted(matches: &ArgMatches, app: &App) -> Result<()> {
         Opts {
             skip_deleted: None,
             only_deleted: Some(true),
+            ..Default::default()
         },
     )
 }
 
-fn process_records(matches: &ArgMatches, app: &App, opts: Opts) -> Result<()> {
+fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()> {
     let decrypt = matches.get_one::<bool>("decrypt");
     let filter = matches.get_one::<String>("filter");
     let exclude = matches.get_one::<String>("exclude");
@@ -75,6 +79,17 @@ fn process_records(matches: &ArgMatches, app: &App, opts: Opts) -> Result<()> {
     let reveal = matches.get_one::<bool>("reveal");
     let sort_by = matches.get_one::<String>("sort-by").map(|s| s.as_str());
     let group_by = matches.get_one::<String>("group-by").map(|s| s.as_str());
+    // If we want to see the status of all records, we're going to override
+    // skip_deleted and only_deleted:
+    match matches.get_one::<bool>("with-status") {
+        Some(true) => {
+            opts.only_deleted = Some(false);
+            opts.skip_deleted = Some(false);
+            opts.with_status = Some(true);
+        }
+        Some(_) => (),
+        None => (),
+    }
     let mut results: Vec<ListResult> = Vec::new();
     let mut groups = GroupByString::new();
     for i in app.db.iter() {

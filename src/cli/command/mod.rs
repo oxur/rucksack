@@ -206,6 +206,13 @@ pub fn setup() -> Command {
                     .value_parser(["score", "url", "user"])
                     .global(true)
             )
+            .arg(
+                Arg::new("with-status")
+                    .help("display the actual state of the record")
+                    .long("with-status")
+                    .action(ArgAction::SetTrue)
+                    .global(true)
+            )
             .arg(db_arg())
             .arg(pwd_arg())
             .arg(salt_arg())
