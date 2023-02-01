@@ -28,6 +28,9 @@ fn to_stdout(app: &App) -> Result<()> {
     match app.db.collect_decrypted() {
         Ok(rs) => {
             for r in rs {
+                if r.metadata().deleted {
+                    continue;
+                }
                 println!("{:?}", r)
             }
         }
@@ -42,6 +45,9 @@ fn to_chrome_csv(app: &App, csv_path: String) -> Result<(), anyhow::Error> {
     let mut wtr = writer::to_bytes()?;
     let mut count = 0;
     for dr in app.db.collect_decrypted()? {
+        if dr.metadata().deleted {
+            continue;
+        }
         wtr.serialize(chrome::from_decrypted(dr))?;
         count += 1;
         print!(".");
@@ -60,6 +66,9 @@ fn to_firefox_csv(app: &App, csv_path: String) -> Result<(), anyhow::Error> {
     let mut wtr = writer::to_bytes()?;
     let mut count = 0;
     for dr in app.db.collect_decrypted()? {
+        if dr.metadata().deleted {
+            continue;
+        }
         wtr.serialize(firefox::from_decrypted(dr))?;
         count += 1;
         print!(".");
