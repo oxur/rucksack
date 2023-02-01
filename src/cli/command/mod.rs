@@ -148,6 +148,7 @@ pub fn setup() -> Command {
                     .help("using this flag causes all secrets to be decrypted to allow for scoring, etc.")
                     .long("decrypt")
                     .action(ArgAction::SetTrue)
+                    .global(true)
             )
             .arg(
                 Arg::new("filter")
@@ -155,12 +156,14 @@ pub fn setup() -> Command {
                     .short('f')
                     .long("filter")
                     .visible_alias("include")
+                    .global(true)
             )
             .arg(
                 Arg::new("exclude")
                     .help("don't show records where the user or the URL contain the given string")
                     .short('x')
                     .long("exclude")
+                    .global(true)
             )
             .arg(
                 Arg::new("group-by")
@@ -168,7 +171,8 @@ pub fn setup() -> Command {
                     .short('g')
                     .long("group-by")
                     .visible_alias("partition")
-                    .value_parser(["password", "user"]),
+                    .value_parser(["password", "user"])
+                    .global(true)
             )
             .arg(
                 Arg::new("max-score")
@@ -176,19 +180,21 @@ pub fn setup() -> Command {
                     .long("max-score")
                     .value_parser(clap::value_parser!(f64))
                     .default_value("100")
+                    .global(true)
             )
             .arg(
                 Arg::new("min-score")
                     .help("limit results to secrets that are not less than the given minimum score")
                     .long("min-score")
                     .value_parser(clap::value_parser!(f64))
-                    .default_value("0")
+                    .default_value("0").global(true)
             )
             .arg(
                 Arg::new("reveal")
                     .help("display the actual the passwords")
                     .long("reveal")
                     .action(ArgAction::SetTrue)
+                    .global(true)
             )
             .arg(
                 Arg::new("sort-by")
@@ -197,11 +203,15 @@ pub fn setup() -> Command {
                     .long("sort-by")
                     .visible_alias("order-by")
                     .default_value("url")
-                    .value_parser(["score", "url", "user"]),
+                    .value_parser(["score", "url", "user"])
+                    .global(true)
             )
             .arg(db_arg())
             .arg(pwd_arg())
             .arg(salt_arg())
+            .subcommand(
+                Command::new("deleted")
+                    .about("list the accounts that have been flagged for deletion"))
     )
     .subcommand(
         Command::new("rm")

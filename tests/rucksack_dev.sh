@@ -151,6 +151,13 @@ header "Remove an account (clammy)"
     --db "$DB_FILE" \
     --db-pass 1234
 
+header "List deleted accounts"
+
+./bin/rucksack list deleted \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234
+
 # TODO: Uncomment when these tests pass on Linux/Docker ... see ticket:
 # * https://github.com/oxur/rucksack/issues/64
 

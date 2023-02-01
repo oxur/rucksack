@@ -344,6 +344,24 @@ rucksack show db-version
 
 Note that this is not necessarily the version of rucksack you're running, rather it will correspond to the version of rucksack that was used when your secrets database was last updated.
 
+### Deletions
+
+By default, accounts are not removed; instead, they are flagged as `deleted`. To delete an account entry:
+
+```shell
+rucksack rm \
+    --url http://example.com \
+    --user clammy
+```
+
+To see the list of accounts that have been deleted:
+
+```shell
+rucksack list deleted
+```
+
+All the same flags and filtering used with the `list` command are available with `list deleted`.
+
 ## Related
 
 [Other projects](https://crates.io/keywords/password-manager?sort=downloads) on crates.io tagged as `#password-manager"` ...

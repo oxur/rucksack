@@ -16,7 +16,11 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
         Some(("export", export_matches)) => export::new(export_matches, app)?,
         Some(("gen", gen_matches)) => gen::new(gen_matches)?,
         Some(("import", import_matches)) => import::new(import_matches, app)?,
-        Some(("list", list_matches)) => list::all(list_matches, app)?,
+        Some(("list", list_matches)) => match list_matches.subcommand() {
+            Some(("deleted", deleted_matches)) => list::deleted(deleted_matches, app)?,
+            Some((&_, _)) => todo!(),
+            None => list::all(list_matches, app)?,
+        },
         Some(("rm", rm_matches)) => rm::one(rm_matches, app)?,
         Some(("set", set_matches)) => match set_matches.subcommand() {
             Some(("password", password_matches)) => set::password(password_matches, app)?,

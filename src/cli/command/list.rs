@@ -138,6 +138,109 @@ pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
     Ok(())
 }
 
+pub fn deleted(matches: &ArgMatches, app: &App) -> Result<()> {
+    let decrypt = matches.get_one::<bool>("decrypt");
+    let filter = matches.get_one::<String>("filter");
+    let exclude = matches.get_one::<String>("exclude");
+    let max_score = matches.get_one::<f64>("max-score");
+    let min_score = matches.get_one::<f64>("min-score");
+    let reveal = matches.get_one::<bool>("reveal");
+    let sort_by = matches.get_one::<String>("sort-by").map(|s| s.as_str());
+    let group_by = matches.get_one::<String>("group-by").map(|s| s.as_str());
+    let mut results: Vec<ListResult> = Vec::new();
+    let mut groups = GroupByString::new();
+    for i in app.db.iter() {
+        let record = i.value().decrypt(app.db.store_pwd(), app.db.salt())?;
+        let analyzed = analyzer::analyze(record.password());
+        let score = scorer::score(&analyzed);
+        let mut result = new_result(record.key(), record.user(), record.metadata().url);
+        if !record.metadata().deleted {
+            continue;
+        }
+        if let Some(check) = filter {
+            if !i.key().contains(check) {
+                continue;
+            }
+        }
+        if let Some(check) = exclude {
+            if i.key().contains(check) {
+                continue;
+            }
+        }
+        if let Some(check) = max_score {
+            if &score.trunc() > check {
+                continue;
+            }
+        }
+        if let Some(check) = min_score {
+            if &score.trunc() < check {
+                continue;
+            }
+        }
+        result.access_count = record.metadata().access_count;
+        match decrypt {
+            Some(true) => {
+                let pwd = match reveal {
+                    Some(true) => record.password(),
+                    Some(false) => hidden(),
+                    None => unreachable!(),
+                };
+                result.pwd = pwd;
+                result.score = score.trunc() as i64;
+            }
+            Some(false) => result.pwd = hidden(),
+            None => unreachable!(),
+        }
+        match group_by {
+            Some("password") => {
+                let entry = groups.entry(record.password()).or_default();
+                entry.push(result.clone());
+            }
+            Some("user") => {
+                let entry = groups.entry(record.user()).or_default();
+                entry.push(result.clone());
+            }
+            Some(&_) => (),
+            None => (),
+        }
+        results.push(result);
+    }
+    sort(&mut results, sort_by);
+    match group_by {
+        Some("password") => {
+            let (group_count, record_count) =
+                print_password_group(groups, decrypt, reveal, sort_by);
+            print_group_report(group_count, record_count, app.db.hash_map().len());
+        }
+        Some("user") => {
+            let (group_count, record_count) = print_user_group(groups, decrypt, sort_by);
+            print_group_report(group_count, record_count, app.db.hash_map().len());
+        }
+        Some(&_) => (),
+        None => {
+            print_results(&results, decrypt);
+            print_report(results.len(), app.db.hash_map().len());
+        }
+    }
+    // With the dash_map iteration finished, the lock is gone, and we can
+    // now update all the records whose passwords were revealed:
+    for r in results {
+        match reveal {
+            Some(true) => {
+                if let Some(mut metadata) = app.db.get_metadata(r.id()) {
+                    metadata.last_used = time::now();
+                    metadata.access_count += 1;
+                    app.db.update_metadata(r.id(), metadata);
+                }
+            }
+            Some(false) => (),
+            None => unreachable!(),
+        }
+    }
+    app.db.close()?;
+    Ok(())
+}
+
 fn print_results(sorted: &Vec<ListResult>, decrypted: Option<&bool>) {
     match decrypted {
         Some(true) => decrypted_header(),
