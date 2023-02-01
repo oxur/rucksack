@@ -51,6 +51,9 @@ pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
         let analyzed = analyzer::analyze(record.password());
         let score = scorer::score(&analyzed);
         let mut result = new_result(record.key(), record.user(), record.metadata().url);
+        if record.metadata().deleted {
+            continue;
+        }
         if let Some(check) = filter {
             if !i.key().contains(check) {
                 continue;

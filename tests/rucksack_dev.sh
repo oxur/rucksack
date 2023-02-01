@@ -137,22 +137,19 @@ header "Filter accounts with 'boo' (decrypted data and revealed passwords)"
     --reveal \
     --filter boo
 
-# TODO: Uncomment when this ticket is fixed:
-# * https://github.com/oxur/rucksack/issues/59
+header "Remove an account (clammy)"
 
-# header "Remove an account (clammy)"
+./bin/rucksack rm \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --url http://example.com \
+    --user clammy
 
-# ./bin/rucksack rm \
-#     --config-file "$CFG_FILE" \
-#     --db "$DB_FILE" \
-#     --db-pass 1234 \
-#     --url http://example.com \
-#     --user clammy --log-level trace
-
-# ./bin/rucksack list \
-#     --config-file "$CFG_FILE" \
-#     --db "$DB_FILE" \
-#     --db-pass 1234
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234
 
 # TODO: Uncomment when these tests pass on Linux/Docker ... see ticket:
 # * https://github.com/oxur/rucksack/issues/64
