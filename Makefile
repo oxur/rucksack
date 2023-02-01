@@ -22,6 +22,7 @@ build: $(BIN_DIR)
 	@cargo install --path . --root .
 
 lint:
+	@cargo clippy --version
 	@cargo clippy --all-targets --all-features -- --no-deps -D warnings
 
 test:
