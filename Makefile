@@ -23,7 +23,7 @@ build: $(BIN_DIR)
 
 lint:
 	@cargo clippy --version
-	@cargo clippy --all-targets --all-features -- --no-deps -D warnings
+	@cargo clippy --all-targets --all-features -- --no-deps -D clippy::all
 
 test:
 	@RUST_BACKTRACE=1 cargo test

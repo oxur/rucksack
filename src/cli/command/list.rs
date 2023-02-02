@@ -37,9 +37,10 @@ type GroupByString = HashMap<String, Vec<ListResult>>;
 
 #[derive(Default)]
 pub struct Opts {
-    pub skip_deleted: Option<bool>,
-    pub only_deleted: Option<bool>,
-    pub with_status: Option<bool>,
+    pub skip_deleted: bool,
+    pub only_deleted: bool,
+    pub with_status: bool,
+    pub reveal: bool,
 }
 
 // TODO: once there's config for it, pull from config and pass
@@ -49,8 +50,7 @@ pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
         matches,
         app,
         Opts {
-            skip_deleted: Some(true),
-            only_deleted: None,
+            skip_deleted: true,
             ..Default::default()
         },
     )
@@ -63,8 +63,7 @@ pub fn deleted(matches: &ArgMatches, app: &App) -> Result<()> {
         matches,
         app,
         Opts {
-            skip_deleted: None,
-            only_deleted: Some(true),
+            only_deleted: true,
             ..Default::default()
         },
     )
@@ -76,16 +75,17 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
     let exclude = matches.get_one::<String>("exclude");
     let max_score = matches.get_one::<f64>("max-score");
     let min_score = matches.get_one::<f64>("min-score");
-    let reveal = matches.get_one::<bool>("reveal");
+    let reveal = matches.get_one::<bool>("reveal").unwrap();
     let sort_by = matches.get_one::<String>("sort-by").map(|s| s.as_str());
     let group_by = matches.get_one::<String>("group-by").map(|s| s.as_str());
+    opts.reveal = *reveal;
     // If we want to see the status of all records, we're going to override
     // skip_deleted and only_deleted:
     match matches.get_one::<bool>("with-status") {
         Some(true) => {
-            opts.only_deleted = Some(false);
-            opts.skip_deleted = Some(false);
-            opts.with_status = Some(true);
+            opts.only_deleted = false;
+            opts.skip_deleted = false;
+            opts.with_status = true;
         }
         Some(_) => (),
         None => (),
@@ -99,25 +99,13 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         let mut result = new_result(record.key(), record.user(), record.metadata().url);
         // If we're only showing non-deleted records and the record has been
         // deleted, move on to the next one:
-        match opts.skip_deleted {
-            Some(true) => {
-                if record.metadata().deleted {
-                    continue;
-                }
-            }
-            Some(_) => (),
-            None => (),
+        if opts.skip_deleted && record.metadata().deleted {
+            continue;
         }
         // If we're only showing deleted records and the record hasn't been
         // deleted, move on to the next one:
-        match opts.only_deleted {
-            Some(true) => {
-                if !record.metadata().deleted {
-                    continue;
-                }
-            }
-            Some(_) => (),
-            None => (),
+        if opts.only_deleted && !record.metadata().deleted {
+            continue;
         }
         if let Some(check) = filter {
             if !i.key().contains(check) {
@@ -142,10 +130,10 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         result.access_count = record.metadata().access_count;
         match decrypt {
             Some(true) => {
-                let pwd = match reveal {
-                    Some(true) => record.password(),
-                    Some(false) => hidden(),
-                    None => unreachable!(),
+                let pwd = if opts.reveal {
+                    record.password()
+                } else {
+                    hidden()
                 };
                 result.pwd = pwd;
                 result.score = score.trunc() as i64;
@@ -170,49 +158,44 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
     sort(&mut results, sort_by);
     match group_by {
         Some("password") => {
-            let (group_count, record_count) =
-                print_password_group(groups, decrypt, reveal, sort_by);
+            let (group_count, record_count) = print_password_group(groups, decrypt, sort_by, &opts);
             print_group_report(group_count, record_count, app.db.hash_map().len());
         }
         Some("user") => {
-            let (group_count, record_count) = print_user_group(groups, decrypt, sort_by);
+            let (group_count, record_count) = print_user_group(groups, decrypt, sort_by, &opts);
             print_group_report(group_count, record_count, app.db.hash_map().len());
         }
         Some(&_) => (),
         None => {
-            print_results(&results, decrypt);
+            print_results(&results, decrypt, &opts);
             print_report(results.len(), app.db.hash_map().len());
         }
     }
     // With the dash_map iteration finished, the lock is gone, and we can
     // now update all the records whose passwords were revealed:
     for r in results {
-        match reveal {
-            Some(true) => {
-                if let Some(mut metadata) = app.db.get_metadata(r.id()) {
-                    metadata.last_used = time::now();
-                    metadata.access_count += 1;
-                    app.db.update_metadata(r.id(), metadata);
-                }
+        if opts.reveal {
+            if let Some(mut metadata) = app.db.get_metadata(r.id()) {
+                metadata.last_used = time::now();
+                metadata.access_count += 1;
+                app.db.update_metadata(r.id(), metadata);
             }
-            Some(false) => (),
-            None => unreachable!(),
         }
     }
     app.db.close()?;
     Ok(())
 }
 
-fn print_results(sorted: &Vec<ListResult>, decrypted: Option<&bool>) {
+fn print_results(sorted: &Vec<ListResult>, decrypted: Option<&bool>, opts: &Opts) {
     match decrypted {
-        Some(true) => decrypted_header(),
-        Some(false) => encrypted_header(),
+        Some(true) => decrypted_header(opts),
+        Some(false) => encrypted_header(opts),
         None => unreachable!(),
     }
     for r in sorted {
         match decrypted {
-            Some(true) => decrypted_result(r),
-            Some(false) => encrypted_result(r),
+            Some(true) => decrypted_result(r, opts),
+            Some(false) => encrypted_result(r, opts),
             None => unreachable!(),
         }
     }
@@ -225,8 +208,8 @@ fn print_report(count: usize, total: usize) {
 fn print_password_group(
     groups: GroupByString,
     decrypted: Option<&bool>,
-    reveal: Option<&bool>,
     sort_by: Option<&str>,
+    opts: &Opts,
 ) -> (i32, usize) {
     let mut group_count = 0;
     let mut record_count = 0;
@@ -236,12 +219,12 @@ fn print_password_group(
         }
         group_count += 1;
         sort(&mut group, sort_by);
-        password_section(&group[0], decrypted, reveal);
+        password_section(&group[0], decrypted, opts);
         println!("Accounts using: {}\nAccounts:", group.len());
-        encrypted_header();
+        encrypted_header(opts);
         record_count += group.len();
         for r in group {
-            encrypted_result(&r)
+            encrypted_result(&r, opts)
         }
     }
     (group_count, record_count)
@@ -251,6 +234,7 @@ fn print_user_group(
     groups: GroupByString,
     decrypted: Option<&bool>,
     sort_by: Option<&str>,
+    opts: &Opts,
 ) -> (i32, usize) {
     let mut group_count = 0;
     let mut record_count = 0;
@@ -260,18 +244,18 @@ fn print_user_group(
         }
         group_count += 1;
         sort(&mut group, sort_by);
-        user_section(&group[0], decrypted);
+        user_section(&group[0], decrypted, opts);
         println!("Accounts using: {}\nAccounts:", group.len());
         match decrypted {
-            Some(true) => decrypted_no_user_header(),
-            Some(false) => encrypted_no_user_header(),
+            Some(true) => decrypted_no_user_header(opts),
+            Some(false) => encrypted_no_user_header(opts),
             None => unreachable!(),
         }
         record_count += group.len();
         for r in group {
             match decrypted {
-                Some(true) => decrypted_no_user_result(&r),
-                Some(false) => encrypted_no_user_result(&r),
+                Some(true) => decrypted_no_user_result(&r, opts),
+                Some(false) => encrypted_no_user_result(&r, opts),
                 None => unreachable!(),
             }
         }
@@ -292,7 +276,7 @@ const PWD_HEADER: &str = "Password";
 const SCORE_HEADER: &str = "Score / Strength";
 const COUNT_HEADER: &str = "Access Count";
 
-fn decrypted_header() {
+fn decrypted_header(_opts: &Opts) {
     println!(
         "\n{: <40} | {: <30} | {: <20} | {: <15} | {}",
         URL_HEADER, USER_HEADER, PWD_HEADER, SCORE_HEADER, COUNT_HEADER
@@ -307,7 +291,7 @@ fn decrypted_header() {
     )
 }
 
-fn decrypted_no_user_header() {
+fn decrypted_no_user_header(_opts: &Opts) {
     println!(
         "\n{: <40} | {: <20} | {}",
         URL_HEADER, PWD_HEADER, SCORE_HEADER
@@ -320,7 +304,7 @@ fn decrypted_no_user_header() {
     )
 }
 
-fn encrypted_header() {
+fn encrypted_header(_opts: &Opts) {
     println!(
         "\n{: <40} | {: <30} | {}",
         URL_HEADER, USER_HEADER, COUNT_HEADER
@@ -333,32 +317,34 @@ fn encrypted_header() {
     )
 }
 
-fn encrypted_no_user_header() {
+fn encrypted_no_user_header(_opts: &Opts) {
     println!("\n{: <40} | {}", URL_HEADER, COUNT_HEADER);
     println!("{:40}-+-{}", "-".repeat(40), "-".repeat(12))
 }
 
-fn decrypted_result(r: &ListResult) {
+fn decrypted_result(r: &ListResult, _opts: &Opts) {
     println!(
         "{: <40} | {: <30} | {: <20} | {: ^16.2} | {: ^12}",
         r.url, r.user, r.pwd, r.score, r.access_count
     )
 }
 
-fn password_section(r: &ListResult, decrypted: Option<&bool>, reveal: Option<&bool>) {
+fn password_section(r: &ListResult, decrypted: Option<&bool>, opts: &Opts) {
     println!("\n\n+{}\n", "=".repeat(40 + 30 + 2));
     match decrypted {
-        Some(true) => match reveal {
-            Some(true) => println!("Password: {} (Score: {})", r.pwd, r.score),
-            Some(false) => println!("Password: {} (Score: {})", hidden(), r.score),
-            None => unreachable!(),
-        },
+        Some(true) => {
+            if opts.reveal {
+                println!("Password: {} (Score: {})", r.pwd, r.score)
+            } else {
+                println!("Password: {} (Score: {})", hidden(), r.score)
+            }
+        }
         Some(false) => println!("Password Group"),
         None => unreachable!(),
     }
 }
 
-fn user_section(r: &ListResult, decrypted: Option<&bool>) {
+fn user_section(r: &ListResult, decrypted: Option<&bool>, _opts: &Opts) {
     match decrypted {
         Some(true) => {
             println!("\n\n+{}\n", "=".repeat(40 + 20 + 16 + 5));
@@ -372,18 +358,18 @@ fn user_section(r: &ListResult, decrypted: Option<&bool>) {
     }
 }
 
-fn encrypted_result(r: &ListResult) {
+fn encrypted_result(r: &ListResult, _opts: &Opts) {
     println!("{: <40} | {: <30} | {: ^12}", r.url, r.user, r.access_count)
 }
 
-fn decrypted_no_user_result(r: &ListResult) {
+fn decrypted_no_user_result(r: &ListResult, _opts: &Opts) {
     println!(
         "{: <40} | {: <20} | {: ^16.2} | {}",
         r.url, r.pwd, r.score, r.access_count
     )
 }
 
-fn encrypted_no_user_result(r: &ListResult) {
+fn encrypted_no_user_result(r: &ListResult, _opts: &Opts) {
     println!("{: <40} | {: ^12}", r.url, r.access_count)
 }
 
