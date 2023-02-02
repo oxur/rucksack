@@ -6,6 +6,7 @@ use crate::store;
 use crate::store::db;
 use crate::store::records;
 use crate::store::records::DecryptedRecord;
+use crate::util;
 
 pub fn setup_db(matches: &ArgMatches) -> Result<db::DB> {
     let db = matches.get_one::<String>("db");
@@ -23,21 +24,23 @@ pub fn setup_db(matches: &ArgMatches) -> Result<db::DB> {
         None => (),
     }
     log::debug!("Database is needed; preparing for read ...");
+    let pwd = match matches.get_one::<String>("db-pass") {
+        Some(flag_pwd) => SecretString::new(flag_pwd.to_owned()),
+        None => secret("Enter db password: ").unwrap(),
+    };
+    let salt = matches.get_one::<String>("salt").unwrap().to_string();
+    let db_file: String;
     match db {
-        Some(db_file) => {
-            log::debug!("Got database file from flag: {}", db_file);
-            let pwd = match matches.get_one::<String>("db-pass") {
-                Some(flag_pwd) => SecretString::new(flag_pwd.to_owned()),
-                None => secret("Enter db password: ").unwrap(),
-            };
-            let salt = matches.get_one::<String>("salt").unwrap().to_string();
-            db::open(db_file.to_owned(), pwd.expose_secret().to_string(), salt)
+        Some(file_path) => {
+            log::debug!("Got database file from flag: {}", file_path);
+            db_file = file_path.to_owned();
         }
         None => {
-            log::debug!("No database found; creating new one ...");
-            Ok(db::new())
+            db_file = util::db_file();
+            log::debug!("No database flag provided; using default ({db_file:})");
         }
     }
+    db::open(db_file, pwd.expose_secret().to_string(), salt)
 }
 
 pub fn record(app_db: &db::DB, matches: &ArgMatches) -> Result<DecryptedRecord> {

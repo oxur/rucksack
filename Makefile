@@ -46,7 +46,7 @@ release: build lint test tag publish
 
 clean:
 	@cargo clean
-	@rm $(BIN_DIR)/$(PROJ)
+	@rm -f $(BIN_DIR)/$(PROJ)
 
 clean-all: clean
 	@rm .crates.toml .crates2.json Cargo.lock

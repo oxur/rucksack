@@ -114,8 +114,8 @@ impl DB {
                 Ok(x) => Ok(x),
                 Err(e) => {
                     let msg = "Could not copy file";
-                    log::error!("{} {:?} ({:})", msg, path, e);
-                    Err(anyhow!("{} {:?} ({:})", msg, path, e))
+                    log::error!("{msg} {path:?} ({e:})");
+                    Err(anyhow!("{msg} {path:?} ({e:})"))
                 }
             }?;
         }
