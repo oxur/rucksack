@@ -5,6 +5,7 @@ use clap::ArgMatches;
 use passwords::{analyzer, scorer};
 
 use crate::app::App;
+use crate::store::Status;
 use crate::time;
 
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
@@ -15,6 +16,7 @@ struct ListResult {
     pwd: String,
     access_count: u64,
     score: i64,
+    status: String,
 }
 
 fn new_result(id: String, user: String, url: String) -> ListResult {
@@ -99,12 +101,12 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         let mut result = new_result(record.key(), record.user(), record.metadata().url);
         // If we're only showing non-deleted records and the record has been
         // deleted, move on to the next one:
-        if opts.skip_deleted && record.metadata().deleted {
+        if opts.skip_deleted && record.metadata().state == Status::Deleted {
             continue;
         }
         // If we're only showing deleted records and the record hasn't been
         // deleted, move on to the next one:
-        if opts.only_deleted && !record.metadata().deleted {
+        if opts.only_deleted && record.metadata().state != Status::Deleted {
             continue;
         }
         if let Some(check) = filter {
@@ -127,7 +129,9 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
                 continue;
             }
         }
-        result.access_count = record.metadata().access_count;
+        let md = record.metadata();
+        result.access_count = md.access_count;
+        result.status = md.status().to_string();
         match decrypt {
             Some(true) => {
                 let pwd = if opts.reveal {
@@ -275,57 +279,110 @@ const USER_HEADER: &str = "User / Account";
 const PWD_HEADER: &str = "Password";
 const SCORE_HEADER: &str = "Score / Strength";
 const COUNT_HEADER: &str = "Access Count";
+const STATUS_HEADER: &str = "Status";
 
-fn decrypted_header(_opts: &Opts) {
-    println!(
-        "\n{: <40} | {: <30} | {: <20} | {: <15} | {}",
-        URL_HEADER, USER_HEADER, PWD_HEADER, SCORE_HEADER, COUNT_HEADER
-    );
-    println!(
-        "{: <40}-+-{: <30}-+-{: <20}-+-{: <15}-+-{}",
-        "-".repeat(40),
-        "-".repeat(30),
-        "-".repeat(20),
-        "-".repeat(16),
-        "-".repeat(12),
-    )
+fn decrypted_header(opts: &Opts) {
+    if opts.with_status {
+        println!(
+            "\n{: <40} | {: <30} | {: <20} | {: <15} | {: <12} | {}",
+            URL_HEADER, USER_HEADER, PWD_HEADER, SCORE_HEADER, COUNT_HEADER, STATUS_HEADER
+        );
+        println!(
+            "{: <40}-+-{: <30}-+-{: <20}-+-{: <15}-+-{}-+-{: <12}",
+            "-".repeat(40),
+            "-".repeat(30),
+            "-".repeat(20),
+            "-".repeat(16),
+            "-".repeat(12),
+            "-".repeat(8),
+        )
+    } else {
+        println!(
+            "\n{: <40} | {: <30} | {: <20} | {: <15} | {}",
+            URL_HEADER, USER_HEADER, PWD_HEADER, SCORE_HEADER, COUNT_HEADER
+        );
+        println!(
+            "{: <40}-+-{: <30}-+-{: <20}-+-{: <15}-+-{}",
+            "-".repeat(40),
+            "-".repeat(30),
+            "-".repeat(20),
+            "-".repeat(16),
+            "-".repeat(12),
+        )
+    }
 }
 
-fn decrypted_no_user_header(_opts: &Opts) {
-    println!(
-        "\n{: <40} | {: <20} | {}",
-        URL_HEADER, PWD_HEADER, SCORE_HEADER
-    );
-    println!(
-        "{: <40}-+-{: <20}-+-{}",
-        "-".repeat(40),
-        "-".repeat(20),
-        "-".repeat(16)
-    )
+fn decrypted_no_user_header(opts: &Opts) {
+    if opts.with_status {
+        println!(
+            "\n{: <40} | {: <20} | {: <12} | {}",
+            URL_HEADER, PWD_HEADER, SCORE_HEADER, COUNT_HEADER
+        );
+        println!(
+            "{: <40}-+-{: <20}-+-{: <12}-+-{}",
+            "-".repeat(40),
+            "-".repeat(20),
+            "-".repeat(16),
+            "-".repeat(8),
+        )
+    } else {
+        println!(
+            "\n{: <40} | {: <20} | {}",
+            URL_HEADER, PWD_HEADER, SCORE_HEADER
+        );
+        println!(
+            "{: <40}-+-{: <20}-+-{}",
+            "-".repeat(40),
+            "-".repeat(20),
+            "-".repeat(16)
+        )
+    }
 }
 
-fn encrypted_header(_opts: &Opts) {
-    println!(
-        "\n{: <40} | {: <30} | {}",
-        URL_HEADER, USER_HEADER, COUNT_HEADER
-    );
-    println!(
-        "{:40}-+-{:30}-+-{}",
-        "-".repeat(40),
-        "-".repeat(30),
-        "-".repeat(12)
-    )
+fn encrypted_header(opts: &Opts) {
+    if opts.with_status {
+        println!(
+            "\n{: <40} | {: <30} | {: <12} | {}",
+            URL_HEADER, USER_HEADER, COUNT_HEADER, STATUS_HEADER
+        );
+        println!(
+            "{:40}-+-{:30}-+-{:12}-+-{}",
+            "-".repeat(40),
+            "-".repeat(30),
+            "-".repeat(12),
+            "-".repeat(8)
+        )
+    } else {
+        println!(
+            "\n{: <40} | {: <30} | {}",
+            URL_HEADER, USER_HEADER, COUNT_HEADER
+        );
+        println!(
+            "{:40}-+-{:30}-+-{}",
+            "-".repeat(40),
+            "-".repeat(30),
+            "-".repeat(12)
+        )
+    }
 }
 
 fn encrypted_no_user_header(_opts: &Opts) {
-    println!("\n{: <40} | {}", URL_HEADER, COUNT_HEADER);
-    println!("{:40}-+-{}", "-".repeat(40), "-".repeat(12))
+    if opts.with_status {
+        println!(
+            "\n{: <40} | {: <12} | {}",
+            URL_HEADER, COUNT_HEADER, STATUS_HEADER
+        );
+        println!("{:40}-+-{:12}-+-{}", "-".repeat(40), "-".repeat(12), .repeat(8))
+    } else {
+        println!("\n{: <40} | {}", URL_HEADER, COUNT_HEADER);
+        println!("{:40}-+-{}", "-".repeat(40), "-".repeat(12))
+    }
 }
 
 fn decrypted_result(r: &ListResult, _opts: &Opts) {
     println!(
-        "{: <40} | {: <30} | {: <20} | {: ^16.2} | {: ^12}",
-        r.url, r.user, r.pwd, r.score, r.access_count
+        "{: <40} | {: <30} | {: <20} | {: ^16.2} | {: ^12} | {: ^8}",
+        r.url, r.user, r.pwd, r.score, r.access_count, r.status
     )
 }
 
@@ -358,8 +415,15 @@ fn user_section(r: &ListResult, decrypted: Option<&bool>, _opts: &Opts) {
     }
 }
 
-fn encrypted_result(r: &ListResult, _opts: &Opts) {
-    println!("{: <40} | {: <30} | {: ^12}", r.url, r.user, r.access_count)
+fn encrypted_result(r: &ListResult, opts: &Opts) {
+    if opts.with_status {
+        println!(
+            "{: <40} | {: <30} | {: ^12} | {: <8}",
+            r.url, r.user, r.access_count, r.status
+        )
+    } else {
+        println!("{: <40} | {: <30} | {: ^12}", r.url, r.user, r.access_count)
+    }
 }
 
 fn decrypted_no_user_result(r: &ListResult, _opts: &Opts) {
