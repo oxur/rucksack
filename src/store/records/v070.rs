@@ -13,6 +13,14 @@ pub const VERSION: &str = "0.7.0";
 
 pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
 
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
+pub enum Status {
+    #[default]
+    Active,
+    Inactive,
+    Deleted,
+}
+
 pub fn migrate_hashmap_from_v060(hm_v060: v060::HashMap) -> HashMap {
     let hm: HashMap = dashmap::DashMap::new();
     for i in hm_v060.iter() {
@@ -67,8 +75,7 @@ pub struct Metadata {
     pub last_used: String,
     pub synced: String,
     pub access_count: u64,
-    pub active: bool,
-    pub deleted: bool,
+    pub state: Status,
 }
 
 pub fn migrate_metadata_from_v060(md: v060::Metadata) -> Metadata {
@@ -82,8 +89,17 @@ pub fn migrate_metadata_from_v060(md: v060::Metadata) -> Metadata {
         last_used: md.last_used,
         synced: String::new(),
         access_count: md.access_count,
-        active: true,
-        deleted: false,
+        state: Status::Active,
+    }
+}
+
+impl Metadata {
+    pub fn status(&self) -> &str {
+        match self.state {
+            Status::Active => "active",
+            Status::Inactive => "inactive",
+            Status::Deleted => "deleted",
+        }
     }
 }
 

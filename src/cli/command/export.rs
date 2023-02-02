@@ -4,6 +4,7 @@ use clap::ArgMatches;
 use crate::app::App;
 use crate::csv::writer;
 use crate::csv::{chrome, firefox};
+use crate::store::Status;
 use crate::util::write_file;
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
@@ -28,7 +29,7 @@ fn to_stdout(app: &App) -> Result<()> {
     match app.db.collect_decrypted() {
         Ok(rs) => {
             for r in rs {
-                if r.metadata().deleted {
+                if r.metadata().state == Status::Deleted {
                     continue;
                 }
                 println!("{:?}", r)
@@ -45,7 +46,7 @@ fn to_chrome_csv(app: &App, csv_path: String) -> Result<(), anyhow::Error> {
     let mut wtr = writer::to_bytes()?;
     let mut count = 0;
     for dr in app.db.collect_decrypted()? {
-        if dr.metadata().deleted {
+        if dr.metadata().state == Status::Deleted {
             continue;
         }
         wtr.serialize(chrome::from_decrypted(dr))?;
@@ -66,7 +67,7 @@ fn to_firefox_csv(app: &App, csv_path: String) -> Result<(), anyhow::Error> {
     let mut wtr = writer::to_bytes()?;
     let mut count = 0;
     for dr in app.db.collect_decrypted()? {
-        if dr.metadata().deleted {
+        if dr.metadata().state == Status::Deleted {
             continue;
         }
         wtr.serialize(firefox::from_decrypted(dr))?;

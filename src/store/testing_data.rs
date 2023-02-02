@@ -1,6 +1,6 @@
 use crate::time;
 
-use super::records::{Creds, DecryptedRecord, Kind, Metadata};
+use super::records::{Creds, DecryptedRecord, Kind, Metadata, Status};
 
 pub fn store_pwd() -> String {
     "abc123".to_string()
@@ -24,8 +24,7 @@ pub fn plaintext_record() -> DecryptedRecord {
             last_used: date_time.clone(),
             access_count: 0,
             synced: date_time,
-            active: true,
-            deleted: false,
+            state: Status::Active,
         },
     }
 }

@@ -5,7 +5,7 @@ use secrecy::{ExposeSecret, Secret, SecretString};
 use crate::store;
 use crate::store::db;
 use crate::store::records;
-use crate::store::records::DecryptedRecord;
+use crate::store::records::{DecryptedRecord, Status};
 use crate::util;
 
 pub fn setup_db(matches: &ArgMatches) -> Result<db::DB> {
@@ -121,10 +121,11 @@ pub fn account_pwd_revealed(matches: &ArgMatches) -> String {
     reveal(account_pwd(matches))
 }
 
-pub fn account_active_state(matches: &ArgMatches) -> bool {
+pub fn account_active_state(matches: &ArgMatches) -> Status {
     match matches.get_one::<bool>("active") {
-        Some(flag) => *flag,
-        None => false,
+        Some(true) => Status::Active,
+        Some(false) => Status::Inactive,
+        None => Status::Inactive,
     }
 }
 

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::store::records::Kind;
+use crate::store::records::{Kind, Status};
 use crate::{store, time};
 
 // This started as the Firefox login data struct, but it has more fields than
@@ -52,8 +52,7 @@ impl Record {
             last_used: time::epoch_to_string(self.time_last_used),
             access_count: 0,
             synced: now,
-            active: true,
-            deleted: false,
+            state: Status::Active,
         };
         store::DecryptedRecord { creds, metadata }
     }

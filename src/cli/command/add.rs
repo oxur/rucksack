@@ -4,7 +4,7 @@ use clap::ArgMatches;
 use super::util;
 
 use crate::app::App;
-use crate::store::{Creds, DecryptedRecord, Metadata};
+use crate::store::{Creds, DecryptedRecord, Metadata, Status};
 use crate::time;
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
@@ -29,8 +29,7 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
         last_used: now.clone(),
         access_count: 0,
         synced: now,
-        active: true,
-        deleted: false,
+        state: Status::Active,
     };
     let dr = DecryptedRecord { creds, metadata };
     app.db.insert(dr);
