@@ -27,7 +27,7 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
             Some(("status", status_matches)) => set::status(status_matches, app)?,
             Some(("url", url_matches)) => set::url(url_matches, app)?,
             Some(("user", user_matches)) => set::user(user_matches, app)?,
-            Some(("type", type_matches)) => set::account_type(type_matches, app)?,
+            Some(("type", type_matches)) => set::record_type(type_matches, app)?,
             Some((&_, _)) => todo!(),
             None => todo!(),
         },

@@ -40,10 +40,10 @@ pub fn setup() -> Command {
     .subcommand(
         Command::new("add")
             .about("add a new secret")
-            .arg(account_type())
-            .arg(account_user().required(true))
-            .arg(account_pass())
-            .arg(account_url().required(true))
+            .arg(record_type())
+            .arg(record_user().required(true))
+            .arg(record_pass())
+            .arg(record_url().required(true))
             .arg(db_arg())
             .arg(pwd_arg())
             .arg(salt_arg())
@@ -218,14 +218,14 @@ pub fn setup() -> Command {
             .arg(salt_arg())
             .subcommand(
                 Command::new("deleted")
-                    .about("list the accounts that have been flagged for deletion"))
+                    .about("list the records that have been flagged for deletion"))
     )
     .subcommand(
         Command::new("rm")
             .about("delete a single record")
             .visible_aliases(["delete","remove"])
-            .arg(account_user().required(true))
-            .arg(account_url().required(true))
+            .arg(record_user().required(true))
+            .arg(record_url().required(true))
             .arg(db_arg())
             .arg(pwd_arg())
             .arg(salt_arg())
@@ -238,38 +238,38 @@ pub fn setup() -> Command {
             .arg(salt_arg())
             .subcommand(
                 Command::new("password")
-                    .about("change the password for the given account")
-                    .arg(account_pass())
-                    .arg(account_user().required(true))
-                    .arg(account_url().required(true))
+                    .about("change the password for the given record")
+                    .arg(record_pass())
+                    .arg(record_user().required(true))
+                    .arg(record_url().required(true))
             )
             .subcommand(
                 Command::new("status")
-                    .about("set the status for the given account")
-                    .arg(account_status().required(true))
-                    .arg(account_user().required(true))
-                    .arg(account_url().required(true))
+                    .about("set the status for the given record")
+                    .arg(record_status().required(true))
+                    .arg(record_user().required(true))
+                    .arg(record_url().required(true))
             )
             .subcommand(
                 Command::new("url")
-                    .about("change the url for the given account")
-                    .arg(account_url_old().required(true))
-                    .arg(account_url_new().required(true))
-                    .arg(account_user().required(true))
+                    .about("change the url for the given record")
+                    .arg(record_url_old().required(true))
+                    .arg(record_url_new().required(true))
+                    .arg(record_user().required(true))
             )
             .subcommand(
                 Command::new("user")
-                    .about("change the user (login name) for the given account")
-                    .arg(account_user_old().required(true))
-                    .arg(account_user_new().required(true))
-                    .arg(account_url().required(true))
+                    .about("change the user (login name) for the given record")
+                    .arg(record_user_old().required(true))
+                    .arg(record_user_new().required(true))
+                    .arg(record_url().required(true))
             )
             .subcommand(
                 Command::new("type")
-                    .about("change the type of the given account")
-                    .arg(account_type().required(true))
-                    .arg(account_user().required(true))
-                    .arg(account_url().required(true))
+                    .about("change the type of the given record")
+                    .arg(record_type().required(true))
+                    .arg(record_user().required(true))
+                    .arg(record_url().required(true))
             )
     )
     .subcommand(
@@ -356,15 +356,15 @@ fn default_salt() -> String {
     }
 }
 
-// Account Flags
+// Record Flags
 
-pub fn account_status() -> Arg {
+pub fn record_status() -> Arg {
     Arg::new("status")
-        .help("the status of the given account")
+        .help("the status of the given record")
         .value_parser(["active", "inactive", "deleted"])
 }
 
-pub fn account_type() -> Arg {
+pub fn record_type() -> Arg {
     Arg::new("type")
         .help("the type of secret for the record")
         .short('t')
@@ -381,46 +381,46 @@ pub fn account_type() -> Arg {
         ])
 }
 
-pub fn account_user() -> Arg {
+pub fn record_user() -> Arg {
     Arg::new("user")
-        .help("the user, login, or account, identifier")
+        .help("the user/login identifier")
         .short('u')
         .long("user")
 }
 
-pub fn account_user_old() -> Arg {
+pub fn record_user_old() -> Arg {
     Arg::new("old-user")
         .help("the old user login name")
         .short('u')
         .long("old-user")
 }
 
-pub fn account_user_new() -> Arg {
+pub fn record_user_new() -> Arg {
     Arg::new("new-user")
         .help("the new user login name to use")
         .short('u')
         .long("new-user")
 }
 
-pub fn account_pass() -> Arg {
+pub fn record_pass() -> Arg {
     Arg::new("password")
-        .help("the account / login password")
+        .help("the login password")
         .long("password")
 }
 
-pub fn account_url() -> Arg {
+pub fn record_url() -> Arg {
     Arg::new("url").help("the login URL").long("url")
 }
 
-pub fn account_url_old() -> Arg {
+pub fn record_url_old() -> Arg {
     Arg::new("old-url")
         .help("the old login URL")
         .long("old-url")
 }
 
-pub fn account_url_new() -> Arg {
+pub fn record_url_new() -> Arg {
     Arg::new("new-url")
-        .help("the new URL for the account / login")
+        .help("the new URL for the login")
         .long("new-url")
 }
 

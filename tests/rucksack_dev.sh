@@ -46,7 +46,7 @@ header "Generate encoded password"
 
 ./bin/rucksack gen --config-file "$CFG_FILE" --type uuid++ --encode
 
-header "Add a new account (shelly)"
+header "Add a new record (shelly)"
 echo
 
 ./bin/rucksack add \
@@ -69,7 +69,7 @@ header "Show DB file format version"
     --db "$DB_FILE" \
     --db-pass 1234
 
-header "Change the account user name"
+header "Change the record user name"
 
 ./bin/rucksack set user \
     --config-file "$CFG_FILE" \
@@ -84,7 +84,7 @@ header "Change the account user name"
     --db "$DB_FILE" \
     --db-pass 1234
 
-header "List all accounts (with decrypted data)"
+header "List all records (with decrypted data)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
@@ -92,7 +92,7 @@ header "List all accounts (with decrypted data)"
     --db-pass 1234 \
     --decrypt
 
-header "Add a new account (sully)"
+header "Add a new record (sully)"
 echo
 
 ./bin/rucksack add \
@@ -108,7 +108,7 @@ echo
     --db "$DB_FILE" \
     --db-pass 1234
 
-header "List all accounts (with decrypted data and revealed passwords)"
+header "List all records (with decrypted data and revealed passwords)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
@@ -117,7 +117,7 @@ header "List all accounts (with decrypted data and revealed passwords)"
     --decrypt \
     --reveal
 
-header "Filter accounts with 'exa' (decrypted data and revealed passwords)"
+header "Filter records with 'exa' (decrypted data and revealed passwords)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
@@ -127,7 +127,7 @@ header "Filter accounts with 'exa' (decrypted data and revealed passwords)"
     --reveal \
     --filter exa
 
-header "Filter accounts with 'boo' (decrypted data and revealed passwords)"
+header "Filter records with 'boo' (decrypted data and revealed passwords)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
@@ -137,7 +137,7 @@ header "Filter accounts with 'boo' (decrypted data and revealed passwords)"
     --reveal \
     --filter boo
 
-header "Remove an account (clammy)"
+header "Remove an record (clammy)"
 
 ./bin/rucksack rm \
     --config-file "$CFG_FILE" \
@@ -151,7 +151,7 @@ header "Remove an account (clammy)"
     --db "$DB_FILE" \
     --db-pass 1234
 
-header "List deleted accounts"
+header "List deleted records"
 
 ./bin/rucksack list deleted \
     --config-file "$CFG_FILE" \

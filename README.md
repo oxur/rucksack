@@ -173,7 +173,7 @@ Enter password for record:
 There are several types of changes to records that can't be made via an "update" subcommand due to how the data is used in the database. That did't leave too much data left for an "update" command, so the "record type" update was moved into the "set" group, too. The total list of `set` operations is:
 
 * changing the password
-* changing the user (account name)
+* changing the user (name associated with the password)
 * changing the URL
 * changing the type of record
 
@@ -191,7 +191,7 @@ rucksack set password \
 If the password isn't provided, you will be prompted at the terminal:
 
 ```shell
-Enter account password:
+Enter record password:
 ```
 
 Changing a user:
@@ -218,14 +218,14 @@ Changing the record type:
 rucksack set type \
   --url http://example.com \
   --user clammy
-  --type account
+  --type password
 ```
 
 Note that for all of this, should you want to pass the DB password, file, or salt, you will need to make sure those flags come after `set` but before the following subcommmand.
 
 ### List Secrets
 
-Show URL/accounts for all secrets:
+Show all secrets records:
 
 ```shell
 rucksack list
@@ -235,7 +235,7 @@ rucksack list
 Enter db password:
 ```
 
-Show URLs, accounts, passwords, and password scores for all secrets:
+Show URLs, names, passwords, and password scores for all secrets:
 
 ```shell
 rucksack list --decrypt
@@ -266,7 +266,7 @@ rucksack list \
 ```
 
 ```text
-URL                                      | User / Account                 | Password             | Strength
+URL                                      | User / Record                 | Password             | Strength
 -----------------------------------------+--------------------------------+----------------------+-----------
 https://www.bugworld.com                 | hexapod123                     | **********           | 93
 https://accounts.cloud.com               | hexapod@thing.systems          | **********           | 90
@@ -299,10 +299,10 @@ rucksack list \
 +========================================================================
 
 Password: ********** (Score: 99)
-Accounts using: 5
-Accounts:
+Records using: 5
+Records:
 
-URL                                      | User / Account
+URL                                      | User / Record
 -----------------------------------------+-------------------------------
 https://smile.amazon.com                 | alice@example.com
 https://smile.amazon.com/ap/signin       | alice@example.com
@@ -313,10 +313,10 @@ https://mybank.com                       | alice@example.com
 +========================================================================
 
 Password: ********** (Score: 86)
-Accounts using: 2
-Accounts:
+Records using: 2
+Records:
 
-URL                                      | User / Account
+URL                                      | User / Record
 -----------------------------------------+-------------------------------
 https://blurp.com                        | alice
 https://bleep.net                        | alice
@@ -354,7 +354,7 @@ rucksack rm \
     --user clammy
 ```
 
-To see the list of accounts that have been deleted:
+To see the list of records that have been deleted:
 
 ```shell
 rucksack list deleted

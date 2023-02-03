@@ -110,18 +110,18 @@ pub fn db_pwd(matches: &ArgMatches) -> Secret<String> {
     }
 }
 
-pub fn account_pwd(matches: &ArgMatches) -> Secret<String> {
+pub fn record_pwd(matches: &ArgMatches) -> Secret<String> {
     match matches.get_one::<String>("password") {
         Some(flag_pwd) => SecretString::new(flag_pwd.to_owned()),
-        None => secret("Enter account password: ").unwrap(),
+        None => secret("Enter record password: ").unwrap(),
     }
 }
 
-pub fn account_pwd_revealed(matches: &ArgMatches) -> String {
-    reveal(account_pwd(matches))
+pub fn record_pwd_revealed(matches: &ArgMatches) -> String {
+    reveal(record_pwd(matches))
 }
 
-pub fn account_state(matches: &ArgMatches) -> Status {
+pub fn record_state(matches: &ArgMatches) -> Status {
     match matches.get_one::<String>("status").map(|s| s.as_str()) {
         Some("active") => Status::Active,
         Some("inactive") => Status::Inactive,
@@ -141,9 +141,9 @@ pub fn reveal(pwd: SecretString) -> String {
     pwd.expose_secret().to_string()
 }
 
-pub fn account_kind(matches: &ArgMatches) -> records::Kind {
-    let account_type = matches.get_one::<String>("type").map(|s| s.as_str());
-    match account_type {
+pub fn record_kind(matches: &ArgMatches) -> records::Kind {
+    let record_type = matches.get_one::<String>("type").map(|s| s.as_str());
+    match record_type {
         Some("account") => records::Kind::Account, // Anything that has an account ID, e.g., AWS creds
         Some("asymmetric-crypto") => records::Kind::AsymmetricCrypto, // SSH, GPG, etc.
         Some("asymmetric") => records::Kind::AsymmetricCrypto, // Alias for 'asymmetric-crypto'

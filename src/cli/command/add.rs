@@ -17,10 +17,10 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     let now = time::now();
     let creds = Creds {
         user: util::user(matches),
-        password: util::account_pwd_revealed(matches),
+        password: util::record_pwd_revealed(matches),
     };
     let metadata = Metadata {
-        kind: util::account_kind(matches),
+        kind: util::record_kind(matches),
         url: util::url(matches),
         created: now.clone(),
         imported: now.clone(),

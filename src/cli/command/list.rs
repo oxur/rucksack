@@ -224,7 +224,7 @@ fn print_password_group(
         group_count += 1;
         sort(&mut group, sort_by);
         password_section(&group[0], decrypted, opts);
-        println!("Accounts using: {}\nAccounts:", group.len());
+        println!("Records using: {}\nRecords:", group.len());
         encrypted_header(opts);
         record_count += group.len();
         for r in group {
@@ -249,7 +249,7 @@ fn print_user_group(
         group_count += 1;
         sort(&mut group, sort_by);
         user_section(&group[0], decrypted);
-        println!("Accounts using: {}\nAccounts:", group.len());
+        println!("Records using: {}\nRecords:", group.len());
         match decrypted {
             Some(true) => decrypted_no_user_header(opts),
             Some(false) => encrypted_no_user_header(opts),
@@ -272,7 +272,7 @@ fn print_group_report(count: i32, records: usize, total: usize) {
 }
 
 const URL_HEADER: &str = "URL";
-const USER_HEADER: &str = "User / Account";
+const USER_HEADER: &str = "User / Record";
 const PWD_HEADER: &str = "Password";
 const SCORE_HEADER: &str = "Score / Strength";
 const COUNT_HEADER: &str = "Access Count";

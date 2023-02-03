@@ -9,7 +9,7 @@ use super::util;
 
 pub fn one(matches: &ArgMatches, app: &App) -> Result<()> {
     let key = util::key(matches);
-    log::debug!("Marking account '{}' as deleted ...", key);
+    log::debug!("Marking record '{}' as deleted ...", key);
     let now = time::now();
     let mut record = util::record(&app.db, matches)?;
     record.metadata.state = Status::Deleted;
