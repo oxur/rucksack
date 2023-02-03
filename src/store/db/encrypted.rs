@@ -79,7 +79,7 @@ impl EncryptedDB {
                 Ok(())
             }
             Err(e) => {
-                let msg = format!("Could not decrypt data: {:?}", e);
+                let msg = format!("Could not decrypt data: {e:?}");
                 log::error!("{}", msg);
                 Err(anyhow!("{}", msg))
             }

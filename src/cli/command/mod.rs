@@ -18,7 +18,7 @@ const DESC: &str = env!("CARGO_PKG_DESCRIPTION");
 
 pub fn setup() -> Command {
     Command::new(NAME)
-    .about(format!("{}: {}", NAME, DESC))
+    .about(format!("{NAME}: {DESC}"))
     .arg_required_else_help(true)
     // .allow_external_subcommands(true)
     .arg(config_arg())

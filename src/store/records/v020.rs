@@ -11,10 +11,7 @@ pub const VERSION: &str = "0.2.0";
 pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
 
 pub fn decode_hashmap(bytes: Vec<u8>, version: versions::SemVer) -> Result<HashMap> {
-    log::debug!(
-        "Decoding hashmap from stored bytes (format version {:})...",
-        version
-    );
+    log::debug!("Decoding hashmap from stored bytes (format version {version:})...");
     let hm: HashMap = dashmap::DashMap::new();
     log::trace!("Created hashmap.");
     let sorted_vec: Vec<(String, EncryptedRecord)>;
@@ -28,7 +25,7 @@ pub fn decode_hashmap(bytes: Vec<u8>, version: versions::SemVer) -> Result<HashM
             Ok(hm)
         }
         Err(e) => {
-            let msg = format!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
+            let msg = format!("couldn't deserialise bincoded hashmap bytes: {e:?}");
             log::error!("{}", msg);
             Err(anyhow!(msg))
         }

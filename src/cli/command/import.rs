@@ -19,7 +19,7 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 fn from_chrome_csv(db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
-    println!("Importing data from {}:", csv_path);
+    println!("Importing data from {csv_path}:");
     let mut rdr = csv::reader::from_path(csv_path)?;
     let mut count = 0;
     for result in rdr.deserialize() {
@@ -33,7 +33,7 @@ fn from_chrome_csv(db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
 }
 
 fn from_firefox_csv(db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
-    println!("Importing data from {}:", csv_path);
+    println!("Importing data from {csv_path}:");
     let mut rdr = csv::reader::from_path(csv_path)?;
     let mut count: usize = 0;
     for result in rdr.deserialize() {
@@ -47,8 +47,5 @@ fn from_firefox_csv(db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
 }
 
 fn print_report(count: usize, total: usize) {
-    println!(
-        "\nImported {} records (total records in DB: {})",
-        count, total
-    )
+    println!("\nImported {count} records (total records in DB: {total})",)
 }

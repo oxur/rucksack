@@ -22,6 +22,10 @@ build: $(BIN_DIR)
 	@cargo install --path . --root .
 
 lint:
+	@cargo +nightly clippy --version
+	@cargo +nightly clippy --all-targets --all-features -- --no-deps -D clippy::all
+
+cicd-lint:
 	@cargo clippy --version
 	@cargo clippy --all-targets --all-features -- --no-deps -D clippy::all
 

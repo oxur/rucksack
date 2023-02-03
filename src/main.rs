@@ -65,7 +65,7 @@ fn main() -> Result<()> {
     match twyg::setup_logger(&cfg.logging) {
         Ok(_) => {}
         Err(error) => {
-            panic!("Could not setup logger: {:?}", error)
+            panic!("Could not setup logger: {error:?}")
         }
     }
     log::debug!("Config setup complete (using {})", cfg.rucksack.cfg_file);

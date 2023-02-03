@@ -177,7 +177,7 @@ impl DB {
                 Ok(encoded)
             }
             Err(e) => {
-                let msg = format!("couldn't encode DB hashmap ({:?})", e);
+                let msg = format!("couldn't encode DB hashmap ({e:?})");
                 log::error!("{}", msg);
                 Err(anyhow!("{}", msg))
             }

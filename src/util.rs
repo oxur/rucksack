@@ -8,7 +8,7 @@ use rand::Rng;
 const SPECIALS: &[u8] = b"!@#%&*?=+:";
 
 pub fn display(text: &str) -> Result<()> {
-    println!("{}", text);
+    println!("{text}");
     Ok(())
 }
 

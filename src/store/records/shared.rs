@@ -1,5 +1,5 @@
 pub fn key(user: &str, url: &str) -> String {
-    format!("{}:{}", user, url)
+    format!("{user}:{url}")
 }
 
 pub fn version(v: &str) -> versions::SemVer {

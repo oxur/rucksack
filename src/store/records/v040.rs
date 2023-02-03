@@ -28,7 +28,7 @@ pub fn decode_hashmap(bytes: Vec<u8>, version: versions::SemVer) -> Result<HashM
             Ok(hm)
         }
         Err(e) => {
-            let msg = format!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
+            let msg = format!("couldn't deserialise bincoded hashmap bytes: {e:?}");
             log::error!("{}", msg);
             Err(anyhow!(msg))
         }

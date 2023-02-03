@@ -20,10 +20,7 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
     let sorted_vec: Vec<(String, EncryptedRecord)>;
     log::trace!("Created vec for sorted data.");
     if version < shared::version(VERSION) {
-        let msg = format!(
-            "automatic migration not supported for versions prior to: {}",
-            VERSION
-        );
+        let msg = format!("automatic migration not supported for versions prior to: {VERSION}");
         log::error!("{}", msg);
         return Err(anyhow!(msg));
     }
@@ -36,7 +33,7 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
             Ok(hm)
         }
         Err(e) => {
-            let msg = format!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
+            let msg = format!("couldn't deserialise bincoded hashmap bytes: {e:?}");
             log::error!("{}", msg);
             Err(anyhow!(msg))
         }
