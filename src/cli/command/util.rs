@@ -144,10 +144,13 @@ pub fn reveal(pwd: SecretString) -> String {
 pub fn account_kind(matches: &ArgMatches) -> records::Kind {
     let account_type = matches.get_one::<String>("type").map(|s| s.as_str());
     match account_type {
-        Some("account") => records::Kind::Account,
-        Some("creds") => records::Kind::Credential,
-        Some("credential") => records::Kind::Credential,
-        Some("password") => records::Kind::Password,
+        Some("account") => records::Kind::Account, // Anything that has an account ID, e.g., AWS creds
+        Some("asymmetric-crypto") => records::Kind::AsymmetricCrypto, // SSH, GPG, etc.
+        Some("asymmetric") => records::Kind::AsymmetricCrypto, // Alias for 'asymmetric-crypto'
+        Some("certificates") => records::Kind::Certificates, // public, private, root -- SSL, e.g.
+        Some("password") => records::Kind::Password, // standard username/password
+        Some("service-creds") => records::Kind::ServiceCredentials, // Alias for service-creds
+        Some("service-credentials") => records::Kind::ServiceCredentials, // API key/secret pairs, e.g.
         Some("") => records::DEFAULT_KIND,
         Some(&_) => todo!(),
         None => records::DEFAULT_KIND,

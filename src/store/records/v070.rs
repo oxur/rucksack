@@ -7,11 +7,31 @@ use crate::util;
 
 use super::shared;
 use super::v060;
-pub use super::v060::{Creds, Kind, DEFAULT_KIND};
+pub use super::v060::Creds;
 
 pub const VERSION: &str = "0.7.0";
 
-pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
+// Enums
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
+pub enum Kind {
+    Account,
+    AsymmetricCrypto,
+    Certificates,
+    #[default]
+    Password,
+    ServiceCredentials,
+}
+
+pub const DEFAULT_KIND: Kind = Kind::Password;
+
+pub fn migrate_kind_from_v060(k: v060::Kind) -> Kind {
+    match k {
+        v060::Kind::Account => Kind::Password,
+        v060::Kind::Credential => Kind::Password,
+        v060::Kind::Password => Kind::Password,
+    }
+}
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub enum Status {
@@ -20,6 +40,10 @@ pub enum Status {
     Inactive,
     Deleted,
 }
+
+// The primary store data structure
+
+pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
 
 pub fn migrate_hashmap_from_v060(hm_v060: v060::HashMap) -> HashMap {
     let hm: HashMap = dashmap::DashMap::new();
@@ -78,6 +102,16 @@ pub struct Metadata {
     pub state: Status,
 }
 
+impl Metadata {
+    pub fn status(&self) -> &str {
+        match self.state {
+            Status::Active => "active",
+            Status::Inactive => "inactive",
+            Status::Deleted => "deleted",
+        }
+    }
+}
+
 pub fn migrate_metadata_from_v060(md: v060::Metadata) -> Metadata {
     Metadata {
         kind: migrate_kind_from_v060(md.kind),
@@ -93,23 +127,7 @@ pub fn migrate_metadata_from_v060(md: v060::Metadata) -> Metadata {
     }
 }
 
-impl Metadata {
-    pub fn status(&self) -> &str {
-        match self.state {
-            Status::Active => "active",
-            Status::Inactive => "inactive",
-            Status::Deleted => "deleted",
-        }
-    }
-}
-
-pub fn migrate_kind_from_v060(k: v060::Kind) -> Kind {
-    match k {
-        v060::Kind::Account => Kind::Account,
-        v060::Kind::Credential => Kind::Credential,
-        v060::Kind::Password => Kind::Password,
-    }
-}
+// Decrypted records
 
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
 pub struct DecryptedRecord {
@@ -145,6 +163,8 @@ impl DecryptedRecord {
         }
     }
 }
+
+// Encrypted records
 
 #[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub struct EncryptedRecord {

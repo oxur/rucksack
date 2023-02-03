@@ -369,8 +369,16 @@ pub fn account_type() -> Arg {
         .help("the type of secret for the record")
         .short('t')
         .long("type")
-        // These next have not yet been defined/refined:
-        .value_parser(["", "account", "credential", "creds", "password"])
+        .value_parser([
+            "",
+            "account",
+            "asymmetric-crypto",
+            "asymmetric",
+            "certificates",
+            "password",
+            "service-creds",
+            "service-credentials",
+        ])
 }
 
 pub fn account_user() -> Arg {
