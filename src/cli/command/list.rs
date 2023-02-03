@@ -366,13 +366,18 @@ fn encrypted_header(opts: &Opts) {
     }
 }
 
-fn encrypted_no_user_header(_opts: &Opts) {
+fn encrypted_no_user_header(opts: &Opts) {
     if opts.with_status {
         println!(
             "\n{: <40} | {: <12} | {}",
             URL_HEADER, COUNT_HEADER, STATUS_HEADER
         );
-        println!("{:40}-+-{:12}-+-{}", "-".repeat(40), "-".repeat(12), .repeat(8))
+        println!(
+            "{:40}-+-{:12}-+-{}",
+            "-".repeat(40),
+            "-".repeat(12),
+            "-".repeat(8)
+        )
     } else {
         println!("\n{: <40} | {}", URL_HEADER, COUNT_HEADER);
         println!("{:40}-+-{}", "-".repeat(40), "-".repeat(12))
