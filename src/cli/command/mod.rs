@@ -244,6 +244,13 @@ pub fn setup() -> Command {
                     .arg(account_url().required(true))
             )
             .subcommand(
+                Command::new("status")
+                    .about("set the status for the given account")
+                    .arg(account_status().required(true))
+                    .arg(account_user().required(true))
+                    .arg(account_url().required(true))
+            )
+            .subcommand(
                 Command::new("url")
                     .about("change the url for the given account")
                     .arg(account_url_old().required(true))
@@ -263,9 +270,6 @@ pub fn setup() -> Command {
                     .arg(account_type().required(true))
                     .arg(account_user().required(true))
                     .arg(account_url().required(true))
-                    .arg(db_arg())
-                    .arg(pwd_arg())
-                    .arg(salt_arg())
             )
     )
     .subcommand(
@@ -354,9 +358,15 @@ fn default_salt() -> String {
 
 // Account Flags
 
+pub fn account_status() -> Arg {
+    Arg::new("status")
+        .help("the status of the given account")
+        .value_parser(["active", "inactive", "deleted"])
+}
+
 pub fn account_type() -> Arg {
     Arg::new("type")
-        .help("the type of secret to add")
+        .help("the type of secret for the record")
         .short('t')
         .long("type")
         // These next have not yet been defined/refined:

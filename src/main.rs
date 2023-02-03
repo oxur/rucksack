@@ -24,6 +24,7 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
         Some(("rm", rm_matches)) => rm::one(rm_matches, app)?,
         Some(("set", set_matches)) => match set_matches.subcommand() {
             Some(("password", password_matches)) => set::password(password_matches, app)?,
+            Some(("status", status_matches)) => set::status(status_matches, app)?,
             Some(("url", url_matches)) => set::url(url_matches, app)?,
             Some(("user", user_matches)) => set::user(user_matches, app)?,
             Some(("type", type_matches)) => set::account_type(type_matches, app)?,

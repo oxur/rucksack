@@ -121,11 +121,13 @@ pub fn account_pwd_revealed(matches: &ArgMatches) -> String {
     reveal(account_pwd(matches))
 }
 
-pub fn account_active_state(matches: &ArgMatches) -> Status {
-    match matches.get_one::<bool>("active") {
-        Some(true) => Status::Active,
-        Some(false) => Status::Inactive,
-        None => Status::Inactive,
+pub fn account_state(matches: &ArgMatches) -> Status {
+    match matches.get_one::<String>("status").map(|s| s.as_str()) {
+        Some("active") => Status::Active,
+        Some("inactive") => Status::Inactive,
+        Some("deleted") => Status::Deleted,
+        Some(&_) => todo!(),
+        None => Status::Active,
     }
 }
 

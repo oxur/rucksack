@@ -17,23 +17,23 @@ pub fn account_type(matches: &ArgMatches, app: &App) -> Result<()> {
     Ok(())
 }
 
-pub fn active(matches: &ArgMatches, app: &App) -> Result<()> {
-    log::debug!("Setting account 'active' flag ...");
-    let now = time::now();
-    let mut record = util::record(&app.db, matches)?;
-    record.metadata.state = util::account_active_state(matches);
-    record.metadata.updated = now;
-    app.db.insert(record);
-    app.db.close()?;
-    Ok(())
-}
-
 pub fn password(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting account password ...");
     let now = time::now();
     let mut record = util::record(&app.db, matches)?;
     record.creds.password = util::account_pwd_revealed(matches);
     record.metadata.password_changed = now.clone();
+    record.metadata.updated = now;
+    app.db.insert(record);
+    app.db.close()?;
+    Ok(())
+}
+
+pub fn status(matches: &ArgMatches, app: &App) -> Result<()> {
+    log::debug!("Setting account status ...");
+    let now = time::now();
+    let mut record = util::record(&app.db, matches)?;
+    record.metadata.state = util::account_state(matches);
     record.metadata.updated = now;
     app.db.insert(record);
     app.db.close()?;
