@@ -3,6 +3,7 @@ use bincode::{Decode, Encode};
 use serde::{Deserialize, Serialize};
 
 use crate::store::crypto::{decrypt, encrypt};
+use crate::time;
 use crate::util;
 
 use super::shared;
@@ -10,6 +11,7 @@ use super::v060;
 pub use super::v060::Creds;
 
 pub const VERSION: &str = "0.7.0";
+pub const DEFAULT_CATEGORY: &str = "default";
 
 // Enums
 
@@ -91,6 +93,9 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub struct Metadata {
     pub kind: Kind,
+    pub category: String,
+    pub name: String,
+    pub account_id: String,
     pub url: String,
     pub created: String,
     pub imported: String,
@@ -112,19 +117,36 @@ impl Metadata {
     }
 }
 
-pub fn migrate_metadata_from_v060(md: v060::Metadata) -> Metadata {
-    Metadata {
-        kind: migrate_kind_from_v060(md.kind),
-        url: md.url,
-        created: md.created,
-        imported: md.imported,
-        updated: md.updated,
-        password_changed: md.password_changed,
-        last_used: md.last_used,
-        synced: String::new(),
-        access_count: md.access_count,
-        state: Status::Active,
-    }
+pub fn default_metadata() -> Metadata {
+    let now = time::now();
+    let time_zero = time::epoch_zero();
+    let mut md = Metadata {
+        ..Default::default()
+    };
+    md.state = Status::Active;
+    md.kind = DEFAULT_KIND;
+    md.category = DEFAULT_CATEGORY.to_string();
+    md.created = now.clone();
+    md.updated = now;
+    md.imported = time_zero.clone();
+    md.password_changed = time_zero.clone();
+    md.last_used = time_zero.clone();
+    md.synced = time_zero;
+    md
+}
+
+pub fn migrate_metadata_from_v060(md6: v060::Metadata, name: String) -> Metadata {
+    let mut md = default_metadata();
+    md.kind = migrate_kind_from_v060(md6.kind);
+    md.name = name;
+    md.url = md6.url;
+    md.created = md6.created;
+    md.imported = md6.imported;
+    md.updated = md6.updated;
+    md.password_changed = md6.password_changed;
+    md.last_used = md6.last_used;
+    md.access_count = md6.access_count;
+    md
 }
 
 // Decrypted records
@@ -199,10 +221,12 @@ impl EncryptedRecord {
 }
 
 pub fn migrate_encrypted_record_from_v060(er: v060::EncryptedRecord) -> EncryptedRecord {
+    let key = er.key();
+    let parts: Vec<&str> = key.split(':').collect();
     EncryptedRecord {
         key: er.key(),
         value: er.value(),
-        metadata: migrate_metadata_from_v060(er.metadata()),
+        metadata: migrate_metadata_from_v060(er.metadata(), parts[0].to_string()),
     }
 }
 

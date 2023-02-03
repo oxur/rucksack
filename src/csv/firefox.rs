@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::store::records::{Kind, Status};
 use crate::{store, time};
 
 // This started as the Firefox login data struct, but it has more fields than
@@ -37,23 +36,15 @@ pub fn new_with_password(url: String, username: String, password: String) -> Rec
 
 impl Record {
     pub fn to_decrypted(&self) -> store::DecryptedRecord {
-        let now = time::now();
         let creds = store::Creds {
             user: self.username.clone(),
             password: self.password.clone(),
         };
-        let metadata = store::Metadata {
-            kind: Kind::Password,
-            url: self.url.clone(),
-            created: time::epoch_to_string(self.time_created),
-            imported: now.clone(),
-            updated: now.clone(),
-            password_changed: time::epoch_to_string(self.time_password_changed),
-            last_used: time::epoch_to_string(self.time_last_used),
-            access_count: 0,
-            synced: now,
-            state: Status::Active,
-        };
+        let mut metadata = store::default_metadata();
+        metadata.url = self.url.clone();
+        metadata.created = time::epoch_to_string(self.time_created);
+        metadata.password_changed = time::epoch_to_string(self.time_password_changed);
+        metadata.last_used = time::epoch_to_string(self.time_last_used);
         store::DecryptedRecord { creds, metadata }
     }
 }
