@@ -248,7 +248,7 @@ fn print_user_group(
         }
         group_count += 1;
         sort(&mut group, sort_by);
-        user_section(&group[0], decrypted, opts);
+        user_section(&group[0], decrypted);
         println!("Accounts using: {}\nAccounts:", group.len());
         match decrypted {
             Some(true) => decrypted_no_user_header(opts),
@@ -384,11 +384,18 @@ fn encrypted_no_user_header(opts: &Opts) {
     }
 }
 
-fn decrypted_result(r: &ListResult, _opts: &Opts) {
-    println!(
-        "{: <40} | {: <30} | {: <20} | {: ^16.2} | {: ^12} | {: ^8}",
-        r.url, r.user, r.pwd, r.score, r.access_count, r.status
-    )
+fn decrypted_result(r: &ListResult, opts: &Opts) {
+    if opts.with_status {
+        println!(
+            "{: <40} | {: <30} | {: <20} | {: ^16.2} | {: ^12} | {: ^8}",
+            r.url, r.user, r.pwd, r.score, r.access_count, r.status
+        )
+    } else {
+        println!(
+            "{: <40} | {: <30} | {: <20} | {: ^16.2} | {: ^12}",
+            r.url, r.user, r.pwd, r.score, r.access_count
+        )
+    }
 }
 
 fn password_section(r: &ListResult, decrypted: Option<&bool>, opts: &Opts) {
@@ -406,7 +413,7 @@ fn password_section(r: &ListResult, decrypted: Option<&bool>, opts: &Opts) {
     }
 }
 
-fn user_section(r: &ListResult, decrypted: Option<&bool>, _opts: &Opts) {
+fn user_section(r: &ListResult, decrypted: Option<&bool>) {
     match decrypted {
         Some(true) => {
             println!("\n\n+{}\n", "=".repeat(40 + 20 + 16 + 5));
@@ -431,15 +438,26 @@ fn encrypted_result(r: &ListResult, opts: &Opts) {
     }
 }
 
-fn decrypted_no_user_result(r: &ListResult, _opts: &Opts) {
-    println!(
-        "{: <40} | {: <20} | {: ^16.2} | {}",
-        r.url, r.pwd, r.score, r.access_count
-    )
+fn decrypted_no_user_result(r: &ListResult, opts: &Opts) {
+    if opts.with_status {
+        println!(
+            "{: <40} | {: <20} | {: ^16.2} | {: ^12} | {: <8}",
+            r.url, r.pwd, r.score, r.access_count, r.status
+        )
+    } else {
+        println!(
+            "{: <40} | {: <20} | {: ^16.2} | {}",
+            r.url, r.pwd, r.score, r.access_count
+        )
+    }
 }
 
-fn encrypted_no_user_result(r: &ListResult, _opts: &Opts) {
-    println!("{: <40} | {: ^12}", r.url, r.access_count)
+fn encrypted_no_user_result(r: &ListResult, opts: &Opts) {
+    if opts.with_status {
+        println!("{: <40} | {: ^12} | {}", r.url, r.access_count, r.status)
+    } else {
+        println!("{: <40} | {: ^12}", r.url, r.access_count)
+    }
 }
 
 fn hidden() -> String {
