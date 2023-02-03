@@ -19,9 +19,12 @@
 * [x] Searching secrets via filtering (0.4.0)
 * [x] Reports on password quality, duplicates, etc. (0.5.0)
 * [x] Add new records to the DB (and support updates) via CLI subcommands (0.6.0)
-* [ ] [Database restores](https://github.com/oxur/rucksack/milestone/9)
-* [ ] [Local network sync](https://github.com/oxur/rucksack/milestone/10)
-* [ ] [Firefox Account Sync Client](https://github.com/oxur/rucksack/milestone/11)
+* [x] Archived deletes (0.7.0)
+* [ ] Tags and categories (0.7.0)
+* [ ] Support public/private keys, certificates, API keys (0.7.0)
+* [ ] [Database restores](https://github.com/oxur/rucksack/milestone/10)
+* [ ] [Local network sync](https://github.com/oxur/rucksack/milestone/11)
+* [ ] [Firefox Account Sync Client](https://github.com/oxur/rucksack/milestone/12)
 
 ## Installation
 
