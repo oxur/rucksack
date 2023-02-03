@@ -58,3 +58,6 @@ clean-all: clean
 fresh-all: clean-all all
 
 fresh: clean all
+
+nightly:
+	@rustup toolchain install nightly

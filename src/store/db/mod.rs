@@ -267,12 +267,12 @@ mod tests {
     use tempfile::NamedTempFile;
 
     use crate::store::db;
-    use crate::store::testing_data;
+    use crate::testing;
     use crate::time;
 
     #[test]
     fn db_basics() {
-        let pwd = testing_data::store_pwd();
+        let pwd = testing::data::store_pwd();
         let salt = time::now();
         let path = NamedTempFile::new()
             .unwrap()
@@ -282,7 +282,7 @@ mod tests {
             .to_string();
         let tmp_db = db::open(path.clone(), pwd.clone(), salt.clone()).unwrap();
         assert!(tmp_db.version() > versions::SemVer::new("0.6.0").unwrap());
-        let dpr = testing_data::plaintext_record();
+        let dpr = testing::data::plaintext_record();
         tmp_db.insert(dpr.clone());
         let re_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(re_dpr.creds.user, "alice@site.com");

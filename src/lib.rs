@@ -4,6 +4,7 @@ pub mod config;
 pub mod csv;
 pub mod generator;
 pub mod store;
+pub mod testing;
 pub mod time;
 pub mod util;
 

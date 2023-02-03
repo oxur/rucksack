@@ -175,14 +175,14 @@ pub fn migrate_metadata_from_v050(md: v030::Metadata) -> Metadata {
 
 #[cfg(test)]
 mod tests {
-    use crate::store::testing_data;
+    use crate::testing;
     use crate::time;
 
     #[test]
     fn password_records() {
-        let pwd = testing_data::store_pwd();
+        let pwd = testing::data::store_pwd();
         let salt = time::now();
-        let dpr = testing_data::plaintext_record();
+        let dpr = testing::data::plaintext_record();
         assert_eq!(
             format!("{}", dpr.creds),
             "Creds{user: alice@site.com, password: *****}"
