@@ -208,12 +208,9 @@ impl DB {
 
     pub fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord> {
         let key = record.key();
-        match self.get(record.key()) {
-            Some(r) => {
-                log::trace!("Record exists; skipping insert");
-                return Some(r.encrypt(self.store_pwd(), self.salt()));
-            }
-            None => (),
+        if let Some(r) = self.get(record.key()) {
+            log::trace!("Record exists; skipping insert");
+            return Some(r.encrypt(self.store_pwd(), self.salt()));
         };
         log::trace!("Inserting record with key {} ...", key);
         self.hash_map
