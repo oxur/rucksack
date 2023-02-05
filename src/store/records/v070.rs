@@ -18,6 +18,7 @@ pub const DEFAULT_CATEGORY: &str = "default";
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub enum Kind {
     Account,
+    Any,
     AsymmetricCrypto,
     Certificates,
     #[default]
@@ -37,6 +38,7 @@ pub fn migrate_kind_from_v060(k: v060::Kind) -> Kind {
 pub enum Status {
     #[default]
     Active,
+    Any,
     Inactive,
     Deleted,
 }
@@ -204,6 +206,7 @@ impl Metadata {
             Status::Active => "active",
             Status::Inactive => "inactive",
             Status::Deleted => "deleted",
+            Status::Any => "any",
         }
     }
 }

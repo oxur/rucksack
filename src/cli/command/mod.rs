@@ -221,7 +221,7 @@ pub fn setup() -> Command {
             .arg(pwd_arg())
             .arg(salt_arg())
             .arg(record_category())
-            .arg(record_type())
+            .arg(record_type_list())
             .arg(record_name())
             .subcommand(
                 Command::new("deleted")
@@ -384,30 +384,47 @@ pub fn record_status() -> Arg {
         .value_parser(["active", "inactive", "deleted"])
 }
 
-pub fn record_type() -> Arg {
+pub fn record_types_allowed() -> Vec<&'static str> {
+    vec![
+        "",
+        "account",
+        "asymmetric-crypto",
+        "asymmetric",
+        "certificates",
+        "password",
+        "service-creds",
+        "service-credentials",
+    ]
+}
+
+pub fn record_types_list_allowed() -> Vec<&'static str> {
+    let mut rta = record_types_allowed();
+    rta.push("any");
+    rta
+}
+
+pub fn record_base() -> Arg {
     Arg::new("type")
         .help("the type of secret for the record")
         .short('t')
         .long("type")
-        .default_value("password")
-        .value_parser([
-            "",
-            "account",
-            "asymmetric-crypto",
-            "asymmetric",
-            "certificates",
-            "password",
-            "service-creds",
-            "service-credentials",
-        ])
         .global(true)
 }
 
+pub fn record_type() -> Arg {
+    record_base()
+        .default_value("password")
+        .value_parser(record_types_allowed())
+}
+
+pub fn record_type_list() -> Arg {
+    record_base()
+        .default_value("any")
+        .value_parser(record_types_list_allowed())
+}
+
 pub fn record_name() -> Arg {
-    Arg::new("name")
-        .help("the record name")
-        .long("name")
-        .global(true)
+    Arg::new("name").help("the record name").long("name")
 }
 
 pub fn record_user() -> Arg {
@@ -471,4 +488,42 @@ pub fn db_needed() -> Arg {
         .value_parser(clap::builder::BoolValueParser::new())
         .default_value("true")
         .global(true)
+}
+
+mod tests {
+
+    #[test]
+    fn record_types_allowed() {
+        assert_eq!(
+            super::record_types_allowed(),
+            vec![
+                "",
+                "account",
+                "asymmetric-crypto",
+                "asymmetric",
+                "certificates",
+                "password",
+                "service-creds",
+                "service-credentials",
+            ]
+        );
+    }
+
+    #[test]
+    fn record_types_list_allowed() {
+        assert_eq!(
+            super::record_types_list_allowed(),
+            vec![
+                "",
+                "account",
+                "asymmetric-crypto",
+                "asymmetric",
+                "certificates",
+                "password",
+                "service-creds",
+                "service-credentials",
+                "any"
+            ]
+        );
+    }
 }
