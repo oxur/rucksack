@@ -158,6 +158,33 @@ header "List deleted records"
     --db "$DB_FILE" \
     --db-pass 1234
 
+header "Export data"
+
+echo
+mkdir -p exports
+EXPORT_FILE=exports/secrets.csv
+./bin/rucksack export \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    -o $EXPORT_FILE
+echo
+
+header "Import data"
+
+echo
+mkdir -p exports
+./bin/rucksack import \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    -f $EXPORT_FILE
+echo
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234
+
 # TODO: Uncomment when these tests pass on Linux/Docker ... see ticket:
 # * https://github.com/oxur/rucksack/issues/64
 

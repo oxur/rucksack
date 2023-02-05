@@ -12,6 +12,7 @@ use crate::{
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Record {
+    pub key: String,
     pub url: String,
     pub username: String,
     pub password: String,
@@ -41,6 +42,7 @@ impl Record {
     pub fn to_decrypted(&self) -> store::DecryptedRecord {
         let secrets = secrets_from_user_pass(self.username.as_str(), self.password.as_str());
         let mut metadata = store::default_metadata();
+        metadata.name = secrets.user.clone();
         metadata.url = self.url.clone();
         metadata.created = time::epoch_to_string(self.time_created);
         metadata.password_changed = time::epoch_to_string(self.time_password_changed);
@@ -49,12 +51,17 @@ impl Record {
     }
 }
 
-pub fn from_decrypted(r: store::DecryptedRecord) -> Record {
-    let md = r.metadata();
+pub fn from_decrypted(dr: store::DecryptedRecord) -> Record {
+    let md = dr.metadata();
+    let mut name = md.name.clone();
+    if name.is_empty() {
+        name = dr.secrets.user.clone();
+    };
     Record {
-        url: r.metadata().url,
-        username: r.user(),
-        password: r.password(),
+        key: dr.key(),
+        url: md.url.clone(),
+        username: name,
+        password: dr.password(),
         form_action_origin: md.url,
         guid: Uuid::new_v4().to_string(),
         time_created: time::string_to_epoch(md.created),

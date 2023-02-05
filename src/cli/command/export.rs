@@ -16,7 +16,7 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
         to_stdout(app)?;
         return Ok(());
     }
-    let export_file = matches.get_one::<String>("file").unwrap().to_string();
+    let export_file = matches.get_one::<String>("output").unwrap().to_string();
     match export_type {
         Some("chrome") => to_chrome_csv(app, export_file),
         Some("firefox") => to_firefox_csv(app, export_file),

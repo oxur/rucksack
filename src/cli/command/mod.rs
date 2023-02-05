@@ -1,6 +1,8 @@
 use clap::builder::EnumValueParser;
 use clap::{Arg, ArgAction, Command};
 
+use crate::store::records;
+
 pub mod add;
 pub mod export;
 pub mod gen;
@@ -40,7 +42,9 @@ pub fn setup() -> Command {
     .subcommand(
         Command::new("add")
             .about("add a new secret")
+            .arg(record_category())
             .arg(record_type())
+            .arg(record_name())
             .arg(record_user().required(true))
             .arg(record_pass())
             .arg(record_url().required(true))
@@ -60,10 +64,10 @@ pub fn setup() -> Command {
                     .value_parser(["chrome", "debug", "firefox"]),
             )
             .arg(
-                Arg::new("file")
+                Arg::new("output")
                     .help("path to the file that will contain the exported data")
-                    .short('f')
-                    .long("file"),
+                    .short('o')
+                    .long("output"),
             )
             .arg(db_arg())
             .arg(pwd_arg())
@@ -216,6 +220,9 @@ pub fn setup() -> Command {
             .arg(db_arg())
             .arg(pwd_arg())
             .arg(salt_arg())
+            .arg(record_category())
+            .arg(record_type())
+            .arg(record_name())
             .subcommand(
                 Command::new("deleted")
                     .about("list the records that have been flagged for deletion"))
@@ -224,6 +231,9 @@ pub fn setup() -> Command {
         Command::new("rm")
             .about("delete a single record")
             .visible_aliases(["delete","remove"])
+            .arg(record_category())
+            .arg(record_type())
+            .arg(record_name())
             .arg(record_user().required(true))
             .arg(record_url().required(true))
             .arg(db_arg())
@@ -236,6 +246,9 @@ pub fn setup() -> Command {
             .arg(db_arg())
             .arg(pwd_arg())
             .arg(salt_arg())
+            .arg(record_category())
+            .arg(record_type())
+            .arg(record_name())
             .subcommand(
                 Command::new("password")
                     .about("change the password for the given record")
@@ -267,7 +280,6 @@ pub fn setup() -> Command {
             .subcommand(
                 Command::new("type")
                     .about("change the type of the given record")
-                    .arg(record_type().required(true))
                     .arg(record_user().required(true))
                     .arg(record_url().required(true))
             )
@@ -358,9 +370,17 @@ fn default_salt() -> String {
 
 // Record Flags
 
+pub fn record_category() -> Arg {
+    Arg::new("category")
+        .help("the user-supplied category of the given record")
+        .default_value(records::DEFAULT_CATEGORY)
+        .global(true)
+}
+
 pub fn record_status() -> Arg {
     Arg::new("status")
         .help("the status of the given record")
+        .default_value("active")
         .value_parser(["active", "inactive", "deleted"])
 }
 
@@ -369,6 +389,7 @@ pub fn record_type() -> Arg {
         .help("the type of secret for the record")
         .short('t')
         .long("type")
+        .default_value("password")
         .value_parser([
             "",
             "account",
@@ -379,6 +400,14 @@ pub fn record_type() -> Arg {
             "service-creds",
             "service-credentials",
         ])
+        .global(true)
+}
+
+pub fn record_name() -> Arg {
+    Arg::new("name")
+        .help("the record name")
+        .long("name")
+        .global(true)
 }
 
 pub fn record_user() -> Arg {

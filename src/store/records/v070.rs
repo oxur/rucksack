@@ -250,9 +250,15 @@ pub struct DecryptedRecord {
 
 impl DecryptedRecord {
     pub fn key(&self) -> String {
-        format!(
-            "{}:{:?}:{}:{}",
-            self.metadata.category, self.metadata.kind, self.metadata.name, self.metadata.url
+        let mut name = self.metadata.name.clone();
+        if name.is_empty() {
+            name = self.secrets.user.clone();
+        }
+        key(
+            self.metadata.category.as_str(),
+            self.metadata.kind.clone(),
+            name.as_str(),
+            self.metadata.url.as_str(),
         )
     }
 
@@ -322,6 +328,10 @@ pub fn migrate_encrypted_record_from_v060(er: v060::EncryptedRecord) -> Encrypte
         value: er.value(),
         metadata: migrate_metadata_from_v060(er.metadata(), parts[0].to_string()),
     }
+}
+
+pub fn key(category: &str, kind: Kind, name: &str, url: &str) -> String {
+    format!("{category}:{kind:?}:{name}:{url}")
 }
 
 // Tests

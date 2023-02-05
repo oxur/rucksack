@@ -1,3 +1,6 @@
+// This function is here for backwards compatibility, used only by versions
+// prior to 0.7.0. For versions 0.7.0 and latter, see the version-specific
+// records/*.rs file.
 pub fn key(user: &str, url: &str) -> String {
     format!("{user}:{url}")
 }

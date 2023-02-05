@@ -75,6 +75,14 @@ pub fn remove_by_key(app_db: &db::DB, key: String) -> Result<()> {
     }
 }
 
+pub fn category(matches: &ArgMatches) -> String {
+    matches.get_one::<String>("category").unwrap().to_string()
+}
+
+pub fn name(matches: &ArgMatches) -> String {
+    matches.get_one::<String>("name").unwrap().to_string()
+}
+
 pub fn user(matches: &ArgMatches) -> String {
     matches.get_one::<String>("user").unwrap().to_string()
 }
@@ -100,7 +108,12 @@ pub fn url_new(matches: &ArgMatches) -> String {
 }
 
 pub fn key(matches: &ArgMatches) -> String {
-    store::key(&user(matches), &url(matches))
+    store::key(
+        &category(matches),
+        record_kind(matches),
+        &user(matches),
+        &url(matches),
+    )
 }
 
 pub fn db_pwd(matches: &ArgMatches) -> Secret<String> {

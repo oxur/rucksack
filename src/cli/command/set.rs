@@ -42,10 +42,12 @@ pub fn status(matches: &ArgMatches, app: &App) -> Result<()> {
 
 pub fn url(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting record URL ...");
+    let category = util::category(matches);
+    let kind = util::record_kind(matches);
+    let user = util::user(matches);
     let old_url = util::url_old(matches);
     let new_url = util::url_new(matches);
-    let user = util::user(matches);
-    let key = store::key(&user, &old_url);
+    let key = store::key(&category, kind, &user, &old_url);
     let mut record = util::record_by_key(&app.db, key.clone())?;
     record.metadata.url = new_url;
     record.metadata.updated = time::now();
@@ -61,10 +63,12 @@ pub fn url(matches: &ArgMatches, app: &App) -> Result<()> {
 
 pub fn user(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting record user ...");
+    let category = util::category(matches);
+    let kind = util::record_kind(matches);
     let old_user = util::user_old(matches);
     let new_user = util::user_new(matches);
     let url = util::url(matches);
-    let key = store::key(&old_user, &url);
+    let key = store::key(&category, kind, &old_user, &url);
     let mut record = util::record_by_key(&app.db, key.clone())?;
     record.secrets.user = new_user.clone();
     record.metadata.updated = time::now();
