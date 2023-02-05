@@ -119,20 +119,19 @@ impl EncryptedRecord {
 
 #[cfg(test)]
 mod tests {
-    use crate::store::records::v020::{Creds, DecryptedRecord, Kind, Metadata};
 
     #[test]
     fn password_records() {
         let store_pwd = "abc123".to_string();
         let now = chrono::offset::Local::now().to_rfc3339();
-        let dpr = DecryptedRecord {
+        let dpr = super::DecryptedRecord {
             key: "a site".to_string(),
-            value: Creds {
+            value: super::Creds {
                 user: "alice@site.com".to_string(),
                 password: "4 s3kr1t".to_string(),
             },
-            metadata: Metadata {
-                kind: Kind::Password,
+            metadata: super::Metadata {
+                kind: super::Kind::Password,
                 url: "https://site.com/".to_string(),
                 created: now.clone(),
                 updated: now.clone(),

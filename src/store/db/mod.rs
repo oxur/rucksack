@@ -270,7 +270,6 @@ impl DB {
 mod tests {
     use tempfile::NamedTempFile;
 
-    use crate::store::db;
     use crate::testing;
     use crate::time;
 
@@ -284,7 +283,7 @@ mod tests {
             .to_str()
             .unwrap()
             .to_string();
-        let tmp_db = db::open(path.clone(), pwd.clone(), salt.clone()).unwrap();
+        let tmp_db = super::open(path.clone(), pwd.clone(), salt.clone()).unwrap();
         assert!(tmp_db.version() > versions::SemVer::new("0.6.0").unwrap());
         let dpr = testing::data::plaintext_record_v070();
         tmp_db.insert(dpr.clone());
@@ -292,7 +291,7 @@ mod tests {
         assert_eq!(re_dpr.secrets.user, "alice@site.com");
         assert_eq!(re_dpr.secrets.password, "4 s3kr1t");
         assert!(tmp_db.close().is_ok());
-        let tmp_db = db::open(path, pwd, salt).unwrap();
+        let tmp_db = super::open(path, pwd, salt).unwrap();
         let read_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(read_dpr.secrets.user, "alice@site.com");
         assert_eq!(read_dpr.secrets.password, "4 s3kr1t");

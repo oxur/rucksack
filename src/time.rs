@@ -31,10 +31,9 @@ pub fn string_to_epoch(stamp: String) -> i64 {
 
 #[cfg(test)]
 mod tests {
-    use crate::time;
 
     #[test]
     fn epoch_zero() {
-        assert_eq!(time::epoch_zero(), "1970-01-01T00:00:00+00:00");
+        assert_eq!(super::epoch_zero(), "1970-01-01T00:00:00+00:00");
     }
 }

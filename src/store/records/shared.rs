@@ -22,13 +22,12 @@ pub fn trim_version(sv: versions::SemVer) -> versions::SemVer {
 
 #[cfg(test)]
 mod tests {
-    use crate::store::records::shared::version;
 
     #[test]
     fn version_comparisons() {
-        assert!(version("1.1.0") > version("1.0.0"));
-        assert_eq!(version("1.1.0"), version("1.1.0-RC1"));
-        assert_eq!(version("1.1.0"), version("1.1.0-dev"));
-        assert!(version("1.1.0-dev") > version("1.0.9"));
+        assert!(super::version("1.1.0") > super::version("1.0.0"));
+        assert_eq!(super::version("1.1.0"), super::version("1.1.0-RC1"));
+        assert_eq!(super::version("1.1.0"), super::version("1.1.0-dev"));
+        assert!(super::version("1.1.0-dev") > super::version("1.0.9"));
     }
 }

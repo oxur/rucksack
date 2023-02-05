@@ -64,11 +64,10 @@ impl VersionedDB {
 
 #[cfg(test)]
 mod tests {
-    use crate::store::db::versioned;
 
     #[test]
     fn db_bytes() {
-        let vsn_db = versioned::new(vec![2, 4, 16], "1.2.3".to_string());
+        let vsn_db = super::new(vec![2, 4, 16], "1.2.3".to_string());
         assert!(vsn_db.version() > versions::SemVer::new("0.3.0").unwrap());
         assert_eq!(vsn_db.hash(), 2233391132);
         assert_eq!(vsn_db.version(), versions::SemVer::new("1.2.3").unwrap());
