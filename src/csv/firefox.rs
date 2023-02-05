@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{store, time};
+use crate::{
+    store::{self, records::v070::creds_from_user_pass},
+    time,
+};
 
 // This started as the Firefox login data struct, but it has more fields than
 // others, so it has become the default interim struct to which others convert
@@ -36,10 +39,7 @@ pub fn new_with_password(url: String, username: String, password: String) -> Rec
 
 impl Record {
     pub fn to_decrypted(&self) -> store::DecryptedRecord {
-        let creds = store::Creds {
-            user: self.username.clone(),
-            password: self.password.clone(),
-        };
+        let creds = creds_from_user_pass(self.username.as_str(), self.password.as_str());
         let mut metadata = store::default_metadata();
         metadata.url = self.url.clone();
         metadata.created = time::epoch_to_string(self.time_created);

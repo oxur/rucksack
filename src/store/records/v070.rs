@@ -1,5 +1,6 @@
 use anyhow::{anyhow, Result};
 use bincode::{Decode, Encode};
+use secrecy::Zeroize;
 use serde::{Deserialize, Serialize};
 
 use crate::store::crypto::{decrypt, encrypt};
@@ -8,7 +9,6 @@ use crate::util;
 
 use super::shared;
 use super::v060;
-pub use super::v060::Creds;
 
 pub const VERSION: &str = "0.7.0";
 pub const DEFAULT_CATEGORY: &str = "default";
@@ -29,8 +29,8 @@ pub const DEFAULT_KIND: Kind = Kind::Password;
 
 pub fn migrate_kind_from_v060(k: v060::Kind) -> Kind {
     match k {
-        v060::Kind::Account => Kind::Password,
-        v060::Kind::Credential => Kind::Password,
+        v060::Kind::Account => Kind::default(),
+        v060::Kind::Credential => Kind::default(),
         v060::Kind::Password => Kind::Password,
     }
 }
@@ -43,7 +43,7 @@ pub enum Status {
     Deleted,
 }
 
-// The primary store data structure
+// Hashmap - the primary store data structure
 
 pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
 
@@ -90,12 +90,105 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
     }
 }
 
+// Creds
+
+#[derive(Clone, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
+pub struct Creds {
+    // Password- and account-based records
+    pub account_id: String,
+    pub user: String,
+    pub password: String,
+    // Asymmetric cryptography-based records
+    pub public_key: Vec<u8>,
+    pub private_key: Vec<u8>,
+    // Certificate-based records
+    pub public_cert: Vec<u8>,
+    pub private_cert: Vec<u8>,
+    pub root_cert: Vec<u8>,
+    // Service-credentials-based records
+    pub key: String,
+    pub secret: String,
+}
+
+pub fn default_creds() -> Creds {
+    Creds {
+        ..Default::default()
+    }
+}
+
+pub fn creds_from_user_pass(user: &str, pwd: &str) -> Creds {
+    Creds {
+        user: user.to_string(),
+        password: pwd.to_string(),
+        ..Default::default()
+    }
+}
+
+impl Zeroize for Creds {
+    fn zeroize(&mut self) {
+        self.password.zeroize();
+        self.private_key.zeroize();
+        self.private_cert.zeroize();
+        self.key.zeroize();
+        self.secret.zeroize();
+    }
+}
+
+impl std::fmt::Display for Creds {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        display_creds(self, f)
+    }
+}
+
+impl std::fmt::Debug for Creds {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        display_creds(self, f)
+    }
+}
+
+fn display_creds(sef: &Creds, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    if !sef.account_id.is_empty() && !sef.user.is_empty() && !sef.password.is_empty() {
+        write!(
+            f,
+            "Creds{{account_id: {} user: {}, password: *****}}",
+            sef.account_id, sef.user
+        )
+    } else if !sef.user.is_empty() && !sef.password.is_empty() {
+        write!(f, "Creds{{user: {}, password: *****}}", sef.user)
+    } else if !sef.key.is_empty() {
+        write!(f, "Creds{{key: {}, secret: *****}}", sef.key)
+    } else if !sef.private_cert.is_empty() {
+        write!(
+            f,
+            "Creds{{public_cert: {:?}, private_cert: *****}}",
+            sef.public_cert
+        )
+    } else if !sef.private_key.is_empty() {
+        write!(
+            f,
+            "Creds{{public_key: {:?}, private_key: *****}}",
+            sef.public_key
+        )
+    } else {
+        write!(f, "Creds{{data: *****}}")
+    }
+}
+
+pub fn migrate_creds_from_v060(creds_v060: v060::Creds) -> Creds {
+    Creds {
+        user: creds_v060.user,
+        password: creds_v060.password,
+        ..Default::default()
+    }
+}
+
+// Metadata
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub struct Metadata {
     pub kind: Kind,
     pub category: String,
     pub name: String,
-    pub account_id: String,
     pub url: String,
     pub created: String,
     pub imported: String,
@@ -123,8 +216,8 @@ pub fn default_metadata() -> Metadata {
     let mut md = Metadata {
         ..Default::default()
     };
-    md.state = Status::Active;
-    md.kind = DEFAULT_KIND;
+    md.state = Status::default();
+    md.kind = Kind::default();
     md.category = DEFAULT_CATEGORY.to_string();
     md.created = now.clone();
     md.updated = now;
@@ -230,6 +323,8 @@ pub fn migrate_encrypted_record_from_v060(er: v060::EncryptedRecord) -> Encrypte
     }
 }
 
+// Tests
+
 #[cfg(test)]
 mod tests {
     use crate::testing;
@@ -239,7 +334,7 @@ mod tests {
     fn password_records() {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
-        let dpr = testing::data::plaintext_record();
+        let dpr = testing::data::plaintext_record_v070();
         assert_eq!(
             format!("{}", dpr.creds),
             "Creds{user: alice@site.com, password: *****}"
@@ -249,7 +344,7 @@ mod tests {
             "Creds{user: alice@site.com, password: *****}"
         );
         let epr = dpr.encrypt(pwd.clone(), salt.clone());
-        assert_eq!(54, epr.value.len());
+        assert_eq!(118, epr.value.len());
         let re_dpr = epr.decrypt(pwd, salt).unwrap();
         assert_eq!(re_dpr.creds.password, "4 s3kr1t");
     }

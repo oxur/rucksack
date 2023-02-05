@@ -4,7 +4,8 @@ use clap::ArgMatches;
 use super::util;
 
 use crate::app::App;
-use crate::store::{default_metadata, Creds, DecryptedRecord};
+use crate::store::records::v070::creds_from_user_pass;
+use crate::store::{default_metadata, DecryptedRecord};
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Running 'add' subcommand ...");
@@ -13,10 +14,10 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
             "Record already exists -- please use the 'update' command"
         ));
     }
-    let creds = Creds {
-        user: util::user(matches),
-        password: util::record_pwd_revealed(matches),
-    };
+    let creds = creds_from_user_pass(
+        util::user(matches).as_str(),
+        util::record_pwd_revealed(matches).as_str(),
+    );
     let mut metadata = default_metadata();
     metadata.kind = util::record_kind(matches);
     metadata.url = util::url(matches);

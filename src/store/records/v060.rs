@@ -6,8 +6,6 @@ use crate::store::crypto::{decrypt, encrypt};
 use crate::util;
 
 use super::shared;
-use super::v020;
-use super::v030;
 use super::v050;
 pub use super::v050::Creds;
 
@@ -67,9 +65,9 @@ pub enum Kind {
 
 pub const DEFAULT_KIND: Kind = Kind::Password;
 
-pub fn migrate_kind_from_v050(k: v020::Kind) -> Kind {
+pub fn migrate_kind_from_v050(k: v050::Kind) -> Kind {
     match k {
-        v020::Kind::Password => Kind::Password,
+        v050::Kind::Password => Kind::Password,
     }
 }
 
@@ -160,7 +158,7 @@ pub struct Metadata {
     pub access_count: u64,
 }
 
-pub fn migrate_metadata_from_v050(md: v030::Metadata) -> Metadata {
+pub fn migrate_metadata_from_v050(md: v050::Metadata) -> Metadata {
     Metadata {
         kind: migrate_kind_from_v050(md.kind),
         url: md.url,
@@ -182,7 +180,7 @@ mod tests {
     fn password_records() {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
-        let dpr = testing::data::plaintext_record();
+        let dpr = testing::data::plaintext_record_v060();
         assert_eq!(
             format!("{}", dpr.creds),
             "Creds{user: alice@site.com, password: *****}"

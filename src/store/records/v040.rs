@@ -111,7 +111,7 @@ mod tests {
     fn password_records() {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
-        let dpr = testing::data::plaintext_record();
+        let dpr = testing::data::plaintext_record_v040();
         assert_eq!(
             format!("{}", dpr.creds),
             "Creds{user: alice@site.com, password: *****}"

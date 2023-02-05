@@ -282,7 +282,7 @@ mod tests {
             .to_string();
         let tmp_db = db::open(path.clone(), pwd.clone(), salt.clone()).unwrap();
         assert!(tmp_db.version() > versions::SemVer::new("0.6.0").unwrap());
-        let dpr = testing::data::plaintext_record();
+        let dpr = testing::data::plaintext_record_v070();
         tmp_db.insert(dpr.clone());
         let re_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(re_dpr.creds.user, "alice@site.com");
