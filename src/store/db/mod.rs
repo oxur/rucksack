@@ -24,9 +24,9 @@ use dashmap::DashMap;
 
 use crate::store::records;
 use crate::store::records::{DecryptedRecord, EncryptedRecord, Metadata};
-use crate::time;
 use crate::util;
 
+pub mod backup;
 pub mod encrypted;
 pub mod old;
 pub mod versioned;
@@ -105,19 +105,9 @@ impl DB {
         log::debug!("Closing DB file ...");
         let path = util::create_parents(self.path())?;
         if path.exists() {
-            let backup_name = format!("{}-{}", self.path, time::simple_timestamp());
-            log::debug!(
-                "Path to db already exists; backing up to {} ...",
-                backup_name
-            );
-            match std::fs::copy(path.clone(), backup_name) {
-                Ok(x) => Ok(x),
-                Err(e) => {
-                    let msg = "Could not copy file";
-                    log::error!("{msg} {path:?} ({e:})");
-                    Err(anyhow!("{msg} {path:?} ({e:})"))
-                }
-            }?;
+            log::debug!("Database file exists; backing up ...",);
+            let backup_file = backup::copy(self.path(), self.version().to_string())?;
+            log::debug!("Backed up file to {}", backup_file);
         }
 
         // Reverse the workflow of `open` ... encode the hashmap
