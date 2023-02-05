@@ -88,10 +88,10 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
     }
 }
 
-// Creds
+// Secret data
 
 #[derive(Clone, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
-pub struct Creds {
+pub struct Secrets {
     // Password- and account-based records
     pub account_id: String,
     pub user: String,
@@ -108,21 +108,21 @@ pub struct Creds {
     pub secret: String,
 }
 
-pub fn default_creds() -> Creds {
-    Creds {
+pub fn default_secrets() -> Secrets {
+    Secrets {
         ..Default::default()
     }
 }
 
-pub fn creds_from_user_pass(user: &str, pwd: &str) -> Creds {
-    Creds {
+pub fn secrets_from_user_pass(user: &str, pwd: &str) -> Secrets {
+    Secrets {
         user: user.to_string(),
         password: pwd.to_string(),
         ..Default::default()
     }
 }
 
-impl Zeroize for Creds {
+impl Zeroize for Secrets {
     fn zeroize(&mut self) {
         self.password.zeroize();
         self.private_key.zeroize();
@@ -132,19 +132,19 @@ impl Zeroize for Creds {
     }
 }
 
-impl std::fmt::Display for Creds {
+impl std::fmt::Display for Secrets {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         display_creds(self, f)
     }
 }
 
-impl std::fmt::Debug for Creds {
+impl std::fmt::Debug for Secrets {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         display_creds(self, f)
     }
 }
 
-fn display_creds(sef: &Creds, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+fn display_creds(sef: &Secrets, f: &mut std::fmt::Formatter) -> std::fmt::Result {
     if !sef.account_id.is_empty() && !sef.user.is_empty() && !sef.password.is_empty() {
         write!(
             f,
@@ -172,8 +172,8 @@ fn display_creds(sef: &Creds, f: &mut std::fmt::Formatter) -> std::fmt::Result {
     }
 }
 
-pub fn migrate_creds_from_v060(creds_v060: v060::Creds) -> Creds {
-    Creds {
+pub fn migrate_secrets_from_v060(creds_v060: v060::Creds) -> Secrets {
+    Secrets {
         user: creds_v060.user,
         password: creds_v060.password,
         ..Default::default()
@@ -244,13 +244,13 @@ pub fn migrate_metadata_from_v060(md6: v060::Metadata, name: String) -> Metadata
 
 #[derive(Clone, Debug, Eq, PartialEq, Encode, Decode)]
 pub struct DecryptedRecord {
-    pub creds: Creds,
+    pub secrets: Secrets,
     pub metadata: Metadata,
 }
 
 impl DecryptedRecord {
     pub fn key(&self) -> String {
-        format!("{}:{}", self.creds.user, self.metadata.url)
+        format!("{}:{}", self.secrets.user, self.metadata.url)
     }
 
     pub fn metadata(&self) -> Metadata {
@@ -258,15 +258,15 @@ impl DecryptedRecord {
     }
 
     pub fn password(&self) -> String {
-        self.creds.password.clone()
+        self.secrets.password.clone()
     }
 
     pub fn user(&self) -> String {
-        self.creds.user.clone()
+        self.secrets.user.clone()
     }
 
     pub fn encrypt(&self, store_pwd: String, salt: String) -> EncryptedRecord {
-        let encoded = bincode::encode_to_vec(&self.creds, util::bincode_cfg()).unwrap();
+        let encoded = bincode::encode_to_vec(&self.secrets, util::bincode_cfg()).unwrap();
         let encrypted = encrypt(encoded, store_pwd, salt);
 
         EncryptedRecord {
@@ -305,7 +305,7 @@ impl EncryptedRecord {
             bincode::decode_from_slice(&decrypted[..], util::bincode_cfg()).unwrap();
 
         Ok(DecryptedRecord {
-            creds: decoded,
+            secrets: decoded,
             metadata: self.metadata(),
         })
     }
@@ -334,16 +334,16 @@ mod tests {
         let salt = time::now();
         let dpr = testing::data::plaintext_record_v070();
         assert_eq!(
-            format!("{}", dpr.creds),
+            format!("{}", dpr.secrets),
             "Creds{user: alice@site.com, password: *****}"
         );
         assert_eq!(
-            format!("{:?}", dpr.creds),
+            format!("{:?}", dpr.secrets),
             "Creds{user: alice@site.com, password: *****}"
         );
         let epr = dpr.encrypt(pwd.clone(), salt.clone());
         assert_eq!(118, epr.value.len());
         let re_dpr = epr.decrypt(pwd, salt).unwrap();
-        assert_eq!(re_dpr.creds.password, "4 s3kr1t");
+        assert_eq!(re_dpr.secrets.password, "4 s3kr1t");
     }
 }

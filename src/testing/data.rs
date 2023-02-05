@@ -53,7 +53,7 @@ pub fn plaintext_record_v070() -> v070::DecryptedRecord {
     let mut md = default_metadata();
     md.url = "https://site.com/".to_string();
     v070::DecryptedRecord {
-        creds: v070::creds_from_user_pass("alice@site.com", "4 s3kr1t"),
+        secrets: v070::secrets_from_user_pass("alice@site.com", "4 s3kr1t"),
         metadata: md,
     }
 }

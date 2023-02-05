@@ -21,7 +21,7 @@ pub fn password(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting record password ...");
     let now = time::now();
     let mut record = util::record(&app.db, matches)?;
-    record.creds.password = util::record_pwd_revealed(matches);
+    record.secrets.password = util::record_pwd_revealed(matches);
     record.metadata.password_changed = now.clone();
     record.metadata.updated = now;
     app.db.insert(record);
@@ -66,7 +66,7 @@ pub fn user(matches: &ArgMatches, app: &App) -> Result<()> {
     let url = util::url(matches);
     let key = store::key(&old_user, &url);
     let mut record = util::record_by_key(&app.db, key.clone())?;
-    record.creds.user = new_user;
+    record.secrets.user = new_user;
     record.metadata.updated = time::now();
     match app.db.delete(key) {
         Some(false) => log::error!("there was a problem deleting the record"),

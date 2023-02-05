@@ -285,12 +285,12 @@ mod tests {
         let dpr = testing::data::plaintext_record_v070();
         tmp_db.insert(dpr.clone());
         let re_dpr = tmp_db.get(dpr.key()).unwrap();
-        assert_eq!(re_dpr.creds.user, "alice@site.com");
-        assert_eq!(re_dpr.creds.password, "4 s3kr1t");
+        assert_eq!(re_dpr.secrets.user, "alice@site.com");
+        assert_eq!(re_dpr.secrets.password, "4 s3kr1t");
         assert!(tmp_db.close().is_ok());
         let tmp_db = db::open(path, pwd, salt).unwrap();
         let read_dpr = tmp_db.get(dpr.key()).unwrap();
-        assert_eq!(read_dpr.creds.user, "alice@site.com");
-        assert_eq!(read_dpr.creds.password, "4 s3kr1t");
+        assert_eq!(read_dpr.secrets.user, "alice@site.com");
+        assert_eq!(read_dpr.secrets.password, "4 s3kr1t");
     }
 }

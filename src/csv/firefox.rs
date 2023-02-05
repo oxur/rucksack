@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
-    store::{self, records::v070::creds_from_user_pass},
+    store::{self, records::v070::secrets_from_user_pass},
     time,
 };
 
@@ -39,13 +39,13 @@ pub fn new_with_password(url: String, username: String, password: String) -> Rec
 
 impl Record {
     pub fn to_decrypted(&self) -> store::DecryptedRecord {
-        let creds = creds_from_user_pass(self.username.as_str(), self.password.as_str());
+        let secrets = secrets_from_user_pass(self.username.as_str(), self.password.as_str());
         let mut metadata = store::default_metadata();
         metadata.url = self.url.clone();
         metadata.created = time::epoch_to_string(self.time_created);
         metadata.password_changed = time::epoch_to_string(self.time_password_changed);
         metadata.last_used = time::epoch_to_string(self.time_last_used);
-        store::DecryptedRecord { creds, metadata }
+        store::DecryptedRecord { secrets, metadata }
     }
 }
 
