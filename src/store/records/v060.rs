@@ -63,8 +63,6 @@ pub enum Kind {
     Password,
 }
 
-pub const DEFAULT_KIND: Kind = Kind::Password;
-
 pub fn migrate_kind_from_v050(k: v050::Kind) -> Kind {
     match k {
         v050::Kind::Password => Kind::Password,

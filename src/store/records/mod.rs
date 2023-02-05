@@ -10,5 +10,5 @@ pub use shared::key;
 // The aliases here are taken from the most recent versions:
 pub use v070::{
     decode_hashmap, default_creds, default_metadata, Creds, DecryptedRecord, EncryptedRecord,
-    HashMap, Kind, Metadata, Status, DEFAULT_KIND, VERSION,
+    HashMap, Kind, Metadata, Status, VERSION,
 };

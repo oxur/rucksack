@@ -25,8 +25,6 @@ pub enum Kind {
     ServiceCredentials,
 }
 
-pub const DEFAULT_KIND: Kind = Kind::Password;
-
 pub fn migrate_kind_from_v060(k: v060::Kind) -> Kind {
     match k {
         v060::Kind::Account => Kind::default(),

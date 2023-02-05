@@ -151,8 +151,8 @@ pub fn record_kind(matches: &ArgMatches) -> records::Kind {
         Some("password") => records::Kind::Password, // standard username/password
         Some("service-creds") => records::Kind::ServiceCredentials, // Alias for service-creds
         Some("service-credentials") => records::Kind::ServiceCredentials, // API key/secret pairs, e.g.
-        Some("") => records::DEFAULT_KIND,
+        Some("") => records::Kind::default(),
         Some(&_) => todo!(),
-        None => records::DEFAULT_KIND,
+        None => records::Kind::default(),
     }
 }
