@@ -66,8 +66,9 @@ pub fn user(matches: &ArgMatches, app: &App) -> Result<()> {
     let url = util::url(matches);
     let key = store::key(&old_user, &url);
     let mut record = util::record_by_key(&app.db, key.clone())?;
-    record.secrets.user = new_user;
+    record.secrets.user = new_user.clone();
     record.metadata.updated = time::now();
+    record.metadata.name = new_user;
     match app.db.delete(key) {
         Some(false) => log::error!("there was a problem deleting the record"),
         Some(_) => (),

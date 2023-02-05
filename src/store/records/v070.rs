@@ -250,7 +250,10 @@ pub struct DecryptedRecord {
 
 impl DecryptedRecord {
     pub fn key(&self) -> String {
-        format!("{}:{}", self.secrets.user, self.metadata.url)
+        format!(
+            "{}:{:?}:{}:{}",
+            self.metadata.category, self.metadata.kind, self.metadata.name, self.metadata.url
+        )
     }
 
     pub fn metadata(&self) -> Metadata {
