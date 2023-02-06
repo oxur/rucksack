@@ -5,8 +5,11 @@ use clap::ArgMatches;
 use passwords::{analyzer, scorer};
 
 use crate::app::App;
+use crate::store::records;
 use crate::store::Status;
 use crate::time;
+
+use super::util;
 
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
 struct ListResult {
@@ -80,6 +83,7 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
     let reveal = matches.get_one::<bool>("reveal").unwrap();
     let sort_by = matches.get_one::<String>("sort-by").map(|s| s.as_str());
     let group_by = matches.get_one::<String>("group-by").map(|s| s.as_str());
+    let kind = util::record_kind(matches);
     opts.reveal = *reveal;
     // If we want to see the status of all records, we're going to override
     // skip_deleted and only_deleted:
@@ -107,6 +111,9 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         // If we're only showing deleted records and the record hasn't been
         // deleted, move on to the next one:
         if opts.only_deleted && record.metadata().state != Status::Deleted {
+            continue;
+        }
+        if kind != records::Kind::Any && kind != record.metadata().kind {
             continue;
         }
         if let Some(check) = filter {
