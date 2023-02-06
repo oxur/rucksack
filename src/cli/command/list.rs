@@ -117,7 +117,7 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         if kind != records::Kind::Any && kind != record.metadata().kind {
             continue;
         }
-        if category != records::ANY_CATEGORY.to_string() && record.metadata().category != category {
+        if category != *records::ANY_CATEGORY && record.metadata().category != category {
             continue;
         };
         if let Some(check) = filter {
