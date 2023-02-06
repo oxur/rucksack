@@ -51,10 +51,11 @@ pub fn url(matches: &ArgMatches, app: &App) -> Result<()> {
     let mut record = util::record_by_key(&app.db, key.clone())?;
     record.metadata.url = new_url;
     record.metadata.updated = time::now();
+    let msg = "there was a problem deleting the old record";
     match app.db.delete(key) {
-        Some(false) => log::error!("there was a problem deleting the record"),
+        Some(false) => log::error!("{msg}"),
         Some(_) => (),
-        None => log::error!("there was a problem deleting the record"),
+        None => log::error!("{msg}"),
     }
     app.db.insert(record);
     app.db.close()?;
@@ -73,10 +74,11 @@ pub fn user(matches: &ArgMatches, app: &App) -> Result<()> {
     record.secrets.user = new_user.clone();
     record.metadata.updated = time::now();
     record.metadata.name = new_user;
+    let msg = "there was a problem deleting the old record";
     match app.db.delete(key) {
-        Some(false) => log::error!("there was a problem deleting the record"),
+        Some(false) => log::error!("{msg}"),
         Some(_) => (),
-        None => log::error!("there was a problem deleting the record"),
+        None => log::error!("{msg}"),
     }
     app.db.insert(record);
     app.db.close()?;

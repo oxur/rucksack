@@ -226,7 +226,7 @@ pub fn setup() -> Command {
             .arg(db_arg())
             .arg(pwd_arg())
             .arg(salt_arg())
-            .arg(record_category())
+            .arg(record_category().default_value(records::ANY_CATEGORY))
             .arg(record_type_list())
             .arg(record_name())
             .subcommand(
@@ -379,6 +379,7 @@ fn default_salt() -> String {
 pub fn record_category() -> Arg {
     Arg::new("category")
         .help("the user-supplied category of the given record")
+        .long("category")
         .default_value(records::DEFAULT_CATEGORY)
         .global(true)
 }

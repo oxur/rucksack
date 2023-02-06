@@ -12,6 +12,7 @@ use super::v060;
 
 pub const VERSION: &str = "0.7.0";
 pub const DEFAULT_CATEGORY: &str = "default";
+pub const ANY_CATEGORY: &str = "any";
 
 // Enums
 

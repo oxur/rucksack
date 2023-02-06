@@ -42,6 +42,7 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
         secrets.secret = util::service_secret(matches);
     }
     let mut metadata = default_metadata();
+    metadata.category = util::category(matches);
     metadata.name = util::name(matches);
     metadata.kind = kind;
     metadata.url = util::url(matches);

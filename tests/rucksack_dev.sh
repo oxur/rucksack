@@ -185,7 +185,7 @@ echo
     --db "$DB_FILE" \
     --db-pass 1234
 
-header "Add a records for different 'kinds'"
+header "Add a records for different 'kinds' and categories"
 echo
 
 ./bin/rucksack add \
@@ -195,6 +195,7 @@ echo
     --url http://example.com \
     --user alice \
     --password 1234 \
+    --category "personal" \
     --type account \
     --account-id "ar314159"
 
@@ -205,6 +206,7 @@ echo
     --url http://example.com \
     --user alice \
     --password 1234 \
+    --category "personal" \
     --type asymmetric-crypto \
     --public "abc" \
     --private "def"
@@ -216,6 +218,7 @@ echo
     --url http://example.com \
     --user alice \
     --password 1234 \
+    --category "business" \
     --type certs \
     --public "abc" \
     --private "def" \
@@ -228,6 +231,7 @@ echo
     --url http://example.com \
     --user alice \
     --password 1234 \
+    --category "business" \
     --type service-creds \
     --key "abc" \
     --secret "def"
@@ -276,6 +280,30 @@ header "Show just service credential kinds"
     --db "$DB_FILE" \
     --db-pass 1234 \
     --type service-creds
+
+header "Show just 'default' category"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --category "default"
+
+header "Show just 'personal' category"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --category "personal"
+
+header "Show just 'business' category"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --category "business"
 
 # TODO: Uncomment when these tests pass on Linux/Docker ... see ticket:
 # * https://github.com/oxur/rucksack/issues/64
