@@ -269,6 +269,18 @@ impl DecryptedRecord {
         self.metadata.clone()
     }
 
+    pub fn name(&self) -> String {
+        self.metadata.name.clone()
+    }
+
+    pub fn name_or_user(&self) -> String {
+        let mut name = self.name();
+        if name.is_empty() {
+            name = self.user();
+        }
+        name
+    }
+
     pub fn password(&self) -> String {
         self.secrets.password.clone()
     }

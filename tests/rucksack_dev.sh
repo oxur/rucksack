@@ -185,6 +185,98 @@ echo
     --db "$DB_FILE" \
     --db-pass 1234
 
+header "Add a records for different 'kinds'"
+echo
+
+./bin/rucksack add \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --url http://example.com \
+    --user alice \
+    --password 1234 \
+    --type account \
+    --account-id "ar314159"
+
+./bin/rucksack add \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --url http://example.com \
+    --user alice \
+    --password 1234 \
+    --type asymmetric-crypto \
+    --public "abc" \
+    --private "def"
+
+./bin/rucksack add \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --url http://example.com \
+    --user alice \
+    --password 1234 \
+    --type certs \
+    --public "abc" \
+    --private "def" \
+    --root "ghi"
+
+./bin/rucksack add \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --url http://example.com \
+    --user alice \
+    --password 1234 \
+    --type service-creds \
+    --key "abc" \
+    --secret "def"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234
+
+header "Show just password kinds"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --type password
+
+header "Show just account kinds"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --type account
+
+header "Show just asymmetric-crypto kinds"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --type asymmetric-crypto
+
+header "Show just certificate kinds"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --type certs
+
+header "Show just service credential kinds"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --type service-creds
+
 # TODO: Uncomment when these tests pass on Linux/Docker ... see ticket:
 # * https://github.com/oxur/rucksack/issues/64
 

@@ -80,7 +80,10 @@ pub fn category(matches: &ArgMatches) -> String {
 }
 
 pub fn name(matches: &ArgMatches) -> String {
-    matches.get_one::<String>("name").unwrap().to_string()
+    match matches.get_one::<String>("name") {
+        Some(n) => n.to_string(),
+        None => user(matches),
+    }
 }
 
 pub fn user(matches: &ArgMatches) -> String {
@@ -105,6 +108,42 @@ pub fn url_old(matches: &ArgMatches) -> String {
 
 pub fn url_new(matches: &ArgMatches) -> String {
     matches.get_one::<String>("new-url").unwrap().to_string()
+}
+
+pub fn account_id(matches: &ArgMatches) -> String {
+    matches.get_one::<String>("account-id").unwrap().to_string()
+}
+
+pub fn public(matches: &ArgMatches) -> Vec<u8> {
+    matches
+        .get_one::<String>("public")
+        .unwrap()
+        .as_bytes()
+        .to_vec()
+}
+
+pub fn private(matches: &ArgMatches) -> Vec<u8> {
+    matches
+        .get_one::<String>("private")
+        .unwrap()
+        .as_bytes()
+        .to_vec()
+}
+
+pub fn root(matches: &ArgMatches) -> Vec<u8> {
+    matches
+        .get_one::<String>("root")
+        .unwrap()
+        .as_bytes()
+        .to_vec()
+}
+
+pub fn service_key(matches: &ArgMatches) -> String {
+    matches.get_one::<String>("key").unwrap().to_string()
+}
+
+pub fn service_secret(matches: &ArgMatches) -> String {
+    matches.get_one::<String>("secret").unwrap().to_string()
 }
 
 pub fn key(matches: &ArgMatches) -> String {
@@ -161,6 +200,7 @@ pub fn record_kind(matches: &ArgMatches) -> records::Kind {
         Some("asymmetric-crypto") => records::Kind::AsymmetricCrypto, // SSH, GPG, etc.
         Some("asymmetric") => records::Kind::AsymmetricCrypto, // Alias for 'asymmetric-crypto'
         Some("certificates") => records::Kind::Certificates, // public, private, root -- SSL, e.g.
+        Some("certs") => records::Kind::Certificates, // Alias for 'certificates'
         Some("password") => records::Kind::Password, // standard username/password
         Some("service-creds") => records::Kind::ServiceCredentials, // Alias for service-creds
         Some("service-credentials") => records::Kind::ServiceCredentials, // API key/secret pairs, e.g.

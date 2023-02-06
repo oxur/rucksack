@@ -8,6 +8,7 @@ pub mod v070;
 
 // The aliases here are taken from the most recent versions:
 pub use v070::{
-    decode_hashmap, default_metadata, default_secrets, key, DecryptedRecord, EncryptedRecord,
-    HashMap, Kind, Metadata, Secrets, Status, DEFAULT_CATEGORY, VERSION,
+    decode_hashmap, default_metadata, default_secrets, key, secrets_from_user_pass,
+    DecryptedRecord, EncryptedRecord, HashMap, Kind, Metadata, Secrets, Status, DEFAULT_CATEGORY,
+    VERSION,
 };

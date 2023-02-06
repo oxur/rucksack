@@ -102,7 +102,7 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         let record = i.value().decrypt(app.db.store_pwd(), app.db.salt())?;
         let analyzed = analyzer::analyze(record.password());
         let score = scorer::score(&analyzed);
-        let mut result = new_result(record.key(), record.user(), record.metadata().url);
+        let mut result = new_result(record.key(), record.name_or_user(), record.metadata().url);
         // If we're only showing non-deleted records and the record has been
         // deleted, move on to the next one:
         if opts.skip_deleted && record.metadata().state == Status::Deleted {

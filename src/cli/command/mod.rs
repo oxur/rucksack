@@ -47,6 +47,12 @@ pub fn setup() -> Command {
             .arg(record_name())
             .arg(record_user().required(true))
             .arg(record_pass())
+            .arg(record_account_id())
+            .arg(record_secret_public())
+            .arg(record_secret_private())
+            .arg(record_root_cert())
+            .arg(record_key())
+            .arg(record_secret())
             .arg(record_url().required(true))
             .arg(db_arg())
             .arg(pwd_arg())
@@ -390,6 +396,7 @@ pub fn record_types_allowed() -> Vec<&'static str> {
         "account",
         "asymmetric-crypto",
         "asymmetric",
+        "certs",
         "certificates",
         "password",
         "service-creds",
@@ -470,6 +477,42 @@ pub fn record_url_new() -> Arg {
         .long("new-url")
 }
 
+pub fn record_account_id() -> Arg {
+    Arg::new("account-id")
+        .help("the account ID for secrets of type 'account'")
+        .long("account-id")
+}
+
+pub fn record_secret_public() -> Arg {
+    Arg::new("public")
+        .help("the public key for asymmetric-crypto secrets; the public cert for certificate-based secrets")
+        .long("public")
+}
+
+pub fn record_secret_private() -> Arg {
+    Arg::new("private")
+        .help("the private key for asymmetric-crypto secrets; the private cert for certificate-based secrets")
+        .long("private")
+}
+
+pub fn record_root_cert() -> Arg {
+    Arg::new("root")
+        .help("the root cert for certificate-based secrets")
+        .long("root")
+}
+
+pub fn record_key() -> Arg {
+    Arg::new("key")
+        .help("the key for service-credential-based secrets")
+        .long("key")
+}
+
+pub fn record_secret() -> Arg {
+    Arg::new("secret")
+        .help("the secret for service-credential-based secrets")
+        .long("secret")
+}
+
 // Miscellaneous
 
 pub fn db_not_needed() -> Arg {
@@ -501,6 +544,7 @@ mod tests {
                 "account",
                 "asymmetric-crypto",
                 "asymmetric",
+                "certs",
                 "certificates",
                 "password",
                 "service-creds",
@@ -518,6 +562,7 @@ mod tests {
                 "account",
                 "asymmetric-crypto",
                 "asymmetric",
+                "certs",
                 "certificates",
                 "password",
                 "service-creds",

@@ -4,22 +4,46 @@ use clap::ArgMatches;
 use super::util;
 
 use crate::app::App;
-use crate::store::records::v070::secrets_from_user_pass;
+use crate::store;
+use crate::store::records;
 use crate::store::{default_metadata, DecryptedRecord};
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Running 'add' subcommand ...");
+    let kind = util::record_kind(matches);
     if let Ok(_dr) = util::record(&app.db, matches) {
         return Err(anyhow!(
-            "Record already exists -- please use the 'update' command"
+            "Record already exists -- please use the 'set' command"
         ));
     }
-    let secrets = secrets_from_user_pass(
-        util::user(matches).as_str(),
-        util::record_pwd_revealed(matches).as_str(),
-    );
+    // Password and Account kinds
+    let mut secrets = store::default_secrets();
+    if kind == records::Kind::Password || kind == records::Kind::Account {
+        secrets.user = util::user(matches);
+        secrets.password = util::record_pwd_revealed(matches);
+    };
+    if kind == records::Kind::Account {
+        secrets.account_id = util::account_id(matches);
+    }
+    // Asymmetric crypto kind
+    if kind == records::Kind::AsymmetricCrypto {
+        secrets.public_key = util::public(matches);
+        secrets.private_key = util::private(matches);
+    }
+    // Certs kind
+    if kind == records::Kind::Certificates {
+        secrets.public_cert = util::public(matches);
+        secrets.private_cert = util::private(matches);
+        secrets.root_cert = util::root(matches);
+    }
+    // Service creds kind
+    if kind == records::Kind::ServiceCredentials {
+        secrets.key = util::service_key(matches);
+        secrets.secret = util::service_secret(matches);
+    }
     let mut metadata = default_metadata();
-    metadata.kind = util::record_kind(matches);
+    metadata.name = util::name(matches);
+    metadata.kind = kind;
     metadata.url = util::url(matches);
     let dr = DecryptedRecord { secrets, metadata };
     app.db.insert(dr);
