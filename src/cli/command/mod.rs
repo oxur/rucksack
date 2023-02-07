@@ -62,14 +62,6 @@ pub fn setup() -> Command {
         Command::new("export")
             .about("export the rucksack db")
             .arg(
-                Arg::new("type")
-                    .help("the type of export to create")
-                    .short('t')
-                    .long("type")
-                    .default_value("firefox")
-                    .value_parser(["chrome", "debug", "firefox"]),
-            )
-            .arg(
                 Arg::new("output")
                     .help("path to the file that will contain the exported data")
                     .short('o')
@@ -78,6 +70,9 @@ pub fn setup() -> Command {
             .arg(db_arg())
             .arg(pwd_arg())
             .arg(salt_arg())
+            .arg(serialised_format())
+            .arg(record_type())
+            .arg(record_category())
     )
     .subcommand(
         Command::new("gen")
@@ -132,14 +127,7 @@ pub fn setup() -> Command {
     .subcommand(
         Command::new("import")
             .about("pull in creds from other sources")
-            .arg(
-                Arg::new("type")
-                    .help("the type of importer to use")
-                    .short('t')
-                    .long("type")
-                    .default_value("firefox")
-                    .value_parser(["chrome", "firefox"]),
-            )
+            .arg(serialised_format())
             .arg(
                 Arg::new("file")
                     .help("credential file to import (for file-based importers)")
@@ -531,6 +519,14 @@ pub fn db_needed() -> Arg {
         .long("db-needed")
         .value_parser(clap::builder::BoolValueParser::new())
         .default_value("true")
+        .global(true)
+}
+
+pub fn serialised_format() -> Arg {
+    Arg::new("format")
+        .help("the de/serialisation format to use for import/export")
+        .long("format")
+        .value_parser(["", "chrome", "debug", "firefox"])
         .global(true)
 }
 

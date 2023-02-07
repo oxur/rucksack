@@ -158,33 +158,6 @@ header "List deleted records"
     --db "$DB_FILE" \
     --db-pass 1234
 
-header "Export data"
-
-echo
-mkdir -p exports
-EXPORT_FILE=exports/secrets.csv
-./bin/rucksack export \
-    --config-file "$CFG_FILE" \
-    --db "$DB_FILE" \
-    --db-pass 1234 \
-    -o $EXPORT_FILE
-echo
-
-header "Import data"
-
-echo
-mkdir -p exports
-./bin/rucksack import \
-    --config-file "$CFG_FILE" \
-    --db "$DB_FILE" \
-    --db-pass 1234 \
-    -f $EXPORT_FILE
-echo
-./bin/rucksack list \
-    --config-file "$CFG_FILE" \
-    --db "$DB_FILE" \
-    --db-pass 1234
-
 header "Add a records for different 'kinds' and categories"
 echo
 
@@ -304,6 +277,43 @@ header "Show just 'business' category"
     --db "$DB_FILE" \
     --db-pass 1234 \
     --category "business"
+
+header "Export password data"
+
+echo
+mkdir -p exports
+EXPORT_FILE=exports/secrets.csv
+./bin/rucksack export \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --type "password" \
+    -o $EXPORT_FILE
+echo
+
+header "Import password export"
+
+echo
+./bin/rucksack import \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    -f $EXPORT_FILE
+
+# TODO: Uncomment when JSON exports land ... see ticket:
+# * https://github.com/oxur/rucksack/issues/71
+
+# echo
+# ./bin/rucksack list \
+#     --config-file "$CFG_FILE" \
+#     --db "$DB_FILE" \
+#     --db-pass 1234
+
+# ./bin/rucksack export \
+#     --config-file "$CFG_FILE" \
+#     --db "$DB_FILE" \
+#     --db-pass 1234 \
+#     --type debug
 
 # TODO: Uncomment when these tests pass on Linux/Docker ... see ticket:
 # * https://github.com/oxur/rucksack/issues/64

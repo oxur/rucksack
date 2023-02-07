@@ -12,8 +12,9 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     match matches.get_one::<String>("type").map(|s| s.as_str()) {
         Some("chrome") => from_chrome_csv(&app.db, import_file)?,
         Some("firefox") => from_firefox_csv(&app.db, import_file)?,
+        Some("") => from_firefox_csv(&app.db, import_file)?,
         Some(_) => todo!(),
-        None => todo!(),
+        None => from_firefox_csv(&app.db, import_file)?,
     };
     Ok(())
 }
