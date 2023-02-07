@@ -283,12 +283,13 @@ header "Export password data"
 echo
 mkdir -p exports
 EXPORT_FILE=exports/secrets.csv
+rm -f $EXPORT_FILE
 ./bin/rucksack export \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --type "password" \
-    -o $EXPORT_FILE --log-level debug
+    -o $EXPORT_FILE
 echo
 
 header "Import password export"
@@ -298,7 +299,7 @@ echo
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
-    -f $EXPORT_FILE --log-level debug
+    -f $EXPORT_FILE
 
 # TODO: Uncomment when JSON exports land ... see ticket:
 # * https://github.com/oxur/rucksack/issues/71
