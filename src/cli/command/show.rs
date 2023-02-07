@@ -48,3 +48,17 @@ pub fn categories(_matches: &ArgMatches, app: &App) -> Result<()> {
     println!("\n{tags:?}\n");
     Ok(())
 }
+
+pub fn tags(_matches: &ArgMatches, app: &App) -> Result<()> {
+    let mut results: HashMap<String, bool> = HashMap::new();
+    for i in app.db.iter() {
+        let dr = i.value().decrypt(app.db.store_pwd(), app.db.salt())?;
+        for t in dr.metadata().tags {
+            results.insert(t.display_or_value(), true);
+        }
+    }
+    let mut tags: Vec<&String> = results.keys().clone().collect();
+    tags.sort();
+    println!("\n{tags:?}\n");
+    Ok(())
+}

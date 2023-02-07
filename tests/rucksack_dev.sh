@@ -101,7 +101,8 @@ echo
     --db-pass 1234 \
     --url http://boo.co \
     --user sully \
-    --password numb3r1fan
+    --password numb3r1fan \
+    --tags "best friend",monster,blue
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
@@ -180,9 +181,10 @@ echo
     --user alice \
     --password 1234 \
     --category "personal" \
+    --tags ssh,server \
     --type asymmetric-crypto \
     --public "abc" \
-    --private "def"
+    --private "def" \
 
 ./bin/rucksack add \
     --config-file "$CFG_FILE" \
@@ -192,6 +194,7 @@ echo
     --user alice \
     --password 1234 \
     --category "business" \
+    --tags http,"rest server",cloud,server \
     --type certs \
     --public "abc" \
     --private "def" \
@@ -205,6 +208,7 @@ echo
     --user alice \
     --password 1234 \
     --category "business" \
+    --tags "api keys",cloud \
     --type service-creds \
     --key "abc" \
     --secret "def"
@@ -285,9 +289,15 @@ header "Show all categories"
     --db "$DB_FILE" \
     --db-pass 1234
 
+header "Show all tags"
+
+./bin/rucksack show tags \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234
+
 header "Export password data"
 
-echo
 mkdir -p exports
 EXPORT_FILE=exports/secrets.csv
 rm -f $EXPORT_FILE

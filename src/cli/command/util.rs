@@ -5,7 +5,7 @@ use secrecy::{ExposeSecret, Secret, SecretString};
 use crate::store;
 use crate::store::db;
 use crate::store::records;
-use crate::store::records::{DecryptedRecord, Status};
+use crate::store::records::{new_tags, DecryptedRecord, Status, Tag};
 use crate::util;
 
 pub fn setup_db(matches: &ArgMatches) -> Result<db::DB> {
@@ -77,6 +77,11 @@ pub fn remove_by_key(app_db: &db::DB, key: String) -> Result<()> {
 
 pub fn category(matches: &ArgMatches) -> String {
     matches.get_one::<String>("category").unwrap().to_string()
+}
+
+pub fn tags(matches: &ArgMatches) -> Option<Vec<Tag>> {
+    let values: Vec<String> = matches.get_many("tags")?.cloned().collect();
+    Some(new_tags(values))
 }
 
 pub fn name(matches: &ArgMatches) -> String {

@@ -1,5 +1,5 @@
 use clap::builder::EnumValueParser;
-use clap::{Arg, ArgAction, Command};
+use clap::{value_parser, Arg, ArgAction, Command};
 
 use crate::store::records;
 
@@ -53,6 +53,7 @@ pub fn setup() -> Command {
             .arg(record_root_cert())
             .arg(record_key())
             .arg(record_secret())
+            .arg(record_tags())
             .arg(record_url().required(true))
             .arg(db_arg())
             .arg(pwd_arg())
@@ -313,6 +314,13 @@ pub fn setup() -> Command {
                     .arg(pwd_arg())
                     .arg(salt_arg())
             )
+            .subcommand(
+                Command::new("tags")
+                    .about("display the tags currently used across all records")
+                    .arg(db_needed())
+                    .arg(pwd_arg())
+                    .arg(salt_arg())
+            )
     )
 }
 
@@ -507,6 +515,16 @@ pub fn record_secret() -> Arg {
     Arg::new("secret")
         .help("the secret for service-credential-based secrets")
         .long("secret")
+}
+
+pub fn record_tags() -> Arg {
+    Arg::new("tags")
+        .help("one or more tags for a record (use a ',' to delimit multiple)")
+        .long("tags")
+        .use_value_delimiter(true)
+        .num_args(0..)
+        .value_parser(value_parser!(String))
+        .action(ArgAction::Append)
 }
 
 // Miscellaneous
