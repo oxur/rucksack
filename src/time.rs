@@ -20,7 +20,7 @@ pub fn string_to_epoch(stamp: String) -> i64 {
         Ok(dt) => dt.timestamp_millis(),
         Err(e) => {
             // TODO: change to debug logging
-            println!("{:?}", e);
+            println!("{e:?}");
             Local::now().timestamp_millis()
         }
     }

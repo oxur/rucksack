@@ -126,7 +126,7 @@ fn print_results(sorted: &Vec<ListResult>, decrypted: Option<&bool>) {
 }
 
 fn print_report(count: usize, total: usize) {
-    println!("\n{} records (of {} total)\n", count, total)
+    println!("\n{count} records (of {total} total)\n")
 }
 
 fn print_password_group(
@@ -187,10 +187,7 @@ fn print_user_group(
 }
 
 fn print_group_report(count: i32, records: usize, total: usize) {
-    println!(
-        "\n{} groups (with {} records out of {} total)\n",
-        count, records, total
-    )
+    println!("\n{count} groups (with {records} records out of {total} total)\n")
 }
 
 const URL_HEADER: &str = "URL";
@@ -199,10 +196,7 @@ const PWD_HEADER: &str = "Password";
 const SCORE_HEADER: &str = "Score / Strength";
 
 fn decrypted_header() {
-    println!(
-        "\n{: <40} | {: <30} | {: <20} | {}",
-        URL_HEADER, USER_HEADER, PWD_HEADER, SCORE_HEADER
-    );
+    println!("\n{URL_HEADER: <40} | {USER_HEADER: <30} | {PWD_HEADER: <20} | {SCORE_HEADER}",);
     println!(
         "{: <40}-+-{: <30}-+-{: <20}-+-{}",
         "-".repeat(40),
@@ -213,10 +207,7 @@ fn decrypted_header() {
 }
 
 fn decrypted_no_user_header() {
-    println!(
-        "\n{: <40} | {: <20} | {}",
-        URL_HEADER, PWD_HEADER, SCORE_HEADER
-    );
+    println!("\n{URL_HEADER: <40} | {PWD_HEADER: <20} | {SCORE_HEADER}");
     println!(
         "{: <40}-+-{: <20}-+-{}",
         "-".repeat(40),
@@ -226,12 +217,12 @@ fn decrypted_no_user_header() {
 }
 
 fn encrypted_header() {
-    println!("\n{: <40} | {: <30}", URL_HEADER, USER_HEADER);
+    println!("\n{URL_HEADER: <40} | {USER_HEADER: <30}");
     println!("{: <40}-+-{}", "-".repeat(40), "-".repeat(30))
 }
 
 fn encrypted_no_user_header() {
-    println!("\n{}", URL_HEADER);
+    println!("\n{URL_HEADER}");
     println!("{}", "-".repeat(40))
 }
 

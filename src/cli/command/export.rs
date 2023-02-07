@@ -58,8 +58,5 @@ fn to_firefox_csv(db: store::db::DB, csv_path: String) -> Result<(), anyhow::Err
 
 fn print_report(count: usize, total: usize) {
     println!();
-    println!(
-        "Exported {} records (total records in DB: {})",
-        count, total
-    )
+    println!("Exported {count} records (total records in DB: {total})")
 }

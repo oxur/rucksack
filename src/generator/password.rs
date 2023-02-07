@@ -18,7 +18,7 @@ pub fn display_scored(mut pwd: String, encode: Option<&bool>) -> Result<()> {
     }
     let analyzed = analyzer::analyze(pwd.clone());
     let score = scorer::score(&analyzed);
-    let msg = format!("\nNew password: {}\nPassword score: {:.2}\n", pwd, score);
+    let msg = format!("\nNew password: {pwd}\nPassword score: {score:.2}\n");
     util::display(&msg)
 }
 
