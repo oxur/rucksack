@@ -5,27 +5,35 @@ use crate::app::App;
 use crate::csv;
 use crate::csv::{chrome, firefox};
 use crate::store::db::DB;
+use crate::store::records::DEFAULT_CATEGORY;
+use crate::store::{records, DecryptedRecord};
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     let import_file = matches.get_one::<String>("file").unwrap().to_string();
 
     match matches.get_one::<String>("type").map(|s| s.as_str()) {
-        Some("chrome") => from_chrome_csv(&app.db, import_file)?,
-        Some("firefox") => from_firefox_csv(&app.db, import_file)?,
-        Some("") => from_firefox_csv(&app.db, import_file)?,
+        Some("chrome") => from_chrome_csv(matches, &app.db, import_file)?,
+        Some("firefox") => from_firefox_csv(matches, &app.db, import_file)?,
+        Some("") => from_firefox_csv(matches, &app.db, import_file)?,
         Some(_) => todo!(),
-        None => from_firefox_csv(&app.db, import_file)?,
+        None => from_firefox_csv(matches, &app.db, import_file)?,
     };
     Ok(())
 }
 
-fn from_chrome_csv(db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
+fn from_chrome_csv(matches: &ArgMatches, db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
     println!("Importing data from {csv_path}:");
     let mut rdr = csv::reader::from_path(csv_path)?;
     let mut count = 0;
     for result in rdr.deserialize() {
         let chr: chrome::Record = result?;
-        db.insert(chr.to_decrypted());
+        let mut dr = chr.to_decrypted();
+        log::debug!("Record: {}", dr.key());
+        if !valid_import(matches, dr.clone()) {
+            continue;
+        }
+        dr.metadata.name = dr.name_or_user();
+        db.insert(dr);
         count += 1;
         print!(".");
     }
@@ -33,13 +41,19 @@ fn from_chrome_csv(db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
     db.close()
 }
 
-fn from_firefox_csv(db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
+fn from_firefox_csv(matches: &ArgMatches, db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
     println!("Importing data from {csv_path}:");
     let mut rdr = csv::reader::from_path(csv_path)?;
     let mut count: usize = 0;
     for result in rdr.deserialize() {
         let ffr: firefox::Record = result?;
-        db.insert(ffr.to_decrypted());
+        let mut dr = ffr.to_decrypted();
+        log::debug!("Record: {}", dr.key());
+        if !valid_import(matches, dr.clone()) {
+            continue;
+        }
+        dr.metadata.name = dr.name_or_user();
+        db.insert(dr);
         count += 1;
         print!(".");
     }
@@ -49,4 +63,14 @@ fn from_firefox_csv(db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
 
 fn print_report(count: usize, total: usize) {
     println!("\nImported {count} records (total records in DB: {total})",)
+}
+
+fn valid_import(_matches: &ArgMatches, r: DecryptedRecord) -> bool {
+    // Right now, only Kind::Password records of the "default" category are
+    // supported for import
+    let md = r.metadata();
+    if md.kind == records::Kind::Password && md.category == DEFAULT_CATEGORY {
+        return true;
+    }
+    false
 }

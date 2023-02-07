@@ -8,7 +8,7 @@ const DEFAULT_TOML: &str = r#"[rucksack]
 
 [logging]
 coloured = true
-level = "debug"
+level = "error"
 report_caller = true
 "#;
 

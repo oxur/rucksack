@@ -4,8 +4,8 @@ use clap::ArgMatches;
 use crate::app::App;
 use crate::csv::writer;
 use crate::csv::{chrome, firefox};
-use crate::store::records::Kind;
-use crate::store::Status;
+use crate::store::records::DEFAULT_CATEGORY;
+use crate::store::{records, DecryptedRecord, Status};
 use crate::util::write_file;
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
@@ -19,11 +19,11 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     }
     let export_file = matches.get_one::<String>("output").unwrap().to_string();
     match serialised_format {
-        Some("chrome") => to_chrome_csv(app, export_file),
-        Some("firefox") => to_firefox_csv(app, export_file),
-        Some("") => to_firefox_csv(app, export_file),
+        Some("chrome") => to_chrome_csv(matches, app, export_file),
+        Some("firefox") => to_firefox_csv(matches, app, export_file),
+        Some("") => to_firefox_csv(matches, app, export_file),
         Some(_) => todo!(),
-        None => to_firefox_csv(app, export_file),
+        None => to_firefox_csv(matches, app, export_file),
     }
 }
 
@@ -44,15 +44,12 @@ fn to_stdout(app: &App) -> Result<()> {
     Ok(())
 }
 
-fn to_chrome_csv(app: &App, csv_path: String) -> Result<(), anyhow::Error> {
+fn to_chrome_csv(matches: &ArgMatches, app: &App, csv_path: String) -> Result<(), anyhow::Error> {
     let mut wtr = writer::to_bytes()?;
     let mut count = 0;
     for dr in app.db.collect_decrypted()? {
-        let md = dr.metadata();
-        if md.state == Status::Deleted {
-            continue;
-        }
-        if md.kind != Kind::Password {
+        log::debug!("Record: {}", dr.key());
+        if !valid_export(matches, dr.clone()) {
             continue;
         }
         wtr.serialize(chrome::from_decrypted(dr))?;
@@ -69,15 +66,12 @@ fn to_chrome_csv(app: &App, csv_path: String) -> Result<(), anyhow::Error> {
     }
 }
 
-fn to_firefox_csv(app: &App, csv_path: String) -> Result<(), anyhow::Error> {
+fn to_firefox_csv(matches: &ArgMatches, app: &App, csv_path: String) -> Result<(), anyhow::Error> {
     let mut wtr = writer::to_bytes()?;
     let mut count = 0;
     for dr in app.db.collect_decrypted()? {
-        let md = dr.metadata();
-        if md.state == Status::Deleted {
-            continue;
-        }
-        if md.kind != Kind::Password {
+        log::debug!("Record: {}", dr.key());
+        if !valid_export(matches, dr.clone()) {
             continue;
         }
         wtr.serialize(firefox::from_decrypted(dr))?;
@@ -96,4 +90,17 @@ fn to_firefox_csv(app: &App, csv_path: String) -> Result<(), anyhow::Error> {
 
 fn print_report(count: usize, total: usize) {
     println!("\nExported {count} records (total records in DB: {total})")
+}
+
+fn valid_export(_matches: &ArgMatches, r: DecryptedRecord) -> bool {
+    // Right now, only Kind::Password records of the "default" category are
+    // supported for export
+    let md = r.metadata();
+    if md.kind == records::Kind::Password
+        && md.category == DEFAULT_CATEGORY
+        && md.state != Status::Deleted
+    {
+        return true;
+    }
+    false
 }
