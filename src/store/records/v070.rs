@@ -44,6 +44,17 @@ pub enum Status {
     Deleted,
 }
 
+impl Status {
+    pub fn as_str(&self) -> &str {
+        match self {
+            Status::Active => "active",
+            Status::Inactive => "inactive",
+            Status::Deleted => "deleted",
+            Status::Any => "any",
+        }
+    }
+}
+
 // Hashmap - the primary store data structure
 
 pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
@@ -186,6 +197,44 @@ pub fn migrate_secrets_from_v060(creds_v060: v060::Creds) -> Secrets {
 // Metadata
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
+pub struct Tag {
+    pub display: String,
+    pub value: String,
+    pub created: String,
+    pub updated: String,
+    pub state: Status,
+}
+
+impl Tag {
+    pub fn status(&self) -> &str {
+        self.state.as_str()
+    }
+}
+
+pub fn new_tag(value: String) -> Tag {
+    Tag {
+        value,
+        created: time::now(),
+        updated: time::epoch_zero(),
+
+        ..Default::default()
+    }
+}
+
+pub fn new_tags(values: Vec<String>) -> Vec<Tag> {
+    values.into_iter().map(new_tag).collect()
+}
+
+impl Tag {
+    pub fn display_or_value(&self) -> String {
+        if !self.display.is_empty() {
+            return self.display.clone();
+        }
+        self.value.clone()
+    }
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub struct Metadata {
     pub kind: Kind,
     pub category: String,
@@ -199,16 +248,34 @@ pub struct Metadata {
     pub synced: String,
     pub access_count: u64,
     pub state: Status,
+    pub tags: Vec<Tag>,
 }
 
 impl Metadata {
     pub fn status(&self) -> &str {
-        match self.state {
-            Status::Active => "active",
-            Status::Inactive => "inactive",
-            Status::Deleted => "deleted",
-            Status::Any => "any",
-        }
+        self.state.as_str()
+    }
+
+    pub fn add_tag(&mut self, value: String) {
+        self.tags.push(new_tag(value));
+        self.sort_tags()
+    }
+
+    pub fn add_tags(&mut self, values: Vec<String>) {
+        self.tags.append(new_tags(values).as_mut());
+        self.sort_tags()
+    }
+
+    fn sort_tags(&mut self) {
+        self.tags.sort_by_key(|a| a.display_or_value())
+    }
+
+    pub fn tag_values(&self) -> Vec<String> {
+        self.tags
+            .clone()
+            .into_iter()
+            .map(|t| t.value)
+            .collect::<Vec<String>>()
     }
 }
 
@@ -253,6 +320,14 @@ pub struct DecryptedRecord {
 }
 
 impl DecryptedRecord {
+    pub fn add_tag(&mut self, value: String) {
+        self.metadata.add_tag(value)
+    }
+
+    pub fn add_tags(&mut self, values: Vec<String>) {
+        self.metadata.add_tags(values)
+    }
+
     pub fn key(&self) -> String {
         let mut name = self.metadata.name.clone();
         if name.is_empty() {
@@ -312,6 +387,14 @@ pub struct EncryptedRecord {
 }
 
 impl EncryptedRecord {
+    pub fn add_tag(&mut self, value: String) {
+        self.metadata.add_tag(value)
+    }
+
+    pub fn add_tags(&mut self, values: Vec<String>) {
+        self.metadata.add_tags(values)
+    }
+
     pub fn key(&self) -> String {
         self.key.clone()
     }
@@ -374,5 +457,20 @@ mod tests {
         assert_eq!(118, epr.value.len());
         let re_dpr = epr.decrypt(pwd, salt).unwrap();
         assert_eq!(re_dpr.secrets.password, "4 s3kr1t");
+    }
+
+    #[test]
+    fn tags() {
+        let mut dpr = testing::data::plaintext_record_v070();
+        assert_eq!(dpr.metadata().tags, vec![]);
+        let tag1 = "good stuff".to_string();
+        dpr.add_tag(tag1.clone());
+        assert_eq!(dpr.metadata().tags.len(), 1);
+        assert_eq!(dpr.metadata().tags[0].value, tag1);
+        let tag2 = "only the best".to_string();
+        let tag3 = "bonus".to_string();
+        dpr.add_tags(vec![tag2.clone(), tag3.clone()]);
+        assert_eq!(dpr.metadata().tags.len(), 3);
+        assert_eq!(dpr.metadata().tag_values(), vec![tag3, tag1, tag2]);
     }
 }
