@@ -217,6 +217,7 @@ pub fn setup() -> Command {
             .arg(salt_arg())
             .arg(record_category().default_value(records::ANY_CATEGORY))
             .arg(record_type_list())
+            .arg(record_tags())
             .arg(record_name())
             .subcommand(
                 Command::new("deleted")

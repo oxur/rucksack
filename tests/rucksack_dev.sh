@@ -289,6 +289,30 @@ header "Show all categories"
     --db "$DB_FILE" \
     --db-pass 1234
 
+header "Show just 'monster'-tagged"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --tags monster
+
+header "Show just 'server'-tagged"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --tags server
+
+header "Show all tagged with 'server' or 'cloud'"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --tags server,cloud
+
 header "Show all tags"
 
 ./bin/rucksack show tags \
