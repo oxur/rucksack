@@ -305,13 +305,21 @@ header "Show just 'server'-tagged"
     --db-pass 1234 \
     --tags server
 
-header "Show all tagged with 'server' or 'cloud'"
+header "Show all tagged with 'server' and 'cloud'"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --tags server,cloud
+
+header "Show all tagged with 'server' or 'cloud'"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --any-tags server,cloud
 
 header "Show all tags"
 

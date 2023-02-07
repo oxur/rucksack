@@ -22,7 +22,7 @@
 * [x] Archived deletes (0.7.0)
 * [x] Tags and categories (0.7.0)
 * [x] Support public/private keys, certificates, API keys (0.7.0)
-* [ ] JSON exports (0.7.0)
+* [ ] JSON exports (0.8.0)
 * [ ] [Database restores](https://github.com/oxur/rucksack/milestone/10)
 * [ ] [Local network sync](https://github.com/oxur/rucksack/milestone/11)
 * [ ] [Firefox Account Sync Client](https://github.com/oxur/rucksack/milestone/12)
