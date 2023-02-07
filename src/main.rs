@@ -32,6 +32,7 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
             None => todo!(),
         },
         Some(("show", show_matches)) => match show_matches.subcommand() {
+            Some(("categories", cat_matches)) => show::categories(cat_matches, app)?,
             Some(("config-file", cfgfile_matches)) => show::config_file(cfgfile_matches, app)?,
             Some(("config", cfg_matches)) => show::config(cfg_matches, app)?,
             Some(("data-dir", datadir_matches)) => show::data_dir(datadir_matches, app)?,

@@ -278,6 +278,13 @@ header "Show just 'business' category"
     --db-pass 1234 \
     --category "business"
 
+header "Show all categories"
+
+./bin/rucksack show categories \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234
+
 header "Export password data"
 
 echo

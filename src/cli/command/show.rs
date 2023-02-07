@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::str;
 
 use anyhow::Result;
@@ -33,5 +34,17 @@ pub fn db_file(_matches: &ArgMatches, app: &App) -> Result<()> {
 
 pub fn db_version(_matches: &ArgMatches, app: &App) -> Result<()> {
     println!("\n{}\n", app.db_version());
+    Ok(())
+}
+
+pub fn categories(_matches: &ArgMatches, app: &App) -> Result<()> {
+    let mut results: HashMap<String, bool> = HashMap::new();
+    for i in app.db.iter() {
+        let dr = i.value().decrypt(app.db.store_pwd(), app.db.salt())?;
+        results.insert(dr.metadata().category, true);
+    }
+    let mut tags: Vec<&String> = results.keys().clone().collect();
+    tags.sort();
+    println!("\n{tags:?}\n");
     Ok(())
 }

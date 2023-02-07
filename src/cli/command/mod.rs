@@ -284,6 +284,13 @@ pub fn setup() -> Command {
             .arg(db_arg())
             .arg(db_not_needed())
             .subcommand(
+                Command::new("categories")
+                    .about("display the categories currently used across all records")
+                    .arg(db_needed())
+                    .arg(pwd_arg())
+                    .arg(salt_arg())
+            )
+            .subcommand(
                 Command::new("config-file")
                     .about("display the location of the config file used by rucksack")
             )
