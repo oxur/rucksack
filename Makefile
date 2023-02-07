@@ -22,7 +22,12 @@ build: $(BIN_DIR)
 	@cargo install --path . --root .
 
 lint:
-	@cargo clippy --all-targets --all-features -- --no-deps -D warnings
+	@cargo +nightly clippy --version
+	@cargo +nightly clippy --all-targets --all-features -- --no-deps -D clippy::all
+
+cicd-lint:
+	@cargo clippy --version
+	@cargo clippy --all-targets --all-features -- --no-deps -D clippy::all
 
 test:
 	@RUST_BACKTRACE=1 cargo test
@@ -36,5 +41,8 @@ publish:
 tag:
 	@git tag $$($(BIN_DIR)/$(PROJ) -v)
 	@git push --tags
+
+nightly:
+	@rustup toolchain install nightly
 
 release: build lint test tag publish
