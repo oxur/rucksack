@@ -18,7 +18,7 @@ pub fn from_encoded(bytes: Vec<u8>) -> Result<VersionedDB> {
             Ok(versioned)
         }
         Err(e) => {
-            let msg = format!("couldn't deserialise versioned database file: {:?}", e);
+            let msg = format!("couldn't deserialise versioned database file: {e:?}");
             Err(anyhow!(msg))
         }
     }
@@ -45,7 +45,7 @@ impl VersionedDB {
         match bincode::encode_to_vec(self, util::bincode_cfg()) {
             Ok(bytes) => Ok(bytes),
             Err(e) => {
-                let msg = format!("couldn't serialise versioned database ({})", e);
+                let msg = format!("couldn't serialise versioned database ({e})");
                 Err(anyhow!("{}", msg))
             }
         }

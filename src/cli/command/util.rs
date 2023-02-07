@@ -29,7 +29,7 @@ pub fn record_by_key(app_db: &db::DB, key: String) -> Result<DecryptedRecord> {
     match app_db.get(key.clone()) {
         Some(dr) => Ok(dr),
         None => {
-            let msg = format!("no secret record for given key '{}'", key);
+            let msg = format!("no secret record for given key '{key}'");
             log::error!("{}", msg);
             Err(anyhow!(msg))
         }

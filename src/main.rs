@@ -13,7 +13,7 @@ const DESC: &str = env!("CARGO_PKG_DESCRIPTION");
 
 fn cli() -> Command {
     Command::new(NAME)
-    .about(format!("{}: {}", NAME, DESC))
+    .about(format!("{NAME}: {DESC}"))
     .arg_required_else_help(true)
     .allow_external_subcommands(true)
     .arg(
@@ -261,7 +261,7 @@ fn main() -> Result<()> {
     match twyg::setup_logger(&cfg.logging) {
         Ok(_) => {}
         Err(error) => {
-            panic!("Could not setup logger: {:?}", error)
+            panic!("Could not setup logger: {error:?}")
         }
     }
     log::debug!("Config setup complete.");

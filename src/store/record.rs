@@ -125,7 +125,7 @@ impl EncryptedRecord {
 // Utility functions
 
 pub fn key(user: &str, url: &str) -> String {
-    format!("{}:{}", user, url)
+    format!("{user}:{url}")
 }
 
 // Tests

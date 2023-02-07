@@ -171,7 +171,7 @@ impl DB {
         match bincode::encode_to_vec(data, util::bincode_cfg()) {
             Ok(encoded) => Ok(encoded),
             Err(e) => {
-                let msg = format!("couldn't encode DB hashmap ({:?})", e);
+                let msg = format!("couldn't encode DB hashmap ({e:?})");
                 Err(anyhow!("{}", msg))
             }
         }

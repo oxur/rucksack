@@ -28,11 +28,11 @@ fn to_stdout(app: &App) -> Result<()> {
     match app.db.collect_decrypted() {
         Ok(rs) => {
             for r in rs {
-                println!("{:?}", r)
+                println!("{r:?}")
             }
         }
         Err(e) => {
-            log::error!("{:?}", e)
+            log::error!("{e:?}")
         }
     }
     Ok(())
@@ -76,8 +76,5 @@ fn to_firefox_csv(app: &App, csv_path: String) -> Result<(), anyhow::Error> {
 
 fn print_report(count: usize, total: usize) {
     println!();
-    println!(
-        "Exported {} records (total records in DB: {})",
-        count, total
-    )
+    println!("Exported {count} records (total records in DB: {total})")
 }
