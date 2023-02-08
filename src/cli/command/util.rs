@@ -85,17 +85,15 @@ pub fn tags(matches: &ArgMatches) -> Option<Vec<Tag>> {
 }
 
 pub fn all_tags(matches: &ArgMatches) -> Option<Vec<String>> {
-    match matches.get_many("all-tags") {
-        Some(x) => Some(x.cloned().collect::<Vec<String>>()),
-        None => None,
-    }
+    matches
+        .get_many("all-tags")
+        .map(|x| x.cloned().collect::<Vec<String>>())
 }
 
 pub fn any_tags(matches: &ArgMatches) -> Option<Vec<String>> {
-    match matches.get_many("any-tags") {
-        Some(x) => Some(x.cloned().collect::<Vec<String>>()),
-        None => None,
-    }
+    matches
+        .get_many("any-tags")
+        .map(|x| x.cloned().collect::<Vec<String>>())
 }
 
 pub fn name(matches: &ArgMatches) -> String {

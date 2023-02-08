@@ -122,21 +122,15 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         if category != *records::ANY_CATEGORY && record.metadata().category != category {
             continue;
         };
-        match all_tags {
-            Some(ref ts) => {
-                if !crate::util::all(ts.clone(), record.metadata().tag_values()) {
-                    continue;
-                }
+        if let Some(ref ts) = all_tags {
+            if !crate::util::all(ts.clone(), record.metadata().tag_values()) {
+                continue;
             }
-            None => (),
         }
-        match any_tags {
-            Some(ref ts) => {
-                if !crate::util::any(ts.clone(), record.metadata().tag_values()) {
-                    continue;
-                }
+        if let Some(ref ts) = any_tags {
+            if !crate::util::any(ts.clone(), record.metadata().tag_values()) {
+                continue;
             }
-            None => (),
         }
         if let Some(check) = filter {
             if !i.key().contains(check) {
