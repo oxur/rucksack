@@ -39,11 +39,11 @@ integration:
 deps:
 	@cargo update
 
-publish-db:
-	@cd rucksack-db && cargo publish
-
 publish-lib:
 	@cd rucksack-lib && cargo publish
+
+publish-db:
+	@cd rucksack-db && cargo publish
 
 publish: publish-lib publish-db
 
