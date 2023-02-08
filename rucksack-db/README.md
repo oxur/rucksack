@@ -2,7 +2,7 @@
 
 [![][logo]][logo-large]
 
-*The small, encrypted DashMap-based database used by Racksack*
+*The small, encrypted DashMap-based database used by Rucksack*
 
 ## License
 
