@@ -3,8 +3,8 @@ use std::io;
 use anyhow::{Context, Result};
 use clap::ArgMatches;
 
-use rucksack::cli;
-use rucksack::cli::command::{add, export, gen, import, list, rm, set, show};
+use rucksack::command as cli;
+use rucksack::command::{add, export, gen, import, list, rm, set, show};
 use rucksack_lib::{config, util};
 
 const NAME: &str = env!("CARGO_PKG_NAME");
@@ -54,7 +54,7 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    let mut rucksack = cli::command::setup();
+    let mut rucksack = cli::setup();
     let matches = rucksack.clone().get_matches();
     let mut config_file = String::new();
     if let Some(cfg_file) = matches.get_one::<String>("config-file") {
@@ -94,7 +94,7 @@ fn main() -> Result<()> {
 
     let (_, subcmd_matches) = matches.subcommand().unwrap();
     log::debug!("Setting up database ...");
-    let db = cli::command::setup_db(subcmd_matches)?;
+    let db = cli::setup_db(subcmd_matches)?;
     cfg.rucksack.db_file = db.path();
     cfg.rucksack.data_dir = util::dir_parent(db.path());
     log::debug!("Setting up rucksack application ...");
