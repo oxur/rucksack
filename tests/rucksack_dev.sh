@@ -216,7 +216,9 @@ echo
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
-    --db-pass 1234
+    --db-pass 1234 \
+    --decrypt \
+    --reveal \
 
 header "Show just password kinds"
 
@@ -224,6 +226,8 @@ header "Show just password kinds"
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
+    --decrypt \
+    --reveal \
     --type password
 
 header "Show just account kinds"
@@ -232,6 +236,8 @@ header "Show just account kinds"
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
+    --decrypt \
+    --reveal \
     --type account
 
 header "Show just asymmetric-crypto kinds"
@@ -240,6 +246,8 @@ header "Show just asymmetric-crypto kinds"
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
+    --decrypt \
+    --reveal \
     --type asymmetric-crypto
 
 header "Show just certificate kinds"
@@ -248,6 +256,8 @@ header "Show just certificate kinds"
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
+    --decrypt \
+    --reveal \
     --type certs
 
 header "Show just service credential kinds"
@@ -256,6 +266,8 @@ header "Show just service credential kinds"
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
+    --decrypt \
+    --reveal \
     --type service-creds
 
 header "Show just 'default' category"
@@ -264,6 +276,8 @@ header "Show just 'default' category"
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
+    --decrypt \
+    --reveal \
     --category "default"
 
 header "Show just 'personal' category"
@@ -272,6 +286,8 @@ header "Show just 'personal' category"
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
+    --decrypt \
+    --reveal \
     --category "personal"
 
 header "Show just 'business' category"
@@ -280,6 +296,8 @@ header "Show just 'business' category"
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
+    --decrypt \
+    --reveal \
     --category "business"
 
 header "Show all categories"
@@ -295,15 +313,29 @@ header "Show just 'monster'-tagged"
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
-    --tags monster
+    --decrypt \
+    --reveal \
+    --any-tags monster
 
-header "Show just 'server'-tagged"
+header "Show just records tagged with 'server' (using --all-tags)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
-    --tags server
+    --decrypt \
+    --reveal \
+    --all-tags server
+
+header "Show just records tagged with 'server' (using --any-tags)"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --decrypt \
+    --reveal \
+    --any-tags server
 
 header "Show all tagged with 'server' and 'cloud'"
 
@@ -311,7 +343,9 @@ header "Show all tagged with 'server' and 'cloud'"
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
-    --tags server,cloud
+    --decrypt \
+    --reveal \
+    --all-tags server,cloud
 
 header "Show all tagged with 'server' or 'cloud'"
 
@@ -319,6 +353,8 @@ header "Show all tagged with 'server' or 'cloud'"
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
+    --decrypt \
+    --reveal \
     --any-tags server,cloud
 
 header "Show all tags"
@@ -349,6 +385,14 @@ echo
     --db "$DB_FILE" \
     --db-pass 1234 \
     -f $EXPORT_FILE
+
+echo
+header "List with latest access counts"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234
 
 # TODO: Uncomment when JSON exports land ... see ticket:
 # * https://github.com/oxur/rucksack/issues/71

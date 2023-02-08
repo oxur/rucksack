@@ -85,6 +85,8 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
     let group_by = matches.get_one::<String>("group-by").map(|s| s.as_str());
     let kind = util::record_kind(matches);
     let category = util::category(matches);
+    let all_tags = util::all_tags(matches);
+    let any_tags = util::any_tags(matches);
     opts.reveal = *reveal;
     // If we want to see the status of all records, we're going to override
     // skip_deleted and only_deleted:
@@ -120,6 +122,22 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         if category != *records::ANY_CATEGORY && record.metadata().category != category {
             continue;
         };
+        match all_tags {
+            Some(ref ts) => {
+                if !crate::util::all(ts.clone(), record.metadata().tag_values()) {
+                    continue;
+                }
+            }
+            None => (),
+        }
+        match any_tags {
+            Some(ref ts) => {
+                if !crate::util::any(ts.clone(), record.metadata().tag_values()) {
+                    continue;
+                }
+            }
+            None => (),
+        }
         if let Some(check) = filter {
             if !i.key().contains(check) {
                 continue;

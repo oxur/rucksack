@@ -217,7 +217,8 @@ pub fn setup() -> Command {
             .arg(salt_arg())
             .arg(record_category().default_value(records::ANY_CATEGORY))
             .arg(record_type_list())
-            .arg(record_tags())
+            .arg(record_all_tags())
+            .arg(record_any_tags())
             .arg(record_name())
             .subcommand(
                 Command::new("deleted")
@@ -522,6 +523,26 @@ pub fn record_tags() -> Arg {
     Arg::new("tags")
         .help("one or more tags for a record (use a ',' to delimit multiple)")
         .long("tags")
+        .use_value_delimiter(true)
+        .num_args(0..)
+        .value_parser(value_parser!(String))
+        .action(ArgAction::Append)
+}
+
+pub fn record_all_tags() -> Arg {
+    Arg::new("all-tags")
+        .help("limit results to records that have ALL of the tags passed")
+        .long("all-tags")
+        .use_value_delimiter(true)
+        .num_args(0..)
+        .value_parser(value_parser!(String))
+        .action(ArgAction::Append)
+}
+
+pub fn record_any_tags() -> Arg {
+    Arg::new("any-tags")
+        .help("limit results to records that have ANY of the tags passed")
+        .long("any-tags")
         .use_value_delimiter(true)
         .num_args(0..)
         .value_parser(value_parser!(String))
