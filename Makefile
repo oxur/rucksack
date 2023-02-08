@@ -39,8 +39,18 @@ integration:
 deps:
 	@cargo update
 
-publish:
-	@cargo publish
+publish-db:
+	@cd rucksack-db && cargo publish
+
+publish-lib:
+	@cd rucksack-lib && cargo publish
+
+publish: publish-lib publish-db
+
+publish-cli:
+	@cd rucksack && cargo publish
+
+publish-all: publish publish-cli
 
 tag:
 	@git tag $$($(BIN_DIR)/$(PROJ) -v)
