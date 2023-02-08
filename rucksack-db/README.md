@@ -12,5 +12,5 @@ Apache License, Version 2.0
 
 [//]: ---Named-Links---
 
-[logo]: resources/images/logo-v1-x250.png
-[logo-large]: resources/images/logo-v1-x1000.png
+[logo]: ../resources/images/logo-v1-x250.png
+[logo-large]: ../resources/images/logo-v1-x1000.png
