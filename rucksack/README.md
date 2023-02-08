@@ -22,7 +22,7 @@
 * [x] Archived deletes (0.7.0)
 * [x] Tags and categories (0.7.0)
 * [x] Support public/private keys, certificates, API keys (0.7.0)
-* [ ] Split repo into rucksack-lib, rucksack-db, and rucksack crates (0.8.0)
+* [x] Split repo into rucksack-lib, rucksack-db, and rucksack crates (0.8.0)
 * [ ] [JSON Exports and database restores](https://github.com/oxur/rucksack/milestone/11)
 * [ ] [Local network sync](https://github.com/oxur/rucksack/milestone/12)
 * [ ] [Firefox Account Sync Client](https://github.com/oxur/rucksack/milestone/13)
