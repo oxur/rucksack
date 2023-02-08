@@ -287,6 +287,20 @@ It is also possible to perform negative filtering using `--exclude`. Additionall
 
 You may sort on `score` (strength), `user`, or `url`. If not provided, `url` sorting is used. Also note that `order-by` is provided as an alias for `sort-by`.
 
+### Additional Searching
+
+You may also limit results with the following:
+
+* by type of record with `--type`
+* by user-supplied category with `--category`
+* by tags, where `--all-tags` will only match records that have all the supplied tags, and where `--any-tags` will match any record that has at least one of the tags listed (both are supplied comma-separated; tags with spaces need to be quoted)
+
+The list of supported types may be shown with: `rucksack show types` and doesn't need access to the database to do so.
+
+A full list of categories created by the user does need access to the database (so you will be prompted for a password if you don't use the `--db-pass` flag): `rucksack show categories`.
+
+Same for user-created tags: `rucksack show tags`.
+
 ### Grouping Results
 
 #### By Password
