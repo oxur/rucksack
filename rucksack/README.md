@@ -57,14 +57,14 @@ Commands:
   rm      delete a single record [aliases: delete, remove]
   set     perform various 'write' operations
   show    display rucksack-specific information
-  help    Print this message or the help of the given subcommand(s)
+  help    print this message or the help of the given subcommand(s)
 
 Options:
       --config-file <config-file>  the path to the config file to use or create [default: "/Users/oubiwann/Library/Application Support/rucksack/config.toml"]
       --log-level <log-level>      override the configured log-level setting [default: ] [possible values: error, warn, info, debug, trace, ]
       --completions <SHELL>        emit shell tab completions [possible values: bash, elvish, fish, powershell, zsh]
-  -v, --version                    Print version information
-  -h, --help                       Print help
+  -v, --version                    print version information
+  -h, --help                       print help
 ```
 
 ### Password Generator
