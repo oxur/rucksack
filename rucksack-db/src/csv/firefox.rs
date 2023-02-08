@@ -12,7 +12,6 @@ use crate::records::v070::secrets_from_user_pass;
 #[derive(Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Record {
-    pub key: String,
     pub url: String,
     pub username: String,
     pub password: String,
@@ -58,7 +57,6 @@ pub fn from_decrypted(dr: records::DecryptedRecord) -> Record {
         name = dr.secrets.user.clone();
     };
     Record {
-        key: dr.key(),
         url: md.url.clone(),
         username: name,
         password: dr.password(),
