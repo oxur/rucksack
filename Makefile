@@ -19,7 +19,7 @@ $(BIN_DIR):
 build: $(BIN_DIR)
 	@cargo build --release
 	@rm -f $(BIN_DIR)/*
-	@cargo install --path . --root .
+	@cd rucksack && cargo install --path ./ --root ../
 
 lint:
 	@cargo +nightly clippy --version
