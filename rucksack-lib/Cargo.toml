@@ -1,12 +1,11 @@
 [package]
 name = "rucksack-lib"
 description = "The rucksack core library"
-version = "0.8.0-rc2"
+version = "0.8.0-rc3"
 license = "Apache-2.0"
 authors = ["Duncan McGreggor <oubiwann@gmail.com>"]
 repository = "https://github.com/oxur/rucksack"
 documentation = "https://docs.rs/rucksack-lib/"
-categories = ["libraries"]
 keywords = ["password-manager", "terminal"]
 exclude = ["/.github", "/resources", ".gitignore"]
 edition = "2021"
