@@ -220,7 +220,7 @@ echo
     --decrypt \
     --reveal \
 
-header "Show just password kinds"
+header "Show just password types"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
@@ -230,7 +230,7 @@ header "Show just password kinds"
     --reveal \
     --type password
 
-header "Show just account kinds"
+header "Show just account types"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
@@ -240,7 +240,7 @@ header "Show just account kinds"
     --reveal \
     --type account
 
-header "Show just asymmetric-crypto kinds"
+header "Show just asymmetric-crypto types"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
@@ -250,7 +250,7 @@ header "Show just asymmetric-crypto kinds"
     --reveal \
     --type asymmetric-crypto
 
-header "Show just certificate kinds"
+header "Show just certificate types"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
@@ -260,7 +260,7 @@ header "Show just certificate kinds"
     --reveal \
     --type certs
 
-header "Show just service credential kinds"
+header "Show just service credential types"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
@@ -269,6 +269,10 @@ header "Show just service credential kinds"
     --decrypt \
     --reveal \
     --type service-creds
+
+header "Show the list of supported types"
+
+./bin/rucksack show types
 
 header "Show just 'default' category"
 

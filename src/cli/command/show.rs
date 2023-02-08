@@ -5,6 +5,7 @@ use anyhow::Result;
 use clap::ArgMatches;
 
 use crate::app::App;
+use crate::store::records;
 use crate::util;
 
 pub fn config_file(_matches: &ArgMatches, app: &App) -> Result<()> {
@@ -60,5 +61,10 @@ pub fn tags(_matches: &ArgMatches, app: &App) -> Result<()> {
     let mut tags: Vec<&String> = results.keys().clone().collect();
     tags.sort();
     println!("\n{tags:?}\n");
+    Ok(())
+}
+
+pub fn types(_matches: &ArgMatches, _app: &App) -> Result<()> {
+    println!("\n{:?}\n", records::types());
     Ok(())
 }

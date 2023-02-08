@@ -323,6 +323,10 @@ pub fn setup() -> Command {
                     .arg(pwd_arg())
                     .arg(salt_arg())
             )
+            .subcommand(
+                Command::new("types")
+                    .about("display the record types supported")
+            )
     )
 }
 

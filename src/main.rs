@@ -39,6 +39,7 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
             Some(("db-file", dbfile_matches)) => show::db_file(dbfile_matches, app)?,
             Some(("db-version", dbvsn_matches)) => show::db_version(dbvsn_matches, app)?,
             Some(("tags", tag_matches)) => show::tags(tag_matches, app)?,
+            Some(("types", type_matches)) => show::types(type_matches, app)?,
             Some((&_, _)) => todo!(),
             None => todo!(),
         },

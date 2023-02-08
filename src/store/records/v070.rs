@@ -1,5 +1,9 @@
+use std::fmt;
+
 use anyhow::{anyhow, Result};
 use bincode::{Decode, Encode};
+use enum_iterator::Sequence;
+use heck::ToKebabCase;
 use secrecy::Zeroize;
 use serde::{Deserialize, Serialize};
 
@@ -16,7 +20,9 @@ pub const ANY_CATEGORY: &str = "any";
 
 // Enums
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
+#[derive(
+    Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode, Sequence,
+)]
 pub enum Kind {
     Account,
     Any,
@@ -25,6 +31,23 @@ pub enum Kind {
     #[default]
     Password,
     ServiceCredentials,
+}
+
+impl fmt::Display for Kind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Debug::fmt(self, f)
+    }
+}
+
+pub fn kinds() -> Vec<Kind> {
+    enum_iterator::all::<Kind>().collect::<Vec<Kind>>()
+}
+
+pub fn types() -> Vec<String> {
+    kinds()
+        .iter()
+        .map(|t| t.to_string().to_kebab_case())
+        .collect::<Vec<String>>()
 }
 
 pub fn migrate_kind_from_v060(k: v060::Kind) -> Kind {
