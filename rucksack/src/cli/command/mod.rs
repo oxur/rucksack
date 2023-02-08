@@ -34,7 +34,7 @@ pub fn setup() -> Command {
     )
     .arg(
         Arg::new("version")
-            .help("Print version information")
+            .help("print version information")
             .short('v')
             .long("version")
             .action(ArgAction::SetTrue)

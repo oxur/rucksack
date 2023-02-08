@@ -4,6 +4,10 @@
 
 *The small, encrypted DashMap-based database used by Rucksack*
 
+## Documentation
+
+See the [Rust docs](https://docs.rs/rucksack/latest/rucksack-db/).
+
 ## License
 
 Copyright © 2022-2023, Oxur Group

@@ -4,6 +4,10 @@
 
 *A small collection of utility functions used by Rucksack*
 
+## Documentation
+
+See the [Rust docs]()<https://docs.rs/rucksack/latest/rucksack-lib/.>
+
 ## License
 
 Copyright © 2022-2023, Oxur Group
