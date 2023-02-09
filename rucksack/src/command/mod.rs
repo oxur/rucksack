@@ -27,21 +27,21 @@ pub fn setup() -> Command {
     .arg(log_level_arg())
     .arg(
         Arg::new("completions")
-            .help("emit shell tab completions")
+            .help("Emit shell tab completions")
             .long("completions")
             .value_name("SHELL")
             .value_parser(EnumValueParser::<clap_complete::Shell>::new()),
     )
     .arg(
         Arg::new("version")
-            .help("print version information")
+            .help("Print version information")
             .short('v')
             .long("version")
             .action(ArgAction::SetTrue)
     )
     .subcommand(
         Command::new("add")
-            .about("add a new secret")
+            .about("Add a new secret")
             .arg(record_category())
             .arg(record_type())
             .arg(record_name())
@@ -61,10 +61,10 @@ pub fn setup() -> Command {
     )
     .subcommand(
         Command::new("export")
-            .about("export the rucksack db")
+            .about("Export the rucksack db")
             .arg(
                 Arg::new("output")
-                    .help("path to the file that will contain the exported data")
+                    .help("Path to the file that will contain the exported data")
                     .short('o')
                     .long("output"),
             )
@@ -77,11 +77,11 @@ pub fn setup() -> Command {
     )
     .subcommand(
         Command::new("gen")
-            .about("generate a secret")
+            .about("Generate a secret")
             .arg(db_not_needed())
             .arg(
                 Arg::new("type")
-                    .help("the type of generator to use")
+                    .help("The type of generator to use")
                     .short('t')
                     .long("type")
                     .default_value("uuid++")
@@ -89,7 +89,7 @@ pub fn setup() -> Command {
             )
             .arg(
                 Arg::new("length")
-                    .help("the character length of secret to generate (ignored for fixed-length generator types)")
+                    .help("The character length of secret to generate (ignored for fixed-length generator types)")
                     .short('l')
                     .long("length")
                     .value_parser(clap::value_parser!(usize))
@@ -97,14 +97,14 @@ pub fn setup() -> Command {
             )
             .arg(
                 Arg::new("suffix-length")
-                    .help("the character length of a random suffix (for generator types that support suffixes)")
+                    .help("The character length of a random suffix (for generator types that support suffixes)")
                     .long("suffix-length")
                     .value_parser(clap::value_parser!(usize))
                     .default_value("4"),
             )
             .arg(
                 Arg::new("word-count")
-                    .help("the number of words to generate (for generator types that assemble words)")
+                    .help("The number of words to generate (for generator types that assemble words)")
                     .short('w')
                     .long("word-count")
                     .value_parser(clap::value_parser!(usize))
@@ -112,14 +112,14 @@ pub fn setup() -> Command {
             )
             .arg(
                 Arg::new("delimiter")
-                    .help("the character used to join parts (for generator types that join parts)")
+                    .help("The character used to join parts (for generator types that join parts)")
                     .short('d')
                     .long("delimiter")
                     .default_value("-"),
             )
             .arg(
                 Arg::new("encode")
-                    .help("encode the generated password (uses base64)")
+                    .help("Encode the generated password (uses base64)")
                     .short('e')
                     .long("encode")
                     .action(ArgAction::SetTrue),
@@ -127,11 +127,11 @@ pub fn setup() -> Command {
     )
     .subcommand(
         Command::new("import")
-            .about("pull in creds from other sources")
+            .about("Pull in creds from other sources")
             .arg(serialised_format())
             .arg(
                 Arg::new("file")
-                    .help("credential file to import (for file-based importers)")
+                    .help("Credential file to import (for file-based importers)")
                     .short('f')
                     .long("file"),
             )
@@ -141,17 +141,17 @@ pub fn setup() -> Command {
     )
     .subcommand(
         Command::new("list")
-            .about("list all secrets")
+            .about("List all secrets")
             .arg(
                 Arg::new("decrypt")
-                    .help("using this flag causes all secrets to be decrypted to allow for scoring, etc.")
+                    .help("Using this flag causes all secrets to be decrypted to allow for scoring, etc.")
                     .long("decrypt")
                     .action(ArgAction::SetTrue)
                     .global(true)
             )
             .arg(
                 Arg::new("filter")
-                    .help("show records where the user or the URL contain the given string")
+                    .help("List records where the user or the URL contain the given string")
                     .short('f')
                     .long("filter")
                     .visible_alias("include")
@@ -159,14 +159,14 @@ pub fn setup() -> Command {
             )
             .arg(
                 Arg::new("exclude")
-                    .help("don't show records where the user or the URL contain the given string")
+                    .help("Don't show records where the user or the URL contain the given string")
                     .short('x')
                     .long("exclude")
                     .global(true)
             )
             .arg(
                 Arg::new("group-by")
-                    .help("group results that have the same value for the given field")
+                    .help("Group results that have the same value for the given field")
                     .short('g')
                     .long("group-by")
                     .visible_alias("partition")
@@ -175,7 +175,7 @@ pub fn setup() -> Command {
             )
             .arg(
                 Arg::new("max-score")
-                    .help("limit results to secrets that do not exceed the given maximum score")
+                    .help("Limit results to secrets that do not exceed the given maximum score")
                     .long("max-score")
                     .value_parser(clap::value_parser!(f64))
                     .default_value("100")
@@ -183,21 +183,21 @@ pub fn setup() -> Command {
             )
             .arg(
                 Arg::new("min-score")
-                    .help("limit results to secrets that are not less than the given minimum score")
+                    .help("Limit results to secrets that are not less than the given minimum score")
                     .long("min-score")
                     .value_parser(clap::value_parser!(f64))
                     .default_value("0").global(true)
             )
             .arg(
                 Arg::new("reveal")
-                    .help("display the actual the passwords")
+                    .help("Display the actual the passwords")
                     .long("reveal")
                     .action(ArgAction::SetTrue)
                     .global(true)
             )
             .arg(
                 Arg::new("sort-by")
-                    .help("display the actual the passwords")
+                    .help("Sort by the given field")
                     .short('s')
                     .long("sort-by")
                     .visible_alias("order-by")
@@ -207,7 +207,7 @@ pub fn setup() -> Command {
             )
             .arg(
                 Arg::new("with-status")
-                    .help("display the actual state of the record")
+                    .help("Display the actual state of the record")
                     .long("with-status")
                     .action(ArgAction::SetTrue)
                     .global(true)
@@ -222,11 +222,11 @@ pub fn setup() -> Command {
             .arg(record_name())
             .subcommand(
                 Command::new("deleted")
-                    .about("list the records that have been flagged for deletion"))
+                    .about("List the records that have been flagged for deletion"))
     )
     .subcommand(
         Command::new("rm")
-            .about("delete a single record")
+            .about("Delete a single record")
             .visible_aliases(["delete","remove"])
             .arg(record_category())
             .arg(record_type())
@@ -239,7 +239,7 @@ pub fn setup() -> Command {
     )
     .subcommand(
         Command::new("set")
-            .about("perform various 'write' operations")
+            .about("Perform various 'write' operations")
             .arg(db_arg())
             .arg(pwd_arg())
             .arg(salt_arg())
@@ -248,62 +248,62 @@ pub fn setup() -> Command {
             .arg(record_name())
             .subcommand(
                 Command::new("password")
-                    .about("change the password for the given record")
+                    .about("Change the password for the given record")
                     .arg(record_pass())
                     .arg(record_user().required(true))
                     .arg(record_url().required(true))
             )
             .subcommand(
                 Command::new("status")
-                    .about("set the status for the given record")
+                    .about("Set the status for the given record")
                     .arg(record_status().required(true))
                     .arg(record_user().required(true))
                     .arg(record_url().required(true))
             )
             .subcommand(
                 Command::new("url")
-                    .about("change the url for the given record")
+                    .about("Change the url for the given record")
                     .arg(record_url_old().required(true))
                     .arg(record_url_new().required(true))
                     .arg(record_user().required(true))
             )
             .subcommand(
                 Command::new("user")
-                    .about("change the user (login name) for the given record")
+                    .about("Change the user (login name) for the given record")
                     .arg(record_user_old().required(true))
                     .arg(record_user_new().required(true))
                     .arg(record_url().required(true))
             )
             .subcommand(
                 Command::new("type")
-                    .about("change the type of the given record")
+                    .about("Change the type of the given record")
                     .arg(record_user().required(true))
                     .arg(record_url().required(true))
             )
     )
     .subcommand(
         Command::new("show")
-            .about("display rucksack-specific information")
+            .about("Display rucksack-specific information")
             .arg(db_arg())
             .arg(db_not_needed())
             .subcommand(
                 Command::new("categories")
-                    .about("display the categories currently used across all records")
+                    .about("Display the categories currently used across all records")
                     .arg(db_needed())
                     .arg(pwd_arg())
                     .arg(salt_arg())
             )
             .subcommand(
                 Command::new("config-file")
-                    .about("display the location of the config file used by rucksack")
+                    .about("Display the location of the config file used by rucksack")
             )
             .subcommand(
                 Command::new("config")
-                    .about("display rucksack's current configuration")
+                    .about("Display rucksack's current configuration")
             )
             .subcommand(
                 Command::new("data-dir")
-                    .about("display the location of the rucksack data directory")
+                    .about("Display the location of the rucksack data directory")
             )
             .subcommand(
                 Command::new("db-file")
@@ -311,21 +311,21 @@ pub fn setup() -> Command {
             )
             .subcommand(
                 Command::new("db-version")
-                    .about("display the file schema version of a given database file")
+                    .about("Display the file schema version of a given database file")
                     .arg(db_needed())
                     .arg(pwd_arg())
                     .arg(salt_arg())
             )
             .subcommand(
                 Command::new("tags")
-                    .about("display the tags currently used across all records")
+                    .about("Display the tags currently used across all records")
                     .arg(db_needed())
                     .arg(pwd_arg())
                     .arg(salt_arg())
             )
             .subcommand(
                 Command::new("types")
-                    .about("display the record types supported")
+                    .about("Display the record types supported")
             )
     )
 }
@@ -335,7 +335,7 @@ pub fn setup() -> Command {
 pub fn config_arg() -> Arg {
     let config_file = rucksack_lib::util::config_file();
     Arg::new("config-file")
-        .help("the path to the config file to use or create")
+        .help("The path to the config file to use or create")
         .long("config-file")
         .default_value(config_file)
         .global(true)
@@ -343,7 +343,7 @@ pub fn config_arg() -> Arg {
 
 pub fn log_level_arg() -> Arg {
     Arg::new("log-level")
-        .help("override the configured log-level setting")
+        .help("Override the configured log-level setting")
         .long("log-level")
         .default_value("")
         .value_parser(["error", "warn", "info", "debug", "trace", ""])
@@ -354,7 +354,7 @@ pub fn log_level_arg() -> Arg {
 
 pub fn db_arg() -> Arg {
     Arg::new("db")
-        .help("path to the encrypted database to use")
+        .help("Path to the encrypted database to use")
         .short('d')
         .long("db")
         .global(true)
@@ -362,14 +362,14 @@ pub fn db_arg() -> Arg {
 
 pub fn pwd_arg() -> Arg {
     Arg::new("db-pass")
-        .help("password used to encrypt the database")
+        .help("Password used to encrypt the database")
         .long("db-pass")
         .global(true)
 }
 
 pub fn salt_arg() -> Arg {
     Arg::new("salt")
-        .help("the salt to use for encrypting the database")
+        .help("The salt to use for encrypting the database")
         .default_value(default_salt())
         .short('s')
         .long("salt")
@@ -387,7 +387,7 @@ fn default_salt() -> String {
 
 pub fn record_category() -> Arg {
     Arg::new("category")
-        .help("the user-supplied category of the given record")
+        .help("The user-supplied category of the given record")
         .long("category")
         .default_value(records::DEFAULT_CATEGORY)
         .global(true)
@@ -395,7 +395,7 @@ pub fn record_category() -> Arg {
 
 pub fn record_status() -> Arg {
     Arg::new("status")
-        .help("the status of the given record")
+        .help("The status of the given record")
         .default_value("active")
         .value_parser(["active", "inactive", "deleted"])
 }
@@ -422,7 +422,7 @@ pub fn record_types_list_allowed() -> Vec<&'static str> {
 
 pub fn record_base() -> Arg {
     Arg::new("type")
-        .help("the type of secret for the record")
+        .help("The type of secret for the record")
         .short('t')
         .long("type")
         .global(true)
@@ -446,28 +446,28 @@ pub fn record_name() -> Arg {
 
 pub fn record_user() -> Arg {
     Arg::new("user")
-        .help("the user/login identifier")
+        .help("The user/login identifier")
         .short('u')
         .long("user")
 }
 
 pub fn record_user_old() -> Arg {
     Arg::new("old-user")
-        .help("the old user login name")
+        .help("The old user login name")
         .short('u')
         .long("old-user")
 }
 
 pub fn record_user_new() -> Arg {
     Arg::new("new-user")
-        .help("the new user login name to use")
+        .help("The new user login name to use")
         .short('u')
         .long("new-user")
 }
 
 pub fn record_pass() -> Arg {
     Arg::new("password")
-        .help("the login password")
+        .help("The login password")
         .long("password")
 }
 
@@ -477,55 +477,55 @@ pub fn record_url() -> Arg {
 
 pub fn record_url_old() -> Arg {
     Arg::new("old-url")
-        .help("the old login URL")
+        .help("The old login URL")
         .long("old-url")
 }
 
 pub fn record_url_new() -> Arg {
     Arg::new("new-url")
-        .help("the new URL for the login")
+        .help("The new URL for the login")
         .long("new-url")
 }
 
 pub fn record_account_id() -> Arg {
     Arg::new("account-id")
-        .help("the account ID for secrets of type 'account'")
+        .help("The account ID for secrets of type 'account'")
         .long("account-id")
 }
 
 pub fn record_secret_public() -> Arg {
     Arg::new("public")
-        .help("the public key for asymmetric-crypto secrets; the public cert for certificate-based secrets")
+        .help("The public key for asymmetric-crypto secrets; the public cert for certificate-based secrets")
         .long("public")
 }
 
 pub fn record_secret_private() -> Arg {
     Arg::new("private")
-        .help("the private key for asymmetric-crypto secrets; the private cert for certificate-based secrets")
+        .help("The private key for asymmetric-crypto secrets; the private cert for certificate-based secrets")
         .long("private")
 }
 
 pub fn record_root_cert() -> Arg {
     Arg::new("root")
-        .help("the root cert for certificate-based secrets")
+        .help("The root cert for certificate-based secrets")
         .long("root")
 }
 
 pub fn record_key() -> Arg {
     Arg::new("key")
-        .help("the key for service-credential-based secrets")
+        .help("The key for service-credential-based secrets")
         .long("key")
 }
 
 pub fn record_secret() -> Arg {
     Arg::new("secret")
-        .help("the secret for service-credential-based secrets")
+        .help("The secret for service-credential-based secrets")
         .long("secret")
 }
 
 pub fn record_tags() -> Arg {
     Arg::new("tags")
-        .help("one or more tags for a record (use a ',' to delimit multiple)")
+        .help("One or more tags for a record (use a ',' to delimit multiple)")
         .long("tags")
         .use_value_delimiter(true)
         .num_args(0..)
@@ -535,7 +535,7 @@ pub fn record_tags() -> Arg {
 
 pub fn record_all_tags() -> Arg {
     Arg::new("all-tags")
-        .help("limit results to records that have ALL of the tags passed")
+        .help("Limit results to records that have ALL of the tags passed")
         .long("all-tags")
         .use_value_delimiter(true)
         .num_args(0..)
@@ -545,7 +545,7 @@ pub fn record_all_tags() -> Arg {
 
 pub fn record_any_tags() -> Arg {
     Arg::new("any-tags")
-        .help("limit results to records that have ANY of the tags passed")
+        .help("Limit results to records that have ANY of the tags passed")
         .long("any-tags")
         .use_value_delimiter(true)
         .num_args(0..)
