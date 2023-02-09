@@ -1,55 +1,62 @@
 #!/bin/bash
 
-# This script is for integration tests of unreleased versions of rucksack
-# that are still in-development.
-
-make build
+# This script is for integration tests of latest released version of rucksack.
 
 . ./tests/common.sh || . ./common.sh
+
+rm -f ~/.cargo/bin/rucksack ~/.cargo/registry/cache/github.com*/rucksack*
+
+echo
+header "Install rucksack"
+echo
+
+cargo install rucksack
 
 echo
 header "Show top-level help"
 echo
-./bin/rucksack help
+
+RUST_BACKTRACE=1 rucksack help
+
 
 echo
 header "Show config file (default)"
 
-./bin/rucksack show config-file
+rucksack show config-file
 
 header "Show config file"
 
-./bin/rucksack show config-file --config-file "$CFG_FILE"
+rucksack show config-file --config-file "$CFG_FILE"
 
 header "Show config"
 
-./bin/rucksack show config --config-file "$CFG_FILE"
+rucksack show config --config-file "$CFG_FILE"
 
 header "Show data dir (default)"
 
-./bin/rucksack show data-dir --config-file "$CFG_FILE"
+rucksack show data-dir --config-file "$CFG_FILE"
 
 header "Show data dir"
 
-./bin/rucksack show data-dir --config-file "$CFG_FILE" --db "$DB_FILE"
+rucksack show data-dir --config-file "$CFG_FILE" --db "$DB_FILE"
 
 header "Show DB file (default)"
 
-./bin/rucksack show db-file --config-file "$CFG_FILE"
+rucksack show db-file --config-file "$CFG_FILE"
 
 header "Show DB file"
 
-./bin/rucksack show db-file --config-file "$CFG_FILE" --db "$DB_FILE"
+rucksack show db-file --config-file "$CFG_FILE" --db "$DB_FILE"
 
 echo
 header "Generate encoded password"
 
-./bin/rucksack gen --config-file "$CFG_FILE" --type uuid++ --encode
+rucksack gen --config-file "$CFG_FILE" --type uuid++ --encode
 
 header "Add a new record (shelly)"
 echo
 
-./bin/rucksack add \
+rucksack add \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -57,21 +64,21 @@ echo
     --user shelly \
     --password whyyyyyy
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234
 
 header "Show DB file format version"
 
-./bin/rucksack show db-version \
+rucksack show db-version \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234
 
 header "Change the record user name"
 
-./bin/rucksack set user \
+rucksack set user \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -79,14 +86,14 @@ header "Change the record user name"
     --old-user shelly \
     --new-user clammy
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234
 
 header "List all records (with decrypted data)"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -95,7 +102,7 @@ header "List all records (with decrypted data)"
 header "Add a new record (sully)"
 echo
 
-./bin/rucksack add \
+rucksack add \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -104,14 +111,14 @@ echo
     --password numb3r1fan \
     --tags "best friend",monster,blue
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234
 
 header "List all records (with decrypted data and revealed passwords)"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -120,7 +127,7 @@ header "List all records (with decrypted data and revealed passwords)"
 
 header "Filter records with 'exa' (decrypted data and revealed passwords)"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -130,7 +137,7 @@ header "Filter records with 'exa' (decrypted data and revealed passwords)"
 
 header "Filter records with 'boo' (decrypted data and revealed passwords)"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -140,21 +147,21 @@ header "Filter records with 'boo' (decrypted data and revealed passwords)"
 
 header "Remove an record (clammy)"
 
-./bin/rucksack rm \
+rucksack rm \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --url http://example.com \
     --user clammy
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234
 
 header "List deleted records"
 
-./bin/rucksack list deleted \
+rucksack list deleted \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234
@@ -162,7 +169,7 @@ header "List deleted records"
 header "Add a records for different 'kinds' and categories"
 echo
 
-./bin/rucksack add \
+rucksack add \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -173,7 +180,7 @@ echo
     --type account \
     --account-id "ar314159"
 
-./bin/rucksack add \
+rucksack add \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -186,7 +193,7 @@ echo
     --public "abc" \
     --private "def" \
 
-./bin/rucksack add \
+rucksack add \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -200,7 +207,7 @@ echo
     --private "def" \
     --root "ghi"
 
-./bin/rucksack add \
+rucksack add \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -213,7 +220,7 @@ echo
     --key "abc" \
     --secret "def"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -222,7 +229,7 @@ echo
 
 header "Show just password types"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -232,7 +239,7 @@ header "Show just password types"
 
 header "Show just account types"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -242,7 +249,7 @@ header "Show just account types"
 
 header "Show just asymmetric-crypto types"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -252,7 +259,7 @@ header "Show just asymmetric-crypto types"
 
 header "Show just certificate types"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -262,7 +269,7 @@ header "Show just certificate types"
 
 header "Show just service credential types"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -272,11 +279,11 @@ header "Show just service credential types"
 
 header "Show the list of supported types"
 
-./bin/rucksack show types
+rucksack show types
 
 header "Show just 'default' category"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -286,7 +293,7 @@ header "Show just 'default' category"
 
 header "Show just 'personal' category"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -296,7 +303,7 @@ header "Show just 'personal' category"
 
 header "Show just 'business' category"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -306,14 +313,14 @@ header "Show just 'business' category"
 
 header "Show all categories"
 
-./bin/rucksack show categories \
+rucksack show categories \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234
 
 header "Show just 'monster'-tagged"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -323,7 +330,7 @@ header "Show just 'monster'-tagged"
 
 header "Show just records tagged with 'server' (using --all-tags)"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -333,7 +340,7 @@ header "Show just records tagged with 'server' (using --all-tags)"
 
 header "Show just records tagged with 'server' (using --any-tags)"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -343,7 +350,7 @@ header "Show just records tagged with 'server' (using --any-tags)"
 
 header "Show all tagged with 'server' and 'cloud'"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -353,7 +360,7 @@ header "Show all tagged with 'server' and 'cloud'"
 
 header "Show all tagged with 'server' or 'cloud'"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -363,7 +370,7 @@ header "Show all tagged with 'server' or 'cloud'"
 
 header "Show all tags"
 
-./bin/rucksack show tags \
+rucksack show tags \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234
@@ -373,7 +380,7 @@ header "Export password data"
 mkdir -p exports
 EXPORT_FILE=exports/secrets.csv
 rm -f $EXPORT_FILE
-./bin/rucksack export \
+rucksack export \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -384,7 +391,7 @@ echo
 header "Import password export"
 
 echo
-./bin/rucksack import \
+rucksack import \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
@@ -393,7 +400,7 @@ echo
 echo
 header "List with latest access counts"
 
-./bin/rucksack list \
+rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234
@@ -402,12 +409,12 @@ header "List with latest access counts"
 # * https://github.com/oxur/rucksack/issues/71
 
 # echo
-# ./bin/rucksack list \
+# rucksack list \
 #     --config-file "$CFG_FILE" \
 #     --db "$DB_FILE" \
 #     --db-pass 1234
 
-# ./bin/rucksack export \
+# rucksack export \
 #     --config-file "$CFG_FILE" \
 #     --db "$DB_FILE" \
 #     --db-pass 1234 \
@@ -419,12 +426,12 @@ header "List with latest access counts"
 # header "Read an old database (v0.5.0)"
 
 # cp ./tests/testing-data/secrets-v0.5.0.db "$DB_FILE"
-# ./bin/rucksack show db-version \
+# rucksack show db-version \
 #     --config-file "$CFG_FILE" \
 #     --db "$DB_FILE" \
 #     --db-pass 1234
 
-# ./bin/rucksack list \
+# rucksack list \
 #     --config-file "$CFG_FILE" \
 #     --db "$DB_FILE" \
 #     --db-pass 1234
@@ -432,12 +439,12 @@ header "List with latest access counts"
 # header "Read an old database (v0.6.0)"
 
 # cp ./tests/testing-data/secrets-v0.6.0.db "$DB_FILE"
-# ./bin/rucksack show db-version \
+# rucksack show db-version \
 #     --config-file "$CFG_FILE" \
 #     --db "$DB_FILE" \
 #     --db-pass 1234
 
-# ./bin/rucksack list \
+# rucksack list \
 #     --config-file "$CFG_FILE" \
 #     --db "$DB_FILE" \
 #     --db-pass 1234
