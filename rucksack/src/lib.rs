@@ -63,5 +63,9 @@
 pub mod app;
 pub mod command;
 pub mod constant;
+pub mod option;
+pub mod prompt;
+pub mod query;
+pub mod setup;
 
 pub use app::App;

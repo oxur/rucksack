@@ -1,11 +1,12 @@
 use clap::builder::EnumValueParser;
-use clap::{value_parser, Arg, ArgAction, Command};
+use clap::{Arg, ArgAction, Command};
 
 use rucksack_db::records;
 
 use crate::constant;
 
 pub mod add;
+pub mod arg;
 pub mod export;
 pub mod gen;
 pub mod import;
@@ -13,9 +14,8 @@ pub mod list;
 pub mod rm;
 pub mod set;
 pub mod show;
-pub mod util;
 
-pub use util::setup_db;
+use arg::{db, record};
 
 pub fn setup() -> Command {
     Command::new(constant::NAME)
@@ -40,22 +40,22 @@ pub fn setup() -> Command {
     .subcommand(
         Command::new("add")
             .about("Add a new secret")
-            .arg(record_category())
-            .arg(record_type())
-            .arg(record_name())
-            .arg(record_user().required(true))
-            .arg(record_pass())
-            .arg(record_account_id())
-            .arg(record_secret_public())
-            .arg(record_secret_private())
-            .arg(record_root_cert())
-            .arg(record_key())
-            .arg(record_secret())
-            .arg(record_tags())
-            .arg(record_url().required(true))
-            .arg(db_arg())
-            .arg(pwd_arg())
-            .arg(salt_arg())
+            .arg(record::category())
+            .arg(record::kind())
+            .arg(record::name())
+            .arg(record::user().required(true))
+            .arg(record::pass())
+            .arg(record::account_id())
+            .arg(record::secret_public())
+            .arg(record::secret_private())
+            .arg(record::root_cert())
+            .arg(record::key())
+            .arg(record::secret())
+            .arg(record::tags())
+            .arg(record::url().required(true))
+            .arg(db::path())
+            .arg(db::pwd())
+            .arg(db::salt())
     )
     .subcommand(
         Command::new("export")
@@ -66,17 +66,17 @@ pub fn setup() -> Command {
                     .short('o')
                     .long("output"),
             )
-            .arg(db_arg())
-            .arg(pwd_arg())
-            .arg(salt_arg())
-            .arg(serialised_format())
-            .arg(record_type())
-            .arg(record_category())
+            .arg(db::path())
+            .arg(db::pwd())
+            .arg(db::salt())
+            .arg(db::serialised_format())
+            .arg(record::kind())
+            .arg(record::category())
     )
     .subcommand(
         Command::new("gen")
             .about("Generate a secret")
-            .arg(db_not_needed())
+            .arg(db::not_needed())
             .arg(
                 Arg::new("type")
                     .help("The type of generator to use")
@@ -126,16 +126,16 @@ pub fn setup() -> Command {
     .subcommand(
         Command::new("import")
             .about("Pull in creds from other sources")
-            .arg(serialised_format())
+            .arg(db::serialised_format())
             .arg(
                 Arg::new("file")
                     .help("Credential file to import (for file-based importers)")
                     .short('f')
                     .long("file"),
             )
-            .arg(db_arg())
-            .arg(pwd_arg())
-            .arg(salt_arg())
+            .arg(db::path())
+            .arg(db::pwd())
+            .arg(db::salt())
     )
     .subcommand(
         Command::new("list")
@@ -210,14 +210,14 @@ pub fn setup() -> Command {
                     .action(ArgAction::SetTrue)
                     .global(true)
             )
-            .arg(db_arg())
-            .arg(pwd_arg())
-            .arg(salt_arg())
-            .arg(record_category().default_value(records::ANY_CATEGORY))
-            .arg(record_type_list())
-            .arg(record_all_tags())
-            .arg(record_any_tags())
-            .arg(record_name())
+            .arg(db::path())
+            .arg(db::pwd())
+            .arg(db::salt())
+            .arg(record::category().default_value(records::ANY_CATEGORY))
+            .arg(record::type_list())
+            .arg(record::all_tags())
+            .arg(record::any_tags())
+            .arg(record::name())
             .subcommand(
                 Command::new("deleted")
                     .about("List the records that have been flagged for deletion"))
@@ -226,70 +226,70 @@ pub fn setup() -> Command {
         Command::new("rm")
             .about("Delete a single record")
             .visible_aliases(["delete","remove"])
-            .arg(record_category())
-            .arg(record_type())
-            .arg(record_name())
-            .arg(record_user().required(true))
-            .arg(record_url().required(true))
-            .arg(db_arg())
-            .arg(pwd_arg())
-            .arg(salt_arg())
+            .arg(record::category())
+            .arg(record::kind())
+            .arg(record::name())
+            .arg(record::user().required(true))
+            .arg(record::url().required(true))
+            .arg(db::path())
+            .arg(db::pwd())
+            .arg(db::salt())
     )
     .subcommand(
         Command::new("set")
             .about("Perform various 'write' operations")
-            .arg(db_arg())
-            .arg(pwd_arg())
-            .arg(salt_arg())
-            .arg(record_category())
-            .arg(record_type())
-            .arg(record_name())
+            .arg(db::path())
+            .arg(db::pwd())
+            .arg(db::salt())
+            .arg(record::category())
+            .arg(record::kind())
+            .arg(record::name())
             .subcommand(
                 Command::new("password")
                     .about("Change the password for the given record")
-                    .arg(record_pass())
-                    .arg(record_user().required(true))
-                    .arg(record_url().required(true))
+                    .arg(record::pass())
+                    .arg(record::user().required(true))
+                    .arg(record::url().required(true))
             )
             .subcommand(
                 Command::new("status")
                     .about("Set the status for the given record")
-                    .arg(record_status().required(true))
-                    .arg(record_user().required(true))
-                    .arg(record_url().required(true))
+                    .arg(record::status().required(true))
+                    .arg(record::user().required(true))
+                    .arg(record::url().required(true))
             )
             .subcommand(
                 Command::new("url")
                     .about("Change the url for the given record")
-                    .arg(record_url_old().required(true))
-                    .arg(record_url_new().required(true))
-                    .arg(record_user().required(true))
+                    .arg(record::url_old().required(true))
+                    .arg(record::url_new().required(true))
+                    .arg(record::user().required(true))
             )
             .subcommand(
                 Command::new("user")
                     .about("Change the user (login name) for the given record")
-                    .arg(record_user_old().required(true))
-                    .arg(record_user_new().required(true))
-                    .arg(record_url().required(true))
+                    .arg(record::user_old().required(true))
+                    .arg(record::user_new().required(true))
+                    .arg(record::url().required(true))
             )
             .subcommand(
                 Command::new("type")
                     .about("Change the type of the given record")
-                    .arg(record_user().required(true))
-                    .arg(record_url().required(true))
+                    .arg(record::user().required(true))
+                    .arg(record::url().required(true))
             )
     )
     .subcommand(
         Command::new("show")
             .about("Display rucksack-specific information")
-            .arg(db_arg())
-            .arg(db_not_needed())
+            .arg(db::path())
+            .arg(db::not_needed())
             .subcommand(
                 Command::new("categories")
                     .about("Display the categories currently used across all records")
-                    .arg(db_needed())
-                    .arg(pwd_arg())
-                    .arg(salt_arg())
+                    .arg(db::needed())
+                    .arg(db::pwd())
+                    .arg(db::salt())
             )
             .subcommand(
                 Command::new("config-file")
@@ -310,16 +310,16 @@ pub fn setup() -> Command {
             .subcommand(
                 Command::new("db-version")
                     .about("Display the file schema version of a given database file")
-                    .arg(db_needed())
-                    .arg(pwd_arg())
-                    .arg(salt_arg())
+                    .arg(db::needed())
+                    .arg(db::pwd())
+                    .arg(db::salt())
             )
             .subcommand(
                 Command::new("tags")
                     .about("Display the tags currently used across all records")
-                    .arg(db_needed())
-                    .arg(pwd_arg())
-                    .arg(salt_arg())
+                    .arg(db::needed())
+                    .arg(db::pwd())
+                    .arg(db::salt())
             )
             .subcommand(
                 Command::new("types")
@@ -346,275 +346,4 @@ pub fn log_level_arg() -> Arg {
         .default_value("")
         .value_parser(["error", "warn", "info", "debug", "trace", ""])
         .global(true)
-}
-
-// Database Flags
-
-pub fn db_arg() -> Arg {
-    Arg::new("db")
-        .help("Path to the encrypted database to use")
-        .short('d')
-        .long("db")
-        .global(true)
-}
-
-pub fn pwd_arg() -> Arg {
-    Arg::new("db-pass")
-        .help("Password used to encrypt the database")
-        .long("db-pass")
-        .global(true)
-}
-
-pub fn salt_arg() -> Arg {
-    Arg::new("salt")
-        .help("The salt to use for encrypting the database")
-        .default_value(default_salt())
-        .short('s')
-        .long("salt")
-        .global(true)
-}
-
-fn default_salt() -> String {
-    match std::env::var("USER") {
-        Ok(user) => user,
-        Err(_) => "rucksack".to_string(),
-    }
-}
-
-// Record Flags
-
-pub fn record_category() -> Arg {
-    Arg::new("category")
-        .help("The user-supplied category of the given record")
-        .long("category")
-        .default_value(records::DEFAULT_CATEGORY)
-        .global(true)
-}
-
-pub fn record_status() -> Arg {
-    Arg::new("status")
-        .help("The status of the given record")
-        .default_value("active")
-        .value_parser(["active", "inactive", "deleted"])
-}
-
-pub fn record_types_allowed() -> Vec<&'static str> {
-    vec![
-        "",
-        "account",
-        "asymmetric-crypto",
-        "asymmetric",
-        "certs",
-        "certificates",
-        "password",
-        "service-creds",
-        "service-credentials",
-    ]
-}
-
-pub fn record_types_list_allowed() -> Vec<&'static str> {
-    let mut rta = record_types_allowed();
-    rta.push("any");
-    rta
-}
-
-pub fn record_base() -> Arg {
-    Arg::new("type")
-        .help("The type of secret for the record")
-        .short('t')
-        .long("type")
-        .global(true)
-}
-
-pub fn record_type() -> Arg {
-    record_base()
-        .default_value("password")
-        .value_parser(record_types_allowed())
-}
-
-pub fn record_type_list() -> Arg {
-    record_base()
-        .default_value("any")
-        .value_parser(record_types_list_allowed())
-}
-
-pub fn record_name() -> Arg {
-    Arg::new("name").help("the record name").long("name")
-}
-
-pub fn record_user() -> Arg {
-    Arg::new("user")
-        .help("The user/login identifier")
-        .short('u')
-        .long("user")
-}
-
-pub fn record_user_old() -> Arg {
-    Arg::new("old-user")
-        .help("The old user login name")
-        .short('u')
-        .long("old-user")
-}
-
-pub fn record_user_new() -> Arg {
-    Arg::new("new-user")
-        .help("The new user login name to use")
-        .short('u')
-        .long("new-user")
-}
-
-pub fn record_pass() -> Arg {
-    Arg::new("password")
-        .help("The login password")
-        .long("password")
-}
-
-pub fn record_url() -> Arg {
-    Arg::new("url").help("the login URL").long("url")
-}
-
-pub fn record_url_old() -> Arg {
-    Arg::new("old-url")
-        .help("The old login URL")
-        .long("old-url")
-}
-
-pub fn record_url_new() -> Arg {
-    Arg::new("new-url")
-        .help("The new URL for the login")
-        .long("new-url")
-}
-
-pub fn record_account_id() -> Arg {
-    Arg::new("account-id")
-        .help("The account ID for secrets of type 'account'")
-        .long("account-id")
-}
-
-pub fn record_secret_public() -> Arg {
-    Arg::new("public")
-        .help("The public key for asymmetric-crypto secrets; the public cert for certificate-based secrets")
-        .long("public")
-}
-
-pub fn record_secret_private() -> Arg {
-    Arg::new("private")
-        .help("The private key for asymmetric-crypto secrets; the private cert for certificate-based secrets")
-        .long("private")
-}
-
-pub fn record_root_cert() -> Arg {
-    Arg::new("root")
-        .help("The root cert for certificate-based secrets")
-        .long("root")
-}
-
-pub fn record_key() -> Arg {
-    Arg::new("key")
-        .help("The key for service-credential-based secrets")
-        .long("key")
-}
-
-pub fn record_secret() -> Arg {
-    Arg::new("secret")
-        .help("The secret for service-credential-based secrets")
-        .long("secret")
-}
-
-pub fn record_tags() -> Arg {
-    Arg::new("tags")
-        .help("One or more tags for a record (use a ',' to delimit multiple)")
-        .long("tags")
-        .use_value_delimiter(true)
-        .num_args(0..)
-        .value_parser(value_parser!(String))
-        .action(ArgAction::Append)
-}
-
-pub fn record_all_tags() -> Arg {
-    Arg::new("all-tags")
-        .help("Limit results to records that have ALL of the tags passed")
-        .long("all-tags")
-        .use_value_delimiter(true)
-        .num_args(0..)
-        .value_parser(value_parser!(String))
-        .action(ArgAction::Append)
-}
-
-pub fn record_any_tags() -> Arg {
-    Arg::new("any-tags")
-        .help("Limit results to records that have ANY of the tags passed")
-        .long("any-tags")
-        .use_value_delimiter(true)
-        .num_args(0..)
-        .value_parser(value_parser!(String))
-        .action(ArgAction::Append)
-}
-
-// Miscellaneous
-
-pub fn db_not_needed() -> Arg {
-    Arg::new("db-needed")
-        .hide(true)
-        .long("db-needed")
-        .value_parser(clap::builder::BoolValueParser::new())
-        .default_value("false")
-        .global(true)
-}
-
-pub fn db_needed() -> Arg {
-    Arg::new("db-needed")
-        .hide(true)
-        .long("db-needed")
-        .value_parser(clap::builder::BoolValueParser::new())
-        .default_value("true")
-        .global(true)
-}
-
-pub fn serialised_format() -> Arg {
-    Arg::new("format")
-        .help("the de/serialisation format to use for import/export")
-        .long("format")
-        .value_parser(["", "chrome", "debug", "firefox"])
-        .global(true)
-}
-
-mod tests {
-
-    #[test]
-    fn record_types_allowed() {
-        assert_eq!(
-            super::record_types_allowed(),
-            vec![
-                "",
-                "account",
-                "asymmetric-crypto",
-                "asymmetric",
-                "certs",
-                "certificates",
-                "password",
-                "service-creds",
-                "service-credentials",
-            ]
-        );
-    }
-
-    #[test]
-    fn record_types_list_allowed() {
-        assert_eq!(
-            super::record_types_list_allowed(),
-            vec![
-                "",
-                "account",
-                "asymmetric-crypto",
-                "asymmetric",
-                "certs",
-                "certificates",
-                "password",
-                "service-creds",
-                "service-credentials",
-                "any"
-            ]
-        );
-    }
 }

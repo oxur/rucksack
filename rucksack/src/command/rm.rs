@@ -23,14 +23,14 @@ use rucksack_db::records::Status;
 use rucksack_lib::time;
 
 use crate::app::App;
-
-use super::util;
+use crate::option;
+use crate::query;
 
 pub fn one(matches: &ArgMatches, app: &App) -> Result<()> {
-    let key = util::key(matches);
+    let key = option::key(matches);
     log::debug!("Marking record '{}' as deleted ...", key);
     let now = time::now();
-    let mut record = util::record(&app.db, matches)?;
+    let mut record = query::record(&app.db, matches)?;
     record.metadata.state = Status::Deleted;
     record.metadata.updated = now;
     app.db.insert(record);

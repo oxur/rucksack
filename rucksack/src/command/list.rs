@@ -53,31 +53,31 @@
 //!
 //! 7 records (of 7 total)
 //! ```
-
+//!
 //! It is also possible to perform negative filtering using `--exclude`. Additionally, `--include` is provided as an alias for `--filter`.
-
+//!
 //! You may sort on `score` (strength), `user`, or `url`. If not provided, `url` sorting is used. Also note that `order-by` is provided as an alias for `sort-by`.
-
+//!
 //! ## Additional Searching
-
+//!
 //! You may also limit results with the following:
-
+//!
 //! * by type of record with `--type`
 //! * by user-supplied category with `--category`
 //! * by tags, where `--all-tags` will only match records that have all the supplied tags, and where `--any-tags` will match any record that has at least one of the tags listed (both are supplied comma-separated; tags with spaces need to be quoted)
-
+//!
 //! The list of supported types may be shown with: `rucksack show types` and doesn't need access to the database to do so.
-
+//!
 //! A full list of categories created by the user does need access to the database (so you will be prompted for a password if you don't use the `--db-pass` flag): `rucksack show categories`.
-
+//!
 //! Same for user-created tags: `rucksack show tags`.
-
+//!
 //! ### Grouping Results
-
+//!
 //! #### By Password
-
+//!
 //! For use in auditing, sites+user combinations that share the same password can be reported:
-
+//!
 //! ```shell
 //! rucksack list \
 //!   --group-by db-pass \
@@ -134,8 +134,7 @@ use rucksack_db::Status;
 use rucksack_lib::time;
 
 use crate::app::App;
-
-use super::util;
+use crate::option;
 
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
 struct ListResult {
@@ -209,10 +208,10 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
     let reveal = matches.get_one::<bool>("reveal").unwrap();
     let sort_by = matches.get_one::<String>("sort-by").map(|s| s.as_str());
     let group_by = matches.get_one::<String>("group-by").map(|s| s.as_str());
-    let kind = util::record_kind(matches);
-    let category = util::category(matches);
-    let all_tags = util::all_tags(matches);
-    let any_tags = util::any_tags(matches);
+    let kind = option::record_kind(matches);
+    let category = option::category(matches);
+    let all_tags = option::all_tags(matches);
+    let any_tags = option::any_tags(matches);
     opts.reveal = *reveal;
     // If we want to see the status of all records, we're going to override
     // skip_deleted and only_deleted:

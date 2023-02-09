@@ -1,4 +1,4 @@
-//! # The `show` Subcommand
+//! # Displaying Miscellaneous Data / Metadata
 //!
 //! If you need to see what version of the database file format you're currently using:
 //!

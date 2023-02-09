@@ -6,6 +6,7 @@ use clap::ArgMatches;
 use rucksack::command as cli;
 use rucksack::command::{add, export, gen, import, list, rm, set, show};
 use rucksack::constant;
+use rucksack::setup;
 use rucksack_lib::{config, util};
 
 fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
@@ -93,7 +94,7 @@ fn main() -> Result<()> {
 
     let (_, subcmd_matches) = matches.subcommand().unwrap();
     log::debug!("Setting up database ...");
-    let db = cli::setup_db(subcmd_matches)?;
+    let db = setup::db(subcmd_matches)?;
     cfg.rucksack.db_file = db.path();
     cfg.rucksack.data_dir = util::dir_parent(db.path());
     log::debug!("Setting up rucksack application ...");
