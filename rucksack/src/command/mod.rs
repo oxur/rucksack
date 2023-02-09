@@ -3,6 +3,8 @@ use clap::{value_parser, Arg, ArgAction, Command};
 
 use rucksack_db::records;
 
+use crate::constant;
+
 pub mod add;
 pub mod export;
 pub mod gen;
@@ -15,14 +17,10 @@ pub mod util;
 
 pub use util::setup_db;
 
-const NAME: &str = env!("CARGO_PKG_NAME");
-const DESC: &str = env!("CARGO_PKG_DESCRIPTION");
-
 pub fn setup() -> Command {
-    Command::new(NAME)
-    .about(format!("{NAME}: {DESC}"))
+    Command::new(constant::NAME)
+    .about(format!("{}: {}", constant::NAME, constant::DESC))
     .arg_required_else_help(true)
-    // .allow_external_subcommands(true)
     .arg(config_arg())
     .arg(log_level_arg())
     .arg(
@@ -333,7 +331,7 @@ pub fn setup() -> Command {
 // Top-level Flags
 
 pub fn config_arg() -> Arg {
-    let config_file = rucksack_lib::util::config_file();
+    let config_file = rucksack_lib::util::config_file(constant::NAME);
     Arg::new("config-file")
         .help("The path to the config file to use or create")
         .long("config-file")

@@ -1,3 +1,128 @@
+//! # Listing Secrets
+//!
+//! Show all secrets records:
+//!
+//! ```shell
+//! rucksack list
+//! ```
+//!
+//! ```shell
+//! Enter db password:
+//! ```
+//!
+//! Show URLs, names, passwords, and password scores for all secrets:
+//!
+//! ```shell
+//! rucksack list --decrypt
+//! ```
+//!
+//! ```shell
+//! Enter db password:
+//! ```
+//!
+//! In both cases a password may be passed with the `--db-pass` flag. By default, the salt is the value of the `USER` environment variable, but it may be overridden with the `--salt` flag.
+//!
+//! Note that without `--decrypt`, only the user and URL are displayed. With `--decrypt`, those as well as masked password and password score are displayed. To unmask the password, one must also set `--reveal`.
+//!
+//! The default database location depends upon operating system. To see the location for your system, you can run `rucksack show db-file`. To use another location, the `--db` flag is available.
+//!
+//! The flags `--db`, `--db-pass`, and `--salt` may be set for any subcommand that access the database.
+//!
+//! # Searching / Filtering Secrets
+//!
+//! Simple filtering is also possible (done using a flag with the `list` command, with or without sorting):
+//!
+//! ```shell
+//! rucksack list \
+//!   --db-pass abc123 \
+//!   --filter exa \
+//!   --sort-by score \
+//!   --decryspt
+//! ```
+//!
+//! ```text
+//! URL                                      | User / Record                 | Password             | Strength
+//! -----------------------------------------+--------------------------------+----------------------+-----------
+//! https://www.bugworld.com                 | hexapod123                     | **********           | 93
+//! https://accounts.cloud.com               | hexapod@thing.systems          | **********           | 90
+//! https://entymology.slack.com             | 6pod@example.com               | **********           | 86
+//! https://bugs.slack.com                   | Alice "Hexapod" Roberts        | **********           | 85
+//! https://twitter.com                      | TheOtherHexapod                | **********           | 83
+//! https://portal-hexapod.testing.app       | alice@example.com              | **********           | 58
+//! http://localhost:3000                    | alice@example.com              | **********           | 30
+//!
+//! 7 records (of 7 total)
+//! ```
+
+//! It is also possible to perform negative filtering using `--exclude`. Additionally, `--include` is provided as an alias for `--filter`.
+
+//! You may sort on `score` (strength), `user`, or `url`. If not provided, `url` sorting is used. Also note that `order-by` is provided as an alias for `sort-by`.
+
+//! ## Additional Searching
+
+//! You may also limit results with the following:
+
+//! * by type of record with `--type`
+//! * by user-supplied category with `--category`
+//! * by tags, where `--all-tags` will only match records that have all the supplied tags, and where `--any-tags` will match any record that has at least one of the tags listed (both are supplied comma-separated; tags with spaces need to be quoted)
+
+//! The list of supported types may be shown with: `rucksack show types` and doesn't need access to the database to do so.
+
+//! A full list of categories created by the user does need access to the database (so you will be prompted for a password if you don't use the `--db-pass` flag): `rucksack show categories`.
+
+//! Same for user-created tags: `rucksack show tags`.
+
+//! ### Grouping Results
+
+//! #### By Password
+
+//! For use in auditing, sites+user combinations that share the same password can be reported:
+
+//! ```shell
+//! rucksack list \
+//!   --group-by db-pass \
+//!   --decrypt
+//! ```
+//!
+//! ```text
+//! +========================================================================
+//!
+//! Password: ********** (Score: 99)
+//! Records using: 5
+//! Records:
+//!
+//! URL                                      | User / Record
+//! -----------------------------------------+-------------------------------
+//! https://smile.amazon.com                 | alice@example.com
+//! https://smile.amazon.com/ap/signin       | alice@example.com
+//! https://www.amazon.com                   | alice@example.com
+//! https://www.amazon.com/ap/signin         | alice@example.com
+//! https://mybank.com                       | alice@example.com
+//!
+//! +========================================================================
+//!
+//! Password: ********** (Score: 86)
+//! Records using: 2
+//! Records:
+//!
+//! URL                                      | User / Record
+//! -----------------------------------------+-------------------------------
+//! https://blurp.com                        | alice
+//! https://bleep.net                        | alice
+//!
+//! 2 groups (with 7 records out of 16 total)
+//! ```
+//!
+//! ## By User
+//!
+//! You may also group by user name (account name):
+//!
+//! ```shell
+//! rucksack list \
+//!   --group-by user \
+//!   --decrypt
+//! ```
+
 use std::collections::HashMap;
 
 use anyhow::Result;

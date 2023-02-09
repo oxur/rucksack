@@ -5,9 +5,8 @@ use clap::ArgMatches;
 
 use rucksack::command as cli;
 use rucksack::command::{add, export, gen, import, list, rm, set, show};
+use rucksack::constant;
 use rucksack_lib::{config, util};
-
-const NAME: &str = env!("CARGO_PKG_NAME");
 
 fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
     log::debug!("Preparing to dispatch based upon (sub)command ...");
@@ -81,7 +80,7 @@ fn main() -> Result<()> {
             return util::display(util::version().to_string().as_str());
         }
     } else if let Some(shell) = matches.get_one::<clap_complete::Shell>("completions") {
-        clap_complete::generate(*shell, &mut rucksack, NAME, &mut io::stdout());
+        clap_complete::generate(*shell, &mut rucksack, constant::NAME, &mut io::stdout());
         return Ok(());
     }
 

@@ -1,3 +1,29 @@
+//! # Adding Records
+//!
+//! To add a single record via the CLI:
+//!
+//! ```shell
+//! rucksack add \
+//!   --url http://example.com \
+//!   --user shelly \
+//!   --password whyyyyyy
+//! ```
+//!
+//! Note that `--user` and `--url` are required when adding a new record. A password is required, too: if one is not provided with `--password`, then you will be prompted:
+//!
+//! ```shell
+//! rucksack add \
+//!  --url http://example.com \
+//!   --user shelly
+//! ```
+//!
+//! ```shell
+//! Enter db password:
+//! ```
+//!
+//! ```shell
+//! Enter password for record:
+//! ```
 use anyhow::{anyhow, Result};
 use clap::ArgMatches;
 

@@ -1,3 +1,15 @@
+//! # Exporting
+//!
+//! Logins may be exported to files that can then be used to import into browsers:
+//!
+//! ```shell
+//! rucksack export \
+//!   --db-pass abc123 \
+//!   --type chrome \
+//!   --file /tmp/exported-logins.csv
+//! ```
+//!
+
 use anyhow::{anyhow, Result};
 use clap::ArgMatches;
 

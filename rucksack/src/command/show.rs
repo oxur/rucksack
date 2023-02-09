@@ -1,3 +1,15 @@
+//! # The `show` Subcommand
+//!
+//! If you need to see what version of the database file format you're currently using:
+//!
+//! ```shell
+//! rucksack show db-version
+//! ```
+//!
+//! Note that this is not necessarily the version of rucksack you're running,
+//! rather it will correspond to the version of rucksack that was used when
+//! your secrets database was last updated.
+//!
 use std::collections::HashMap;
 use std::str;
 

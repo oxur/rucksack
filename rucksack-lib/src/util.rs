@@ -48,14 +48,14 @@ pub fn bincode_cfg() -> bincode::config::Configuration<
     bincode::config::legacy()
 }
 
-pub fn config_dir() -> path::PathBuf {
+pub fn config_dir(project: &str) -> path::PathBuf {
     let mut path = dirs::config_dir().unwrap();
-    path.push(env!("CARGO_PKG_NAME"));
+    path.push(project);
     path
 }
 
-pub fn config_file() -> String {
-    let mut path = config_dir();
+pub fn config_file(project: &str) -> String {
+    let mut path = config_dir(project);
     path.push("config");
     path.set_extension("toml");
     path.to_str().unwrap().to_string()

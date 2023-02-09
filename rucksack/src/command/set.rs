@@ -1,3 +1,49 @@
+//! # Updating Records
+//!
+//! Changing a password:
+//!
+//! ```shell
+//! rucksack set password \
+//!   --url http://example.com \
+//!   --user shelly
+//!   --password whyyyyyyyyyyyyyyyyyyy
+//! ```
+//!
+//! If the password isn't provided, you will be prompted at the terminal:
+//!
+//! ```shell
+//! Enter record password:
+//! ```
+//!
+//! Changing a user:
+//!
+//! ```shell
+//! rucksack set user \
+//!   --url http://example.com \
+//!   --old-user shelly
+//!   --new-user clammy
+//! ```
+//!
+//! Changing a URL:
+//!
+//! ```shell
+//! rucksack set url \
+//!   --old-url http://example.com \
+//!   --new-url http://shelly.com \
+//!   --user clammy
+//! ```
+//!
+//! Changing the record type:
+//!
+//! ```shell
+//! rucksack set type \
+//!   --url http://example.com \
+//!   --user clammy
+//!   --type password
+//! ```
+//!
+//! Note that for all of this, should you want to pass the DB password, file, or salt, you will need to make sure those flags come after `set` but before the following subcommmand.
+
 use anyhow::Result;
 use clap::ArgMatches;
 

@@ -72,8 +72,8 @@ fresh: clean all
 nightly:
 	@rustup toolchain install nightly
 
-build-docs:
+docs:
 	@cargo doc --all-features --no-deps --workspace
 
-docs:
+open-docs:
 	@cargo doc --all-features --no-deps --workspace --open

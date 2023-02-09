@@ -1,3 +1,22 @@
+//! # Importing
+//!
+//! Import login data from Firefox Sync:
+//!
+//! ```shell
+//! rucksack import \
+//!   --db-pass abc123 \
+//!   --type firefox \
+//!   --file ~/Downloads/logins.csv
+//! ```
+//!
+//! From Chrome or Brave:
+//!
+//! ```shell
+//! rucksack import \
+//!   --db-pass abc123 \
+//!   --type chrome \
+//!   --file ~/Downloads/logins.csv
+//! ```
 use anyhow::Result;
 use clap::ArgMatches;
 

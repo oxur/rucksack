@@ -1,8 +1,9 @@
 use std::path;
 
 use rucksack_db as store;
-
 use rucksack_lib::{config, util};
+
+use crate::constant;
 
 #[derive(Debug)]
 pub struct App {
@@ -21,14 +22,14 @@ impl App {
             path.push(self.cfg.rucksack.cfg_dir.clone());
             return path;
         }
-        util::config_dir()
+        util::config_dir(constant::NAME)
     }
 
     pub fn config_file(&self) -> String {
         if self.cfg.rucksack.cfg_file != *"" {
             return self.cfg.rucksack.cfg_file.clone();
         }
-        util::config_file()
+        util::config_file(constant::NAME)
     }
 
     pub fn data_dir(&self) -> path::PathBuf {
