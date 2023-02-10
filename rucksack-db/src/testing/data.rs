@@ -1,6 +1,6 @@
 use rucksack_lib::time;
 
-use crate::records::{default_metadata, v040, v060, v070};
+use crate::records::{v040, v060, v070, v080, v090};
 
 pub fn store_pwd() -> String {
     "abc123".to_string()
@@ -51,10 +51,28 @@ pub fn plaintext_record_v060() -> v060::DecryptedRecord {
 }
 
 pub fn plaintext_record_v070() -> v070::DecryptedRecord {
-    let mut md = default_metadata();
+    let mut md = v070::default_metadata();
     md.url = "https://site.com/".to_string();
     v070::DecryptedRecord {
         secrets: v070::secrets_from_user_pass("alice@site.com", "4 s3kr1t"),
+        metadata: md,
+    }
+}
+
+pub fn plaintext_record_v080() -> v080::DecryptedRecord {
+    let mut md = v080::default_metadata();
+    md.url = "https://site.com/".to_string();
+    v070::DecryptedRecord {
+        secrets: v080::secrets_from_user_pass("alice@site.com", "4 s3kr1t"),
+        metadata: md,
+    }
+}
+
+pub fn plaintext_record_v090() -> v090::DecryptedRecord {
+    let mut md = v090::default_metadata();
+    md.url = "https://site.com/".to_string();
+    v070::DecryptedRecord {
+        secrets: v090::secrets_from_user_pass("alice@site.com", "4 s3kr1t"),
         metadata: md,
     }
 }

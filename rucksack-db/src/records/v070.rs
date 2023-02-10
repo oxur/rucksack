@@ -460,9 +460,8 @@ pub fn key(category: &str, kind: Kind, name: &str, url: &str) -> String {
 
 #[cfg(test)]
 mod tests {
-    use rucksack_lib::time;
-
     use crate::testing;
+    use rucksack_lib::time;
 
     #[test]
     fn password_records() {
