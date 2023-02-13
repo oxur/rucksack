@@ -287,8 +287,8 @@ mod tests {
         let read_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(read_dpr.secrets.user, "alice@site.com");
         assert_eq!(read_dpr.secrets.password, "6 s3kr1t");
-        assert_eq!(read_dpr.history.len(), 0);
-        assert_eq!(read_dpr.history[0].secrets.password, "XXX");
-        assert_eq!(read_dpr.history[1].secrets.password, "YYY");
+        assert_eq!(read_dpr.history.len(), 2);
+        assert_eq!(read_dpr.history[0].secrets.password, "4 s3kr1t");
+        assert_eq!(read_dpr.history[1].secrets.password, "5 s3kr1t");
     }
 }
