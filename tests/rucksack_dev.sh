@@ -55,12 +55,14 @@ echo
     --db-pass 1234 \
     --url http://example.com \
     --user shelly \
-    --password whyyyyyy
+    --password whyyyyyy --log-level trace
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
-    --db-pass 1234
+    --db-pass 1234 --log-level trace
+
+exit 1
 
 header "Show DB file format version"
 

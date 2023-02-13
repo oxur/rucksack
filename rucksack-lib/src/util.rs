@@ -126,10 +126,6 @@ pub fn read_file(path: String) -> Result<Vec<u8>> {
     }
 }
 
-pub fn version() -> versions::SemVer {
-    versions::SemVer::new(env!("CARGO_PKG_VERSION")).unwrap()
-}
-
 pub fn write_file(data: Vec<u8>, path: String) -> Result<()> {
     let ap = create_parents(path.clone())?;
     // Then write the file

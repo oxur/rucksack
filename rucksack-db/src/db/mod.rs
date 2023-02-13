@@ -67,7 +67,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
     log::debug!("Opening database ...");
     let mut hash_map: records::HashMap = DashMap::new();
     let mut store_hash = 0;
-    let mut version = util::version();
+    let mut version = crate::version();
     let vsn_db: versioned::VersionedDB;
     if std::path::Path::new(&path).exists() {
         log::debug!("Creating encrypted DB ...");
