@@ -22,7 +22,7 @@ RUST_BACKTRACE=1 rucksack help
 echo
 header "Show config file (default)"
 
-rucksack show config-file
+rucksack show config-file --log-level error
 
 header "Show config file"
 
