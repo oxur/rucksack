@@ -20,7 +20,6 @@ use anyhow::Result;
 use clap::ArgMatches;
 
 use rucksack_db::records::Status;
-use rucksack_lib::time;
 
 use crate::app::App;
 use crate::option;
@@ -29,10 +28,8 @@ use crate::query;
 pub fn one(matches: &ArgMatches, app: &App) -> Result<()> {
     let key = option::key(matches);
     log::debug!("Marking record '{}' as deleted ...", key);
-    let now = time::now();
     let mut record = query::record(&app.db, matches)?;
-    record.metadata.state = Status::Deleted;
-    record.metadata.updated = now;
+    record.set_status(Status::Deleted);
     app.db.insert(record);
     app.db.close()?;
     Ok(())

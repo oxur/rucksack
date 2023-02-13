@@ -52,7 +52,7 @@ fn from_chrome_csv(matches: &ArgMatches, db: &DB, csv_path: String) -> Result<()
         if !valid_import(matches, dr.clone()) {
             continue;
         }
-        dr.metadata.name = dr.name_or_user();
+        dr.set_name(dr.name_or_user());
         db.insert(dr);
         count += 1;
         print!(".");
@@ -72,7 +72,7 @@ fn from_firefox_csv(matches: &ArgMatches, db: &DB, csv_path: String) -> Result<(
         if !valid_import(matches, dr.clone()) {
             continue;
         }
-        dr.metadata.name = dr.name_or_user();
+        dr.set_name(dr.name_or_user());
         db.insert(dr);
         count += 1;
         print!(".");

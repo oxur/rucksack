@@ -352,15 +352,16 @@ impl DecryptedRecord {
     }
 
     pub fn key(&self) -> String {
-        let mut name = self.metadata.name.clone();
+        let md = self.metadata.clone();
+        let mut name = md.name.clone();
         if name.is_empty() {
             name = self.secrets.user.clone();
         }
         key(
-            self.metadata.category.as_str(),
-            self.metadata.kind.clone(),
+            md.category.as_str(),
+            md.kind.clone(),
             name.as_str(),
-            self.metadata.url.as_str(),
+            md.url.as_str(),
         )
     }
 
@@ -400,6 +401,12 @@ impl DecryptedRecord {
     }
 }
 
+pub fn migrate_decrypted_record_from_v060(dr: v060::DecryptedRecord) -> DecryptedRecord {
+    DecryptedRecord {
+        secrets: migrate_secrets_from_v060(dr.creds.clone()),
+        metadata: migrate_metadata_from_v060(dr.metadata.clone(), name_from_key(dr.key())),
+    }
+}
 // Encrypted records
 
 #[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
@@ -444,16 +451,22 @@ impl EncryptedRecord {
 
 pub fn migrate_encrypted_record_from_v060(er: v060::EncryptedRecord) -> EncryptedRecord {
     let key = er.key();
-    let parts: Vec<&str> = key.split(':').collect();
     EncryptedRecord {
-        key: er.key(),
+        key: key.clone(),
         value: er.value(),
-        metadata: migrate_metadata_from_v060(er.metadata(), parts[0].to_string()),
+        metadata: migrate_metadata_from_v060(er.metadata(), name_from_key(key)),
     }
 }
 
+// Utility functions
+
 pub fn key(category: &str, kind: Kind, name: &str, url: &str) -> String {
     format!("{category}:{kind:?}:{name}:{url}")
+}
+
+pub fn name_from_key(key: String) -> String {
+    let parts: Vec<&str> = key.split(':').collect();
+    parts[0].to_string()
 }
 
 // Tests

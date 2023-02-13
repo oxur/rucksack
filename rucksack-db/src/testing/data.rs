@@ -51,28 +51,19 @@ pub fn plaintext_record_v060() -> v060::DecryptedRecord {
 }
 
 pub fn plaintext_record_v070() -> v070::DecryptedRecord {
-    let mut md = v070::default_metadata();
-    md.url = "https://site.com/".to_string();
-    v070::DecryptedRecord {
-        secrets: v070::secrets_from_user_pass("alice@site.com", "4 s3kr1t"),
-        metadata: md,
-    }
+    let dr060 = plaintext_record_v060();
+    v070::migrate_decrypted_record_from_v060(dr060)
 }
 
 pub fn plaintext_record_v080() -> v080::DecryptedRecord {
-    let mut md = v080::default_metadata();
-    md.url = "https://site.com/".to_string();
-    v070::DecryptedRecord {
-        secrets: v080::secrets_from_user_pass("alice@site.com", "4 s3kr1t"),
-        metadata: md,
-    }
+    let dr070 = plaintext_record_v070();
+    v080::migrate_decrypted_record_from_v070(dr070)
 }
 
 pub fn plaintext_record_v090() -> v090::DecryptedRecord {
-    let mut md = v090::default_metadata();
-    md.url = "https://site.com/".to_string();
-    v070::DecryptedRecord {
-        secrets: v090::secrets_from_user_pass("alice@site.com", "4 s3kr1t"),
-        metadata: md,
-    }
+    let dr080 = plaintext_record_v080();
+    let mut dr = v090::migrate_decrypted_record_from_v080(dr080);
+    dr.set_password("5 s3kr1t".to_string());
+    dr.set_password("6 s3kr1t".to_string());
+    dr
 }

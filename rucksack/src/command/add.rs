@@ -76,7 +76,11 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     metadata.name = option::name(matches);
     metadata.kind = kind;
     metadata.url = option::url(matches);
-    let dr = DecryptedRecord { secrets, metadata };
+    let dr = DecryptedRecord {
+        secrets,
+        metadata,
+        history: vec![],
+    };
     app.db.insert(dr);
     app.db.close()?;
     Ok(())
