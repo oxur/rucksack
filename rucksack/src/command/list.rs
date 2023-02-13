@@ -440,101 +440,99 @@ const STATUS_HEADER: &str = "Status";
 fn decrypted_header(opts: &Opts) {
     if opts.with_status {
         println!(
-            "\n{URL_HEADER: <40} | {USER_HEADER: <30} | {PWD_HEADER: <20} | {SCORE_HEADER: <15} | {COUNT_HEADER: <12} | {STATUS_HEADER}",
+            "\n{USER_HEADER: <30} | {PWD_HEADER: <20} | {SCORE_HEADER: <15} | {COUNT_HEADER: <12} | {STATUS_HEADER} | {URL_HEADER}",
         );
         println!(
-            "{: <40}-+-{: <30}-+-{: <20}-+-{: <15}-+-{}-+-{: <12}",
-            "-".repeat(40),
+            "{: <30}-+-{: <20}-+-{: <15}-+-{}-+-{: <12}-+-{}",
             "-".repeat(30),
             "-".repeat(20),
             "-".repeat(16),
             "-".repeat(12),
             "-".repeat(8),
+            "-".repeat(40),
         )
     } else {
         println!(
-            "\n{URL_HEADER: <40} | {USER_HEADER: <30} | {PWD_HEADER: <20} | {SCORE_HEADER: <15} | {COUNT_HEADER}",
+            "\n{USER_HEADER: <30} | {PWD_HEADER: <20} | {SCORE_HEADER: <15} | {COUNT_HEADER: <12} | {URL_HEADER: <40}",
         );
         println!(
-            "{: <40}-+-{: <30}-+-{: <20}-+-{: <15}-+-{}",
-            "-".repeat(40),
+            "{: <30}-+-{: <20}-+-{: <15}-+-{: <12}-+-{}",
             "-".repeat(30),
             "-".repeat(20),
             "-".repeat(16),
             "-".repeat(12),
+            "-".repeat(40),
         )
     }
 }
 
 fn decrypted_no_user_header(opts: &Opts) {
     if opts.with_status {
-        println!("\n{URL_HEADER: <40} | {PWD_HEADER: <20} | {SCORE_HEADER: <12} | {COUNT_HEADER}",);
+        println!("\n{PWD_HEADER: <20} | {SCORE_HEADER: <16} | {COUNT_HEADER: <12} | {URL_HEADER}",);
         println!(
-            "{: <40}-+-{: <20}-+-{: <12}-+-{}",
-            "-".repeat(40),
+            "{: <20}-+-{: <16}-+-{: <12}-+-{}",
             "-".repeat(20),
             "-".repeat(16),
-            "-".repeat(8),
+            "-".repeat(12),
+            "-".repeat(40),
         )
     } else {
-        println!("\n{URL_HEADER: <40} | {PWD_HEADER: <20} | {SCORE_HEADER}",);
+        println!("\n{PWD_HEADER: <20} | {SCORE_HEADER: <16} | {URL_HEADER}",);
         println!(
-            "{: <40}-+-{: <20}-+-{}",
-            "-".repeat(40),
+            "{: <20}-+-{: <16}-+-{}",
             "-".repeat(20),
-            "-".repeat(16)
+            "-".repeat(16),
+            "-".repeat(40),
         )
     }
 }
 
 fn encrypted_header(opts: &Opts) {
     if opts.with_status {
+        println!("\n{USER_HEADER: <30} | {COUNT_HEADER: <12} | {STATUS_HEADER} | {URL_HEADER}",);
         println!(
-            "\n{URL_HEADER: <40} | {USER_HEADER: <30} | {COUNT_HEADER: <12} | {STATUS_HEADER}",
-        );
-        println!(
-            "{:40}-+-{:30}-+-{:12}-+-{}",
-            "-".repeat(40),
+            "{:30}-+-{:12}-+-{:8}-+-{}",
             "-".repeat(30),
             "-".repeat(12),
-            "-".repeat(8)
+            "-".repeat(8),
+            "-".repeat(40),
         )
     } else {
-        println!("\n{URL_HEADER: <40} | {USER_HEADER: <30} | {COUNT_HEADER}",);
+        println!("\n{USER_HEADER: <30} | {COUNT_HEADER} | {URL_HEADER}",);
         println!(
-            "{:40}-+-{:30}-+-{}",
-            "-".repeat(40),
+            "{:30}-+-{:12}-+-{}",
             "-".repeat(30),
-            "-".repeat(12)
+            "-".repeat(12),
+            "-".repeat(40),
         )
     }
 }
 
 fn encrypted_no_user_header(opts: &Opts) {
     if opts.with_status {
-        println!("\n{URL_HEADER: <40} | {COUNT_HEADER: <12} | {STATUS_HEADER}",);
+        println!("\n{COUNT_HEADER: <12} | {STATUS_HEADER: <8} | {URL_HEADER}",);
         println!(
-            "{:40}-+-{:12}-+-{}",
-            "-".repeat(40),
+            "{:12}-+-{:8}-+-{}",
             "-".repeat(12),
-            "-".repeat(8)
+            "-".repeat(8),
+            "-".repeat(40),
         )
     } else {
-        println!("\n{URL_HEADER: <40} | {COUNT_HEADER}");
-        println!("{:40}-+-{}", "-".repeat(40), "-".repeat(12))
+        println!("\n{COUNT_HEADER} | {URL_HEADER: <40}");
+        println!("{:12}-+-{}", "-".repeat(40), "-".repeat(12))
     }
 }
 
 fn decrypted_result(r: &ListResult, opts: &Opts) {
     if opts.with_status {
         println!(
-            "{: <40} | {: <30} | {: <20} | {: ^16.2} | {: ^12} | {: ^8}",
-            r.url, r.user, r.pwd, r.score, r.access_count, r.status
+            "{: <30} | {: <20} | {: ^16.2} | {: ^12} | {: ^8} | {} ",
+            r.user, r.pwd, r.score, r.access_count, r.status, r.url,
         )
     } else {
         println!(
-            "{: <40} | {: <30} | {: <20} | {: ^16.2} | {: ^12}",
-            r.url, r.user, r.pwd, r.score, r.access_count
+            "{: <30} | {: <20} | {: ^16.2} | {: ^12} | {}",
+            r.user, r.pwd, r.score, r.access_count, r.url,
         )
     }
 }
@@ -571,33 +569,33 @@ fn user_section(r: &ListResult, decrypted: Option<&bool>) {
 fn encrypted_result(r: &ListResult, opts: &Opts) {
     if opts.with_status {
         println!(
-            "{: <40} | {: <30} | {: ^12} | {: <8}",
-            r.url, r.user, r.access_count, r.status
+            "{: <30} | {: ^12} | {: <8} | {}",
+            r.user, r.access_count, r.status, r.url,
         )
     } else {
-        println!("{: <40} | {: <30} | {: ^12}", r.url, r.user, r.access_count)
+        println!("{: <30} | {: ^12} | {}", r.user, r.access_count, r.url)
     }
 }
 
 fn decrypted_no_user_result(r: &ListResult, opts: &Opts) {
     if opts.with_status {
         println!(
-            "{: <40} | {: <20} | {: ^16.2} | {: ^12} | {: <8}",
-            r.url, r.pwd, r.score, r.access_count, r.status
+            "{: <20} | {: ^16.2} | {: ^12} | {: <8} | {}",
+            r.pwd, r.score, r.access_count, r.status, r.url,
         )
     } else {
         println!(
-            "{: <40} | {: <20} | {: ^16.2} | {}",
-            r.url, r.pwd, r.score, r.access_count
+            "{: <20} | {: ^16.2} | {: ^12} | {}",
+            r.pwd, r.score, r.access_count, r.url,
         )
     }
 }
 
 fn encrypted_no_user_result(r: &ListResult, opts: &Opts) {
     if opts.with_status {
-        println!("{: <40} | {: ^12} | {}", r.url, r.access_count, r.status)
+        println!("{: ^12} | {: <8} | {}", r.access_count, r.status, r.url)
     } else {
-        println!("{: <40} | {: ^12}", r.url, r.access_count)
+        println!("{: ^12} | {}", r.access_count, r.url)
     }
 }
 
