@@ -13,7 +13,7 @@
 //!
 //! ```shell
 //! rucksack add \
-//!  --url http://example.com \
+//!   --url http://example.com \
 //!   --user shelly
 //! ```
 //!

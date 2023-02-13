@@ -53,7 +53,7 @@ Commands:
   help    Print this message or the help of the given subcommand(s)
 
 Options:
-      --config-file <config-file>  The path to the config file to use or create [default: "/Users/oubiwann/Library/Application Support/rucksack/config.toml"]
+      --config-file <config-file>  The path to the config file to use or create [default: "<system config dir>/rucksack/config.toml"]
       --log-level <log-level>      Override the configured log-level setting [default: ] [possible values: error, warn, info, debug, trace, ]
       --completions <SHELL>        Emit shell tab completions [possible values: bash, elvish, fish, powershell, zsh]
   -v, --version                    Print version information

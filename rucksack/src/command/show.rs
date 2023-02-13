@@ -10,6 +10,25 @@
 //! rather it will correspond to the version of rucksack that was used when
 //! your secrets database was last updated.
 //!
+//! Display the default location of the config file:
+//!
+//! ```shell
+//! rucksack show config-file
+//! ```
+//!
+//! ```shell
+//! <system config dir>/rucksack/config.toml
+//! ```
+//!
+//! Display the default location of the database file:
+//!
+//! ```shell
+//! rucksack show db-file
+//! ```
+//!
+//! ```shell
+//! <system config dir>/rucksack/data/secrets.db
+//! ````
 use std::collections::HashMap;
 use std::str;
 
