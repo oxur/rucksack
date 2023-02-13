@@ -276,16 +276,19 @@ mod tests {
             .unwrap()
             .to_string();
         let tmp_db = super::open(path.clone(), pwd.clone(), salt.clone()).unwrap();
-        assert!(tmp_db.version() > versions::SemVer::new("0.6.0").unwrap());
-        let dpr = testing::data::plaintext_record_v070();
+        assert!(tmp_db.version() > versions::SemVer::new("0.8.0").unwrap());
+        let dpr = testing::data::plaintext_record_v090();
         tmp_db.insert(dpr.clone());
         let re_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(re_dpr.secrets.user, "alice@site.com");
-        assert_eq!(re_dpr.secrets.password, "4 s3kr1t");
+        assert_eq!(re_dpr.secrets.password, "6 s3kr1t");
         assert!(tmp_db.close().is_ok());
         let tmp_db = super::open(path, pwd, salt).unwrap();
         let read_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(read_dpr.secrets.user, "alice@site.com");
-        assert_eq!(read_dpr.secrets.password, "4 s3kr1t");
+        assert_eq!(read_dpr.secrets.password, "6 s3kr1t");
+        assert_eq!(read_dpr.history.len(), 0);
+        assert_eq!(read_dpr.history[0].secrets.password, "XXX");
+        assert_eq!(read_dpr.history[1].secrets.password, "YYY");
     }
 }

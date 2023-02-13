@@ -4,7 +4,7 @@ use uuid::Uuid;
 use rucksack_lib::time;
 
 use crate::records;
-use crate::records::v070::secrets_from_user_pass;
+use crate::records::secrets_from_user_pass;
 
 // This started as the Firefox login data struct, but it has more fields than
 // others, so it has become the default interim struct to which others convert
@@ -46,7 +46,11 @@ impl Record {
         metadata.created = time::epoch_to_string(self.time_created);
         metadata.password_changed = time::epoch_to_string(self.time_password_changed);
         metadata.last_used = time::epoch_to_string(self.time_last_used);
-        records::DecryptedRecord { secrets, metadata }
+        records::DecryptedRecord {
+            secrets,
+            metadata,
+            history: Vec::<records::History>::new(),
+        }
     }
 }
 
