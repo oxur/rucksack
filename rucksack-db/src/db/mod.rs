@@ -29,7 +29,6 @@ use crate::records::{DecryptedRecord, EncryptedRecord, Metadata};
 
 pub mod backup;
 pub mod encrypted;
-pub mod old;
 pub mod versioned;
 
 #[derive(Clone, Default)]
