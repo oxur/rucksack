@@ -8,3 +8,7 @@ pub use records::{
     default_metadata, default_secrets, key, new_tag, new_tags, secrets_from_user_pass,
     DecryptedRecord, EncryptedRecord, Metadata, Secrets, Status, Tag,
 };
+
+pub fn version() -> versions::SemVer {
+    versions::SemVer::new(env!("CARGO_PKG_VERSION")).unwrap()
+}
