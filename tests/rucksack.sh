@@ -279,7 +279,8 @@ rucksack list \
 
 header "Show the list of supported types"
 
-rucksack show types
+rucksack show types \
+    --config-file "$CFG_FILE"
 
 header "Show just 'default' category"
 
