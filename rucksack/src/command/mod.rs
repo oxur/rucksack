@@ -221,6 +221,9 @@ pub fn setup() -> Command {
             .subcommand(
                 Command::new("deleted")
                     .about("List the records that have been flagged for deletion"))
+            .subcommand(
+                Command::new("password")
+                    .about("List the historical passwords (including current) for the given record"))
     )
     .subcommand(
         Command::new("rm")
