@@ -32,7 +32,7 @@ use crate::app::App;
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     let import_file = matches.get_one::<String>("file").unwrap().to_string();
 
-    match matches.get_one::<String>("type").map(|s| s.as_str()) {
+    match matches.get_one::<String>("format").map(|s| s.as_str()) {
         Some("chrome") => from_chrome_csv(matches, &app.db, import_file)?,
         Some("firefox") => from_firefox_csv(matches, &app.db, import_file)?,
         Some("") => from_firefox_csv(matches, &app.db, import_file)?,
@@ -43,7 +43,7 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 fn from_chrome_csv(matches: &ArgMatches, db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
-    println!("Importing data from {csv_path}:");
+    println!("Importing Chrome data from {csv_path}:");
     let mut rdr = csv::reader::from_path(csv_path)?;
     let mut count = 0;
     for result in rdr.deserialize() {
@@ -63,7 +63,7 @@ fn from_chrome_csv(matches: &ArgMatches, db: &DB, csv_path: String) -> Result<()
 }
 
 fn from_firefox_csv(matches: &ArgMatches, db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
-    println!("Importing data from {csv_path}:");
+    println!("Importing Firefox data from {csv_path}:");
     let mut rdr = csv::reader::from_path(csv_path)?;
     let mut count: usize = 0;
     for result in rdr.deserialize() {
