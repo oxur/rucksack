@@ -24,6 +24,7 @@
 //! ```shell
 //! Enter password for record:
 //! ```
+//!
 use anyhow::{anyhow, Result};
 use clap::ArgMatches;
 

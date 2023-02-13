@@ -48,6 +48,13 @@
 //!   --type password
 //! ```
 //!
+//! //! # All Subcommands
+//!
+//! See the full list of supported subcommands with:
+//! ```shell
+//! rucksack set -h
+//! ```
+//!
 use anyhow::Result;
 use clap::ArgMatches;
 
