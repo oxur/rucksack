@@ -29,6 +29,14 @@
 //! ```shell
 //! <system config dir>/rucksack/data/secrets.db
 //! ````
+//!
+//! # All Subcommands
+//!
+//! See the full list of supported subcommands with:
+//! ```shell
+//! rucksack show -h
+//! ```
+//!
 use std::collections::HashMap;
 use std::str;
 

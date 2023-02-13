@@ -9,7 +9,6 @@
 //!   --file /tmp/exported-logins.csv
 //! ```
 //!
-
 use anyhow::{anyhow, Result};
 use clap::ArgMatches;
 

@@ -17,6 +17,7 @@
 //!   --type chrome \
 //!   --file ~/Downloads/logins.csv
 //! ```
+//!
 use anyhow::Result;
 use clap::ArgMatches;
 

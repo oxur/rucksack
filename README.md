@@ -23,7 +23,7 @@
 * [x] Tags and categories (0.7.0)
 * [x] Support public/private keys, certificates, API keys (0.7.0)
 * [x] Split repo into rucksack-lib, rucksack-db, and rucksack crates (0.8.0)
-* [ ] Password history (0.8.0)
+* [x] Password history (0.8.0)
 * [ ] [Database restores](https://github.com/oxur/rucksack/milestone/11)
 * [ ] [1Password Support](https://github.com/oxur/rucksack/milestone/12)
 * [ ] [Local network sync](https://github.com/oxur/rucksack/milestone/13)
@@ -53,7 +53,7 @@ Commands:
   help    Print this message or the help of the given subcommand(s)
 
 Options:
-      --config-file <config-file>  The path to the config file to use or create [default: "<system config dir>/rucksack/config.toml"]
+      --config-file <config-file>  The path to the config file to use or create [default: "<user config dir>/rucksack/config.toml"]
       --log-level <log-level>      Override the configured log-level setting [default: ] [possible values: error, warn, info, debug, trace, ]
       --completions <SHELL>        Emit shell tab completions [possible values: bash, elvish, fish, powershell, zsh]
   -v, --version                    Print version information

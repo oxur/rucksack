@@ -122,7 +122,7 @@
 //!   --group-by user \
 //!   --decrypt
 //! ```
-
+//!
 use std::collections::HashMap;
 
 use anyhow::Result;
