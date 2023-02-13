@@ -135,6 +135,7 @@ use rucksack_lib::time;
 
 use crate::app::App;
 use crate::option;
+use crate::query;
 
 #[derive(Clone, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
 struct ListResult {
@@ -197,6 +198,16 @@ pub fn deleted(matches: &ArgMatches, app: &App) -> Result<()> {
             ..Default::default()
         },
     )
+}
+
+pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
+    let reveal = matches.get_one::<bool>("reveal").unwrap();
+    let record = query::record(&app.db, matches)?;
+    log::debug!("temp: {reveal:}");
+    log::debug!("temp: {record:?}");
+    // TODO: print header
+    // TODO iterate over password, displaying data
+    Ok(())
 }
 
 fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()> {
