@@ -4,7 +4,7 @@ BIN = target/release/$(PROJ)
 
 default: all
 
-all: clean deps build lint test
+all: clean deps build lint test integration
 
 auth:
 	@echo "Copy and paste the following in the terminal where you"
@@ -33,8 +33,8 @@ test:
 	@RUST_BACKTRACE=1 cargo test
 
 integration:
-	@./tests/rucksack_dev.sh
 	@./tests/rucksack.sh
+	@./tests/rucksack_dev.sh
 
 deps:
 	@cargo update
