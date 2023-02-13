@@ -74,15 +74,15 @@ pub fn create_parents(path: String) -> Result<path::PathBuf> {
     }
 }
 
-pub fn data_dir() -> path::PathBuf {
+pub fn data_dir(project: &str) -> path::PathBuf {
     let mut path = dirs::data_dir().unwrap();
-    path.push(env!("CARGO_PKG_NAME"));
+    path.push(project);
     path.push("data");
     path
 }
 
-pub fn db_file() -> String {
-    let mut path = data_dir();
+pub fn db_file(project: &str) -> String {
+    let mut path = data_dir(project);
     path.push("secrets");
     path.set_extension("db");
     path.to_str().unwrap().to_string()

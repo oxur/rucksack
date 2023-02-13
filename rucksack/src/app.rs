@@ -38,14 +38,14 @@ impl App {
             path.push(self.cfg.rucksack.data_dir.clone());
             return path;
         }
-        util::data_dir()
+        util::data_dir(constant::NAME)
     }
 
     pub fn db_file(&self) -> String {
         if self.cfg.rucksack.db_file != *"" {
             return self.cfg.rucksack.db_file.clone();
         }
-        util::db_file()
+        util::db_file(constant::NAME)
     }
 
     pub fn db_version(&self) -> versions::SemVer {

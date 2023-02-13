@@ -5,7 +5,7 @@ use secrecy::{ExposeSecret, SecretString};
 use rucksack_db::db;
 use rucksack_lib::util;
 
-use crate::prompt;
+use crate::{constant, prompt};
 
 pub fn db(matches: &ArgMatches) -> Result<db::DB> {
     let db = matches.get_one::<String>("db");
@@ -35,7 +35,7 @@ pub fn db(matches: &ArgMatches) -> Result<db::DB> {
             db_file = file_path.to_owned();
         }
         None => {
-            db_file = util::db_file();
+            db_file = util::db_file(constant::NAME);
             log::debug!("No database flag provided; using default ({db_file:})");
         }
     }
