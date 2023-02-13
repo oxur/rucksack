@@ -11,6 +11,7 @@ pub mod export;
 pub mod gen;
 pub mod import;
 pub mod list;
+pub mod output;
 pub mod rm;
 pub mod set;
 pub mod show;
@@ -168,7 +169,7 @@ pub fn setup() -> Command {
                     .short('g')
                     .long("group-by")
                     .visible_alias("partition")
-                    .value_parser(["password", "user"])
+                    .value_parser(["password", "name"])
                     .global(true)
             )
             .arg(
@@ -200,7 +201,7 @@ pub fn setup() -> Command {
                     .long("sort-by")
                     .visible_alias("order-by")
                     .default_value("url")
-                    .value_parser(["score", "url", "user"])
+                    .value_parser(["score", "url", "name"])
                     .global(true)
             )
             .arg(
