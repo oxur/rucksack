@@ -15,7 +15,7 @@ echo
 echo
 header "Show config file (default)"
 
-./bin/rucksack show config-file
+./bin/rucksack show config-file --log-level error
 
 header "Show config file"
 
@@ -272,7 +272,8 @@ header "Show just service credential types"
 
 header "Show the list of supported types"
 
-./bin/rucksack show types
+rucksack show types \
+    --config-file "$CFG_FILE"
 
 header "Show just 'default' category"
 
