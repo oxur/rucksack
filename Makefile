@@ -72,8 +72,15 @@ fresh: clean all
 nightly:
 	@rustup toolchain install nightly
 
+docs: DOCS_PATH = target/doc/rucksack
 docs:
 	@cargo doc --all-features --no-deps --workspace
+	@echo
+	@echo "Docs are available here:"
+	@echo " * $(DOCS_PATH)"
+	@echo " * file://$(shell pwd)/$(DOCS_PATH)/index.html"
+	@echo
+
 
 open-docs:
 	@cargo doc --all-features --no-deps --workspace --open
