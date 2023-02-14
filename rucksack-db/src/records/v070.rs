@@ -50,6 +50,12 @@ pub fn types() -> Vec<String> {
         .collect::<Vec<String>>()
 }
 
+impl Kind {
+    pub fn name(&self) -> String {
+        format!("{self}")
+    }
+}
+
 pub fn migrate_kind_from_v060(k: v060::Kind) -> Kind {
     match k {
         v060::Kind::Account => Kind::default(),

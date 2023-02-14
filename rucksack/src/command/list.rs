@@ -275,6 +275,8 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         }
         // TODO: generalise this logic ... maybe move it to impl ResultRow ...
         let md = record.metadata();
+        result.add(Column::Kind, md.kind.name());
+        result.add(Column::Category, md.category.clone());
         result.add(Column::Count, md.access_count.to_string());
         result.add(Column::Status, md.status().to_string());
         match opts.decrypted {

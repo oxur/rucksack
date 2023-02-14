@@ -47,7 +47,6 @@ header "Generate encoded password"
 ./bin/rucksack gen --config-file "$CFG_FILE" --type uuid++ --encode
 
 header "Add a new record (shelly)"
-echo
 
 ./bin/rucksack add \
     --config-file "$CFG_FILE" \
@@ -93,7 +92,6 @@ header "List all records (with decrypted data)"
     --decrypt
 
 header "Add a new record (sully)"
-echo
 
 ./bin/rucksack add \
     --config-file "$CFG_FILE" \
@@ -160,7 +158,6 @@ header "List deleted records"
     --db-pass 1234
 
 header "Add a records for different 'kinds' and categories"
-echo
 
 ./bin/rucksack add \
     --config-file "$CFG_FILE" \
@@ -272,7 +269,7 @@ header "Show just service credential types"
 
 header "Show the list of supported types"
 
-rucksack show types \
+./bin/rucksack show types \
     --config-file "$CFG_FILE"
 
 header "Show just 'default' category"

@@ -48,6 +48,10 @@ use rucksack_lib::util;
 
 use crate::app::App;
 
+use super::output::option;
+use super::output::result;
+use super::output::table;
+
 pub fn config_file(_matches: &ArgMatches, app: &App) -> Result<()> {
     println!("\n{}\n", app.config_file());
     Ok(())
@@ -84,9 +88,17 @@ pub fn categories(_matches: &ArgMatches, app: &App) -> Result<()> {
         let dr = i.value().decrypt(app.db.store_pwd(), app.db.salt())?;
         results.insert(dr.metadata().category, true);
     }
-    let mut tags: Vec<&String> = results.keys().clone().collect();
-    tags.sort();
-    println!("\n{tags:?}\n");
+    let mut cats: Vec<&String> = results.keys().clone().collect();
+    cats.sort();
+    let mut results: Vec<result::ResultRow> = Vec::new();
+    for c in cats {
+        results.push(result::category(c.to_string()))
+    }
+    let mut opts = option::defaults();
+    opts.categories = true;
+    let mut t = table::new(results.to_owned(), opts);
+    t.display();
+    println!();
     Ok(())
 }
 
@@ -100,11 +112,27 @@ pub fn tags(_matches: &ArgMatches, app: &App) -> Result<()> {
     }
     let mut tags: Vec<&String> = results.keys().clone().collect();
     tags.sort();
-    println!("\n{tags:?}\n");
+    let mut results: Vec<result::ResultRow> = Vec::new();
+    for t in tags {
+        results.push(result::tag(t.to_string()))
+    }
+    let mut opts = option::defaults();
+    opts.tags = true;
+    let mut t = table::new(results.to_owned(), opts);
+    t.display();
+    println!();
     Ok(())
 }
 
 pub fn types(_matches: &ArgMatches, _app: &App) -> Result<()> {
-    println!("\n{:?}\n", records::types());
+    let mut results: Vec<result::ResultRow> = Vec::new();
+    for t in records::types() {
+        results.push(result::kind(t))
+    }
+    let mut opts = option::defaults();
+    opts.kinds = true;
+    let mut t = table::new(results.to_owned(), opts);
+    t.display();
+    println!();
     Ok(())
 }
