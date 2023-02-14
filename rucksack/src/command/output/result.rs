@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::collections::HashMap;
 
-use prettytable::color::{CYAN, GREEN, RED, YELLOW};
+use prettytable::color::{BRIGHT_GREEN, BRIGHT_RED, BRIGHT_YELLOW, CYAN, GREEN, RED, YELLOW};
 use prettytable::format::Alignment;
 use prettytable::{Attr, Cell};
 
@@ -73,9 +73,27 @@ impl ResultRow {
             Column::Score => {
                 c.align(Alignment::RIGHT);
                 match val.parse::<i32>().unwrap() {
+                    x if x == 100 => {
+                        c = c
+                            .with_style(Attr::ForegroundColor(BRIGHT_GREEN))
+                            .with_style(Attr::Bold)
+                    }
+                    x if x >= 95 => c = c.with_style(Attr::ForegroundColor(BRIGHT_GREEN)),
                     x if x >= 90 => c = c.with_style(Attr::ForegroundColor(GREEN)),
+                    x if x >= 85 => c = c.with_style(Attr::ForegroundColor(BRIGHT_YELLOW)),
                     x if x >= 80 => c = c.with_style(Attr::ForegroundColor(YELLOW)),
-                    _ => c = c.with_style(Attr::ForegroundColor(RED)),
+                    x if x >= 40 => c = c.with_style(Attr::ForegroundColor(RED)),
+                    x if x >= 10 => {
+                        c = c
+                            .with_style(Attr::ForegroundColor(BRIGHT_RED))
+                            .with_style(Attr::Bold)
+                    }
+                    _ => {
+                        c = c
+                            .with_style(Attr::ForegroundColor(BRIGHT_RED))
+                            .with_style(Attr::Bold)
+                            .with_style(Attr::Blink)
+                    }
                 }
             }
             Column::Url => c = c.with_style(Attr::ForegroundColor(CYAN)),
