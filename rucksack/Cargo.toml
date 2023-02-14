@@ -20,6 +20,7 @@ clap = { version = "4.0", features = ["string"] }
 clap_complete = "4.0"
 log = "0.4"
 passwords = "3.1"
+prettytable-rs = "0.10.0"
 rpassword = "7.1"
 secrecy = "0.8"
 twyg = "0.1"

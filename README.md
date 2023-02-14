@@ -23,6 +23,7 @@
 * [x] Tags and categories (0.7.0)
 * [x] Support public/private keys, certificates, API keys (0.7.0)
 * [x] Split repo into rucksack-lib, rucksack-db, and rucksack crates (0.8.0)
+* [x] Colourised and fully tabular output (0.8.0)
 * [x] Password history (0.8.0)
 * [ ] [Database restores](https://github.com/oxur/rucksack/milestone/11)
 * [ ] [1Password Support](https://github.com/oxur/rucksack/milestone/12)

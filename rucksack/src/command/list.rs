@@ -135,9 +135,10 @@ use crate::app::App;
 use crate::option;
 use crate::query;
 
-use super::output::formatter;
+use super::output::column::Column;
 use super::output::option::Opts;
 use super::output::result;
+use super::output::table;
 
 // TODO: once there's config for it, pull from config and pass
 // options here from top-level app.
@@ -200,7 +201,7 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         Some(_) => (),
         None => (),
     }
-    let mut results: Vec<result::ListResult> = Vec::new();
+    let mut results: Vec<result::ResultRow> = Vec::new();
     let mut groups = result::GroupByString::new();
     for i in app.db.iter() {
         let record = i.value().decrypt(app.db.store_pwd(), app.db.salt())?;
@@ -254,8 +255,8 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
             }
         }
         let md = record.metadata();
-        result.access_count = md.access_count;
-        result.status = md.status().to_string();
+        result.add(Column::Count, md.access_count.to_string());
+        result.add(Column::Status, md.status().to_string());
         match opts.decrypted {
             true => {
                 let pwd = if opts.reveal {
@@ -263,10 +264,10 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
                 } else {
                     hidden()
                 };
-                result.pwd = pwd;
-                result.score = score.trunc() as i64;
+                result.add(Column::Password, pwd);
+                result.add(Column::Score, (score.trunc() as i64).to_string());
             }
-            false => result.pwd = hidden(),
+            false => result.add(Column::Password, hidden()),
         }
         match group_by {
             Some("password") => {
@@ -294,7 +295,9 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         }
         Some(&_) => (),
         None => {
-            print_results(&results, &opts);
+            let mut t = table::new(results.to_owned(), opts.clone());
+            t.display();
+            // print_results(&results, &opts);
             print_report(results.len(), app.db.hash_map().len());
         }
     }
@@ -311,11 +314,6 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
     }
     app.db.close()?;
     Ok(())
-}
-
-fn print_results(sorted: &[result::ListResult], opts: &Opts) {
-    let f = formatter::new(sorted.to_owned(), opts.clone());
-    f.display()
 }
 
 fn print_report(count: usize, total: usize) {
@@ -380,139 +378,145 @@ fn print_group_report(count: i32, records: usize, total: usize) {
     println!("\n{count} groups (with {records} records out of {total} total)\n",)
 }
 
-const URL_HEADER: &str = "URL";
-const USER_HEADER: &str = "User / Record";
-const PWD_HEADER: &str = "Password";
-const SCORE_HEADER: &str = "Score / Strength";
-const COUNT_HEADER: &str = "Access Count";
-const STATUS_HEADER: &str = "Status";
-
 fn decrypted_no_user_header(opts: &Opts) {
-    if opts.with_status {
-        println!("\n{PWD_HEADER: <20} | {SCORE_HEADER: <16} | {COUNT_HEADER: <12} | {URL_HEADER}",);
-        println!(
-            "{: <20}-+-{: <16}-+-{: <12}-+-{}",
-            "-".repeat(20),
-            "-".repeat(16),
-            "-".repeat(12),
-            "-".repeat(40),
-        )
-    } else {
-        println!("\n{PWD_HEADER: <20} | {SCORE_HEADER: <16} | {URL_HEADER}",);
-        println!(
-            "{: <20}-+-{: <16}-+-{}",
-            "-".repeat(20),
-            "-".repeat(16),
-            "-".repeat(40),
-        )
-    }
+    // if opts.with_status {
+    //     println!("\n{PWD_HEADER: <20} | {SCORE_HEADER: <16} | {COUNT_HEADER: <12} | {URL_HEADER}",);
+    //     println!(
+    //         "{: <20}-+-{: <16}-+-{: <12}-+-{}",
+    //         "-".repeat(20),
+    //         "-".repeat(16),
+    //         "-".repeat(12),
+    //         "-".repeat(40),
+    //     )
+    // } else {
+    //     println!("\n{PWD_HEADER: <20} | {SCORE_HEADER: <16} | {URL_HEADER}",);
+    //     println!(
+    //         "{: <20}-+-{: <16}-+-{}",
+    //         "-".repeat(20),
+    //         "-".repeat(16),
+    //         "-".repeat(40),
+    //     )
+    // }
 }
 
 fn encrypted_header(opts: &Opts) {
-    if opts.with_status {
-        println!("\n{USER_HEADER: <30} | {COUNT_HEADER: <12} | {STATUS_HEADER} | {URL_HEADER}",);
-        println!(
-            "{:30}-+-{:12}-+-{:8}-+-{}",
-            "-".repeat(30),
-            "-".repeat(12),
-            "-".repeat(8),
-            "-".repeat(40),
-        )
-    } else {
-        println!("\n{USER_HEADER: <30} | {COUNT_HEADER} | {URL_HEADER}",);
-        println!(
-            "{:30}-+-{:12}-+-{}",
-            "-".repeat(30),
-            "-".repeat(12),
-            "-".repeat(40),
-        )
-    }
+    // if opts.with_status {
+    //     println!("\n{USER_HEADER: <30} | {COUNT_HEADER: <12} | {STATUS_HEADER} | {URL_HEADER}",);
+    //     println!(
+    //         "{:30}-+-{:12}-+-{:8}-+-{}",
+    //         "-".repeat(30),
+    //         "-".repeat(12),
+    //         "-".repeat(8),
+    //         "-".repeat(40),
+    //     )
+    // } else {
+    //     println!("\n{USER_HEADER: <30} | {COUNT_HEADER} | {URL_HEADER}",);
+    //     println!(
+    //         "{:30}-+-{:12}-+-{}",
+    //         "-".repeat(30),
+    //         "-".repeat(12),
+    //         "-".repeat(40),
+    //     )
+    // }
 }
 
 fn encrypted_no_user_header(opts: &Opts) {
-    if opts.with_status {
-        println!("\n{COUNT_HEADER: <12} | {STATUS_HEADER: <8} | {URL_HEADER}",);
-        println!(
-            "{:12}-+-{:8}-+-{}",
-            "-".repeat(12),
-            "-".repeat(8),
-            "-".repeat(40),
-        )
-    } else {
-        println!("\n{COUNT_HEADER} | {URL_HEADER: <40}");
-        println!("{:12}-+-{}", "-".repeat(40), "-".repeat(12))
-    }
+    // if opts.with_status {
+    //     println!("\n{COUNT_HEADER: <12} | {STATUS_HEADER: <8} | {URL_HEADER}",);
+    //     println!(
+    //         "{:12}-+-{:8}-+-{}",
+    //         "-".repeat(12),
+    //         "-".repeat(8),
+    //         "-".repeat(40),
+    //     )
+    // } else {
+    //     println!("\n{COUNT_HEADER} | {URL_HEADER: <40}");
+    //     println!("{:12}-+-{}", "-".repeat(40), "-".repeat(12))
+    // }
 }
 
-fn password_section(r: &result::ListResult, opts: &Opts) {
-    println!("\n\n+{}\n", "=".repeat(40 + 30 + 2));
-    match opts.decrypted {
-        true => {
-            if opts.reveal {
-                println!("Password: {} (Score: {})", r.pwd, r.score)
-            } else {
-                println!("Password: {} (Score: {})", hidden(), r.score)
-            }
-        }
-        false => println!("Password Group"),
-    }
+fn password_section(r: &result::ResultRow, opts: &Opts) {
+    // println!("\n\n+{}\n", "=".repeat(40 + 30 + 2));
+    // match opts.decrypted {
+    //     true => {
+    //         if opts.reveal {
+    //             println!("Password: {} (Score: {})", r.pwd, r.score)
+    //         } else {
+    //             println!("Password: {} (Score: {})", hidden(), r.score)
+    //         }
+    //     }
+    //     false => println!("Password Group"),
+    // }
 }
 
-fn user_section(r: &result::ListResult, opts: &Opts) {
-    match opts.decrypted {
-        true => {
-            println!("\n\n+{}\n", "=".repeat(40 + 20 + 16 + 5));
-            println!("User: {}", r.name)
-        }
-        false => {
-            println!("\n\n+{}\n", "=".repeat(40 - 1));
-            println!("User: {}", r.name)
-        }
-    }
+fn user_section(r: &result::ResultRow, opts: &Opts) {
+    // match opts.decrypted {
+    //     true => {
+    //         println!("\n\n+{}\n", "=".repeat(40 + 20 + 16 + 5));
+    //         println!("User: {}", r.name)
+    //     }
+    //     false => {
+    //         println!("\n\n+{}\n", "=".repeat(40 - 1));
+    //         println!("User: {}", r.name)
+    //     }
+    // }
 }
 
-fn encrypted_result(r: &result::ListResult, opts: &Opts) {
-    if opts.with_status {
-        println!(
-            "{: <30} | {: ^12} | {: <8} | {}",
-            r.name, r.access_count, r.status, r.url,
-        )
-    } else {
-        println!("{: <30} | {: ^12} | {}", r.name, r.access_count, r.url)
-    }
+fn encrypted_result(r: &result::ResultRow, opts: &Opts) {
+    // if opts.with_status {
+    //     println!(
+    //         "{: <30} | {: ^12} | {: <8} | {}",
+    //         r.name, r.access_count, r.status, r.url,
+    //     )
+    // } else {
+    //     println!("{: <30} | {: ^12} | {}", r.name, r.access_count, r.url)
+    // }
 }
 
-fn decrypted_no_user_result(r: &result::ListResult, opts: &Opts) {
-    if opts.with_status {
-        println!(
-            "{: <20} | {: ^16.2} | {: ^12} | {: <8} | {}",
-            r.pwd, r.score, r.access_count, r.status, r.url,
-        )
-    } else {
-        println!(
-            "{: <20} | {: ^16.2} | {: ^12} | {}",
-            r.pwd, r.score, r.access_count, r.url,
-        )
-    }
+fn decrypted_no_user_result(r: &result::ResultRow, opts: &Opts) {
+    // if opts.with_status {
+    //     println!(
+    //         "{: <20} | {: ^16.2} | {: ^12} | {: <8} | {}",
+    //         r.pwd, r.score, r.access_count, r.status, r.url,
+    //     )
+    // } else {
+    //     println!(
+    //         "{: <20} | {: ^16.2} | {: ^12} | {}",
+    //         r.pwd, r.score, r.access_count, r.url,
+    //     )
+    // }
 }
 
-fn encrypted_no_user_result(r: &result::ListResult, opts: &Opts) {
-    if opts.with_status {
-        println!("{: ^12} | {: <8} | {}", r.access_count, r.status, r.url)
-    } else {
-        println!("{: ^12} | {}", r.access_count, r.url)
-    }
+fn encrypted_no_user_result(r: &result::ResultRow, opts: &Opts) {
+    // if opts.with_status {
+    //     println!("{: ^12} | {: <8} | {}", r.access_count, r.status, r.url)
+    // } else {
+    //     println!("{: ^12} | {}", r.access_count, r.url)
+    // }
 }
 
 fn hidden() -> String {
     "*".repeat(10)
 }
 
-fn sort(results: &mut [result::ListResult], sort_by: Option<&str>) {
+fn sort(results: &mut [result::ResultRow], sort_by: Option<&str>) {
+    if results.is_empty() {
+        return;
+    }
     match sort_by {
-        Some("score") => results.sort_by(|a, b| b.score.cmp(&a.score)),
+        Some("score") => results.sort_by(|a, b| {
+            b.get(&Column::Score)
+                .unwrap()
+                .parse::<i32>()
+                .unwrap()
+                .cmp(&a.get(&Column::Score).unwrap().parse::<i32>().unwrap())
+        }),
         Some("url") => results.sort(),
-        Some("name") => results.sort_by(|a, b| a.name.cmp(&b.name)),
+        Some("name") => results.sort_by(|a, b| {
+            a.get(&Column::Name)
+                .unwrap()
+                .cmp(b.get(&Column::Name).unwrap())
+        }),
         Some(&_) => (),
         None => (),
     };
