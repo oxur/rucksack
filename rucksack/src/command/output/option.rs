@@ -5,4 +5,5 @@ pub struct Opts {
     pub reveal: bool,
     pub skip_deleted: bool,
     pub with_status: bool,
+    pub password_history: bool,
 }
