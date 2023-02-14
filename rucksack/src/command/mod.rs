@@ -6,11 +6,13 @@ use rucksack_db::records;
 use crate::constant;
 
 pub mod add;
+#[doc(hidden)]
 pub mod arg;
 pub mod export;
 pub mod gen;
 pub mod import;
 pub mod list;
+#[doc(hidden)]
 pub mod output;
 pub mod rm;
 pub mod set;
@@ -18,6 +20,7 @@ pub mod show;
 
 use arg::{db, record};
 
+#[doc(hidden)]
 pub fn setup() -> Command {
     Command::new(constant::NAME)
     .about(format!("{}: {}", constant::NAME, constant::DESC))
@@ -339,6 +342,7 @@ pub fn setup() -> Command {
 
 // Top-level Flags
 
+#[doc(hidden)]
 pub fn config_arg() -> Arg {
     let config_file = rucksack_lib::util::config_file(constant::NAME);
     Arg::new("config-file")
@@ -348,6 +352,7 @@ pub fn config_arg() -> Arg {
         .global(true)
 }
 
+#[doc(hidden)]
 pub fn log_level_arg() -> Arg {
     Arg::new("log-level")
         .help("Override the configured log-level setting")

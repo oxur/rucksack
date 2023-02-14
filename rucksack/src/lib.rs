@@ -60,14 +60,21 @@
 //!
 //! Apache License, Version 2.0
 //!
+#[doc(hidden)]
 pub mod app;
 pub mod command;
+#[doc(hidden)]
 pub mod constant;
+#[doc(hidden)]
 pub mod option;
+#[doc(hidden)]
 pub mod prompt;
+#[doc(hidden)]
 pub mod query;
+#[doc(hidden)]
 pub mod setup;
 
+#[doc(hidden)]
 pub use app::App;
 
 pub fn version() -> versions::SemVer {
