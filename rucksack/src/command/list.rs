@@ -167,12 +167,31 @@ pub fn deleted(matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
-    let reveal = matches.get_one::<bool>("reveal").unwrap();
+    let mut results: Vec<result::ResultRow> = Vec::new();
     let record = query::record(&app.db, matches)?;
-    log::debug!("temp: {reveal:}");
-    log::debug!("temp: {record:?}");
-    // TODO: print header
-    // TODO iterate over password, displaying data
+    let md = record.metadata();
+    results.push(result::password(
+        record.password(),
+        md.created,
+        md.updated,
+        md.last_used,
+    ));
+    for old in record.history() {
+        results.push(result::password(
+            old.secrets.password,
+            old.metadata.created,
+            old.metadata.updated,
+            old.metadata.last_used,
+        ));
+    }
+    let opts = Opts {
+        decrypted: *matches.get_one::<bool>("decrypt").unwrap(),
+        reveal: *matches.get_one::<bool>("reveal").unwrap(),
+        password_history: true,
+        ..Default::default()
+    };
+    let mut t = table::new(results.to_owned(), opts.clone());
+    t.display();
     Ok(())
 }
 
@@ -254,6 +273,7 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
                 continue;
             }
         }
+        // TODO: generalise this logic ... maybe move it to impl ResultRow ...
         let md = record.metadata();
         result.add(Column::Count, md.access_count.to_string());
         result.add(Column::Status, md.status().to_string());
@@ -297,7 +317,6 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         None => {
             let mut t = table::new(results.to_owned(), opts.clone());
             t.display();
-            // print_results(&results, &opts);
             print_report(results.len(), app.db.hash_map().len());
         }
     }

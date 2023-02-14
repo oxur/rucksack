@@ -60,6 +60,13 @@ impl Table {
                     Column::Url,
                 ];
             }
+        } else if self.opts.password_history {
+            self.columns = vec![
+                Column::Password,
+                Column::Created,
+                Column::LastUpdated,
+                Column::LastAccessed,
+            ];
         } else if self.opts.with_status {
             self.columns = vec![Column::Name, Column::Status, Column::Count, Column::Url];
         } else {

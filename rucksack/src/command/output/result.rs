@@ -15,10 +15,18 @@ pub struct ResultRow {
 pub fn new(id: String, name: String, url: String) -> ResultRow {
     let hashmap: HashMap<Column, String> =
         HashMap::from([(Column::Id, id), (Column::Name, name), (Column::Url, url)]);
-    // let mut hashmap: HashMap<Column, String> = HashMap::new();
     ResultRow { hashmap }
 }
 
+pub fn password(pwd: String, created: String, updated: String, last_accessed: String) -> ResultRow {
+    let hashmap: HashMap<Column, String> = HashMap::from([
+        (Column::Password, pwd),
+        (Column::Created, created),
+        (Column::LastUpdated, updated),
+        (Column::LastAccessed, last_accessed),
+    ]);
+    ResultRow { hashmap }
+}
 impl PartialOrd for ResultRow {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
