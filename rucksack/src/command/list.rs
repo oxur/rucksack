@@ -190,7 +190,7 @@ pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
         password_history: true,
         ..Default::default()
     };
-    let mut t = table::new(results.to_owned(), opts.clone());
+    let mut t = table::new(results.to_owned(), opts);
     t.display();
     Ok(())
 }
