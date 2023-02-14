@@ -397,7 +397,7 @@ fn print_group_report(count: i32, records: usize, total: usize) {
     println!("\n{count} groups (with {records} records out of {total} total)\n",)
 }
 
-fn decrypted_no_user_header(opts: &Opts) {
+fn decrypted_no_user_header(_opts: &Opts) {
     // if opts.with_status {
     //     println!("\n{PWD_HEADER: <20} | {SCORE_HEADER: <16} | {COUNT_HEADER: <12} | {URL_HEADER}",);
     //     println!(
@@ -418,7 +418,7 @@ fn decrypted_no_user_header(opts: &Opts) {
     // }
 }
 
-fn encrypted_header(opts: &Opts) {
+fn encrypted_header(_opts: &Opts) {
     // if opts.with_status {
     //     println!("\n{USER_HEADER: <30} | {COUNT_HEADER: <12} | {STATUS_HEADER} | {URL_HEADER}",);
     //     println!(
@@ -439,7 +439,7 @@ fn encrypted_header(opts: &Opts) {
     // }
 }
 
-fn encrypted_no_user_header(opts: &Opts) {
+fn encrypted_no_user_header(_opts: &Opts) {
     // if opts.with_status {
     //     println!("\n{COUNT_HEADER: <12} | {STATUS_HEADER: <8} | {URL_HEADER}",);
     //     println!(
@@ -454,7 +454,7 @@ fn encrypted_no_user_header(opts: &Opts) {
     // }
 }
 
-fn password_section(r: &result::ResultRow, opts: &Opts) {
+fn password_section(_r: &result::ResultRow, _opts: &Opts) {
     // println!("\n\n+{}\n", "=".repeat(40 + 30 + 2));
     // match opts.decrypted {
     //     true => {
@@ -468,7 +468,7 @@ fn password_section(r: &result::ResultRow, opts: &Opts) {
     // }
 }
 
-fn user_section(r: &result::ResultRow, opts: &Opts) {
+fn user_section(_r: &result::ResultRow, _opts: &Opts) {
     // match opts.decrypted {
     //     true => {
     //         println!("\n\n+{}\n", "=".repeat(40 + 20 + 16 + 5));
@@ -481,7 +481,7 @@ fn user_section(r: &result::ResultRow, opts: &Opts) {
     // }
 }
 
-fn encrypted_result(r: &result::ResultRow, opts: &Opts) {
+fn encrypted_result(_r: &result::ResultRow, _opts: &Opts) {
     // if opts.with_status {
     //     println!(
     //         "{: <30} | {: ^12} | {: <8} | {}",
@@ -492,7 +492,7 @@ fn encrypted_result(r: &result::ResultRow, opts: &Opts) {
     // }
 }
 
-fn decrypted_no_user_result(r: &result::ResultRow, opts: &Opts) {
+fn decrypted_no_user_result(_r: &result::ResultRow, _opts: &Opts) {
     // if opts.with_status {
     //     println!(
     //         "{: <20} | {: ^16.2} | {: ^12} | {: <8} | {}",
@@ -506,7 +506,7 @@ fn decrypted_no_user_result(r: &result::ResultRow, opts: &Opts) {
     // }
 }
 
-fn encrypted_no_user_result(r: &result::ResultRow, opts: &Opts) {
+fn encrypted_no_user_result(_r: &result::ResultRow, _opts: &Opts) {
     // if opts.with_status {
     //     println!("{: ^12} | {: <8} | {}", r.access_count, r.status, r.url)
     // } else {
