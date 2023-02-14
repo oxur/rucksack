@@ -36,6 +36,7 @@ impl Table {
     }
 
     pub fn display(&mut self) {
+        println!();
         self.results();
         self.output.printstd();
     }
@@ -45,6 +46,8 @@ impl Table {
             if self.opts.with_status {
                 self.columns = vec![
                     Column::Name,
+                    Column::Kind,
+                    Column::Category,
                     Column::Password,
                     Column::Score,
                     Column::Status,
@@ -54,6 +57,8 @@ impl Table {
             } else {
                 self.columns = vec![
                     Column::Name,
+                    Column::Kind,
+                    Column::Category,
                     Column::Password,
                     Column::Score,
                     Column::Count,
@@ -67,6 +72,12 @@ impl Table {
                 Column::LastUpdated,
                 Column::LastAccessed,
             ];
+        } else if self.opts.kinds {
+            self.columns = vec![Column::Kind];
+        } else if self.opts.tags {
+            self.columns = vec![Column::Tags];
+        } else if self.opts.categories {
+            self.columns = vec![Column::Category];
         } else if self.opts.with_status {
             self.columns = vec![Column::Name, Column::Status, Column::Count, Column::Url];
         } else {

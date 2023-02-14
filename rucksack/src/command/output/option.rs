@@ -6,4 +6,13 @@ pub struct Opts {
     pub skip_deleted: bool,
     pub with_status: bool,
     pub password_history: bool,
+    pub kinds: bool,
+    pub categories: bool,
+    pub tags: bool,
+}
+
+pub fn defaults() -> Opts {
+    Opts {
+        ..Default::default()
+    }
 }

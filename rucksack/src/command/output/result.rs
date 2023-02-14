@@ -27,6 +27,22 @@ pub fn password(pwd: String, created: String, updated: String, last_accessed: St
     ]);
     ResultRow { hashmap }
 }
+
+pub fn category(cat: String) -> ResultRow {
+    let hashmap: HashMap<Column, String> = HashMap::from([(Column::Category, cat)]);
+    ResultRow { hashmap }
+}
+
+pub fn kind(kind: String) -> ResultRow {
+    let hashmap: HashMap<Column, String> = HashMap::from([(Column::Kind, kind)]);
+    ResultRow { hashmap }
+}
+
+pub fn tag(tag: String) -> ResultRow {
+    let hashmap: HashMap<Column, String> = HashMap::from([(Column::Tags, tag)]);
+    ResultRow { hashmap }
+}
+
 impl PartialOrd for ResultRow {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))

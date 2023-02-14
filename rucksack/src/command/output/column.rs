@@ -32,6 +32,7 @@ impl Column {
     pub fn name(&self) -> String {
         match self {
             Column::Count => "Access Count".to_string(),
+            Column::Kind => "Type".to_string(),
             Column::Score => "Score / Strength".to_string(),
             Column::Url => "URL".to_string(),
             _ => format!("{self}"),
@@ -52,6 +53,7 @@ mod tests {
     #[test]
     fn column_display() {
         assert_eq!(format!("{}", Column::Count), "Count");
+        assert_eq!(format!("{}", Column::Kind), "Kind");
         assert_eq!(format!("{}", Column::Name), "Name");
         assert_eq!(format!("{}", Column::Score), "Score");
         assert_eq!(format!("{}", Column::Url), "Url");
@@ -60,6 +62,7 @@ mod tests {
     #[test]
     fn column_name() {
         assert_eq!(Column::Count.name(), "Access Count");
+        assert_eq!(Column::Kind.name(), "Type");
         assert_eq!(Column::Name.name(), "Name");
         assert_eq!(Column::Score.name(), "Score / Strength");
         assert_eq!(Column::Url.name(), "URL");
