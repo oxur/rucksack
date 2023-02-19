@@ -167,31 +167,36 @@ pub fn deleted(matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
+    let reveal = matches.get_one::<bool>("reveal").unwrap_or(&false);
+    let opts = Opts {
+        decrypted: true,
+        reveal: *reveal,
+        password_history: true,
+        ..Default::default()
+    };
     let mut results: Vec<result::ResultRow> = Vec::new();
     let record = query::record(&app.db, matches)?;
     let md = record.metadata();
-    results.push(result::password(
-        record.password(),
-        md.created,
-        md.updated,
-        md.last_used,
-    ));
+    let mut pwd = record.password();
+    if !opts.reveal {
+        pwd = hidden();
+    }
+    results.push(result::password(pwd, md.created, md.updated, md.last_used));
     for old in record.history() {
+        pwd = old.secrets.password;
+        if !opts.reveal {
+            pwd = hidden();
+        }
         results.push(result::password(
-            old.secrets.password,
+            pwd,
             old.metadata.created,
             old.metadata.updated,
             old.metadata.last_used,
         ));
     }
-    let opts = Opts {
-        decrypted: *matches.get_one::<bool>("decrypt").unwrap(),
-        reveal: *matches.get_one::<bool>("reveal").unwrap(),
-        password_history: true,
-        ..Default::default()
-    };
     let mut t = table::new(results.to_owned(), opts);
     t.display();
+    println!();
     Ok(())
 }
 

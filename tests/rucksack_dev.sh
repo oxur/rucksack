@@ -366,6 +366,42 @@ header "Show all tags"
     --db "$DB_FILE" \
     --db-pass 1234
 
+header "Show password history"
+
+./bin/rucksack set password \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --user sully \
+    --url http://boo.co \
+    --password "*sekrit2!"
+
+./bin/rucksack set password \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --user sully \
+    --url http://boo.co \
+    --password "*s3kr1t3!"
+
+./bin/rucksack list passwords \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --user sully \
+    --url http://boo.co
+
+header "Show password history (revealed)"
+
+./bin/rucksack list passwords \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --user sully \
+    --url http://boo.co \
+    --reveal
+
+
 header "Export password data"
 
 mkdir -p exports
