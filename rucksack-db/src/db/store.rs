@@ -221,6 +221,18 @@ impl DB {
         self.store_pwd.clone()
     }
 
+    pub fn update(&self, updated: DecryptedRecord) {
+        let key = updated.key();
+        log::debug!("Updating record with key {} ...", key);
+        match self.delete(key) {
+            Some(true) => {
+                self.insert(updated);
+            }
+            Some(false) => log::error!("Could not update record:"),
+            None => unreachable!(),
+        }
+    }
+
     pub fn update_metadata(&self, key: String, metadata: Metadata) {
         log::trace!("Updating metadata on record with key {} ...", key);
         match self.hash_map.try_entry(key) {

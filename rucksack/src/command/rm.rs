@@ -30,7 +30,7 @@ pub fn one(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Marking record '{}' as deleted ...", key);
     let mut record = query::record(&app.db, matches)?;
     record.set_status(Status::Deleted);
-    app.db.insert(record);
+    app.db.update(record);
     app.db.close()?;
     Ok(())
 }
