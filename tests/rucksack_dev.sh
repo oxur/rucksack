@@ -136,14 +136,14 @@ header "Filter records with 'boo' (decrypted data and revealed passwords)"
     --reveal \
     --filter boo
 
-header "Remove an record (clammy)"
+header "Remove a record (clammy)"
 
 ./bin/rucksack rm \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --url http://example.com \
-    --user clammy
+    --user clammy --log-level debug
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \

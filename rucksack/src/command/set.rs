@@ -107,7 +107,7 @@ pub fn url(matches: &ArgMatches, app: &App) -> Result<()> {
         Some(_) => (),
         None => log::error!("{msg}"),
     }
-    app.db.insert(record);
+    app.db.update(record);
     app.db.close()?;
     Ok(())
 }
