@@ -79,9 +79,22 @@ impl Table {
         } else if self.opts.categories {
             self.columns = vec![Column::Category];
         } else if self.opts.with_status {
-            self.columns = vec![Column::Name, Column::Status, Column::Count, Column::Url];
+            self.columns = vec![
+                Column::Name,
+                Column::Kind,
+                Column::Category,
+                Column::Status,
+                Column::Count,
+                Column::Url,
+            ];
         } else {
-            self.columns = vec![Column::Name, Column::Count, Column::Url];
+            self.columns = vec![
+                Column::Name,
+                Column::Kind,
+                Column::Category,
+                Column::Count,
+                Column::Url,
+            ];
         }
         self.set_headers();
     }
