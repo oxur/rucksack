@@ -105,7 +105,7 @@ impl DB {
         if path.exists() {
             log::debug!("Database file exists; backing up ...",);
             let backup_file = backup::copy(self.path(), self.version().to_string())?;
-            log::debug!("Backed up file to {}", backup_file);
+            log::debug!("Backed up file to {backup_file}");
         }
 
         // Reverse the workflow of `open` ... encode the hashmap
@@ -180,11 +180,11 @@ impl DB {
     }
 
     pub fn get_metadata(&self, key: String) -> Option<Metadata> {
-        log::trace!("Getting metadata of record with key {} ...", key);
+        log::trace!("Getting metadata of record with key {key} ...");
         match self.get(key.clone()) {
             Some(r) => Some(r.metadata()),
             None => {
-                log::debug!("key {:} not found", key);
+                log::debug!("key {key} not found");
                 None
             }
         }
@@ -196,11 +196,11 @@ impl DB {
 
     pub fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord> {
         let key = record.key();
+        log::debug!("Inserting record with key {} ...", key);
         if let Some(r) = self.get(record.key()) {
             log::trace!("Record exists; skipping insert");
             return Some(r.encrypt(self.store_pwd(), self.salt()));
         };
-        log::trace!("Inserting record with key {} ...", key);
         self.hash_map
             .insert(key, record.encrypt(self.store_pwd(), self.salt()))
     }
@@ -221,9 +221,13 @@ impl DB {
         self.store_pwd.clone()
     }
 
-    pub fn update(&self, updated: DecryptedRecord) {
-        let key = updated.key();
-        log::debug!("Updating record with key {} ...", key);
+    // Note that the key has to be passed here, even though the
+    // updated record has a key() method; this is because an update
+    // might involved a field used to create the key (and since that
+    // new key hasn't been saved yet, there's no record for it --
+    // just one for the old key).
+    pub fn update(&self, key: String, updated: DecryptedRecord) {
+        log::debug!("Updating record with key {key} ...");
         match self.delete(key) {
             Some(true) => {
                 self.insert(updated);
@@ -234,7 +238,7 @@ impl DB {
     }
 
     pub fn update_metadata(&self, key: String, metadata: Metadata) {
-        log::trace!("Updating metadata on record with key {} ...", key);
+        log::debug!("Updating metadata on record with key {key} ...");
         match self.hash_map.try_entry(key) {
             Some(entry) => {
                 entry.and_modify(|r| r.metadata = metadata);
@@ -250,7 +254,7 @@ impl DB {
 
     // V2 schema additions (rucksack >= v0.7.0)
     pub fn delete(&self, key: String) -> Option<bool> {
-        log::trace!("Deleting record with key {} ...", key);
+        log::debug!("Deleting record with key {key} ...");
         match self.hash_map.remove(&key) {
             Some(_) => Some(true),
             None => Some(false),

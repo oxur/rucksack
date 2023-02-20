@@ -8,7 +8,11 @@ use rucksack_db::records::{new_tags, Status, Tag};
 use crate::prompt;
 
 pub fn category(matches: &ArgMatches) -> String {
-    matches.get_one::<String>("category").unwrap().to_string()
+    matches
+        .get_one::<String>("category")
+        .unwrap()
+        .trim()
+        .to_string()
 }
 
 pub fn tags(matches: &ArgMatches) -> Option<Vec<Tag>> {
@@ -36,31 +40,55 @@ pub fn name(matches: &ArgMatches) -> String {
 }
 
 pub fn user(matches: &ArgMatches) -> String {
-    matches.get_one::<String>("user").unwrap().to_string()
+    matches
+        .get_one::<String>("user")
+        .unwrap()
+        .trim()
+        .to_string()
 }
 
 pub fn user_old(matches: &ArgMatches) -> String {
-    matches.get_one::<String>("old-user").unwrap().to_string()
+    matches
+        .get_one::<String>("old-user")
+        .unwrap()
+        .trim()
+        .to_string()
 }
 
 pub fn user_new(matches: &ArgMatches) -> String {
-    matches.get_one::<String>("new-user").unwrap().to_string()
+    matches
+        .get_one::<String>("new-user")
+        .unwrap()
+        .trim()
+        .to_string()
 }
 
 pub fn url(matches: &ArgMatches) -> String {
-    matches.get_one::<String>("url").unwrap().to_string()
+    matches.get_one::<String>("url").unwrap().trim().to_string()
 }
 
 pub fn url_old(matches: &ArgMatches) -> String {
-    matches.get_one::<String>("old-url").unwrap().to_string()
+    matches
+        .get_one::<String>("old-url")
+        .unwrap()
+        .trim()
+        .to_string()
 }
 
 pub fn url_new(matches: &ArgMatches) -> String {
-    matches.get_one::<String>("new-url").unwrap().to_string()
+    matches
+        .get_one::<String>("new-url")
+        .unwrap()
+        .trim()
+        .to_string()
 }
 
 pub fn account_id(matches: &ArgMatches) -> String {
-    matches.get_one::<String>("account-id").unwrap().to_string()
+    matches
+        .get_one::<String>("account-id")
+        .unwrap()
+        .trim()
+        .to_string()
 }
 
 pub fn public(matches: &ArgMatches) -> Vec<u8> {
@@ -88,11 +116,15 @@ pub fn root(matches: &ArgMatches) -> Vec<u8> {
 }
 
 pub fn service_key(matches: &ArgMatches) -> String {
-    matches.get_one::<String>("key").unwrap().to_string()
+    matches.get_one::<String>("key").unwrap().trim().to_string()
 }
 
 pub fn service_secret(matches: &ArgMatches) -> String {
-    matches.get_one::<String>("secret").unwrap().to_string()
+    matches
+        .get_one::<String>("secret")
+        .unwrap()
+        .trim()
+        .to_string()
 }
 
 pub fn key(matches: &ArgMatches) -> String {

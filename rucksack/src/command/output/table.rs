@@ -42,7 +42,9 @@ impl Table {
     }
 
     fn set_columns(&mut self) {
-        if self.opts.decrypted {
+        if self.opts.only_keys {
+            self.columns = vec![Column::Key]
+        } else if self.opts.decrypted {
             if self.opts.with_status {
                 self.columns = vec![
                     Column::Name,
