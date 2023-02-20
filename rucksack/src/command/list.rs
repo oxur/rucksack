@@ -166,6 +166,19 @@ pub fn deleted(matches: &ArgMatches, app: &App) -> Result<()> {
     )
 }
 
+// TODO: once there's config for it, pull from config and pass
+// options here from top-level app.
+pub fn keys(matches: &ArgMatches, app: &App) -> Result<()> {
+    process_records(
+        matches,
+        app,
+        Opts {
+            only_keys: true,
+            ..Default::default()
+        },
+    )
+}
+
 pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
     let reveal = matches.get_one::<bool>("reveal").unwrap_or(&false);
     let opts = Opts {
@@ -280,6 +293,7 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         }
         // TODO: generalise this logic ... maybe move it to impl ResultRow ...
         let md = record.metadata();
+        result.add(Column::Key, record.key());
         result.add(Column::Kind, md.kind.name());
         result.add(Column::Category, md.category.clone());
         result.add(Column::Count, md.access_count.to_string());

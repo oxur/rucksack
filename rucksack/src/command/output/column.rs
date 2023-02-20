@@ -10,6 +10,7 @@ pub enum Column {
     Created,
     Id,
     Imported,
+    Key,
     Kind,
     LastAccessed,
     LastUpdated,

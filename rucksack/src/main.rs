@@ -18,6 +18,7 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
         Some(("import", import_matches)) => import::new(import_matches, app)?,
         Some(("list", list_matches)) => match list_matches.subcommand() {
             Some(("deleted", deleted_matches)) => list::deleted(deleted_matches, app)?,
+            Some(("keys", key_matches)) => list::keys(key_matches, app)?,
             Some(("passwords", passwords_matches)) => list::passwords(passwords_matches, app)?,
             Some((&_, _)) => todo!(),
             None => list::all(list_matches, app)?,

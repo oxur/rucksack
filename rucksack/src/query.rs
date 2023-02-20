@@ -12,10 +12,11 @@ pub fn record(app_db: &db::DB, matches: &ArgMatches) -> Result<DecryptedRecord> 
 }
 
 pub fn record_by_key(app_db: &db::DB, key: String) -> Result<DecryptedRecord> {
+    log::debug!("Querying record by key '{key}' ...");
     match app_db.get(key.clone()) {
         Some(dr) => Ok(dr),
         None => {
-            let msg = format!("no secret record for given key '{key}'");
+            let msg = format!("No secret record for given key '{key}'");
             log::info!("{msg}");
             Err(anyhow!(msg))
         }
@@ -31,7 +32,7 @@ pub fn remove_by_key(app_db: &db::DB, key: String) -> Result<()> {
     match app_db.delete(key.clone()) {
         Some(true) => Ok(()),
         Some(false) => {
-            let msg = format!("could not delete record with given key '{key}'");
+            let msg = format!("Could not delete record with given key '{key}'");
             log::error!("{msg}");
             Err(anyhow!(msg))
         }

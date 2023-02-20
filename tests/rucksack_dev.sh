@@ -143,7 +143,7 @@ header "Remove a record (clammy)"
     --db "$DB_FILE" \
     --db-pass 1234 \
     --url http://example.com \
-    --user clammy --log-level debug
+    --user clammy
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
@@ -156,6 +156,16 @@ header "List deleted records"
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234
+
+header "Change the URL for a record"
+
+./bin/rucksack set url \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --user sully \
+    --old-url "http://boo.co" \
+    --new-url "https://boo.fans.co.uk "
 
 header "Add a records for different 'kinds' and categories"
 
@@ -366,6 +376,13 @@ header "Show all tags"
     --db "$DB_FILE" \
     --db-pass 1234
 
+header "List just the keys"
+
+./bin/rucksack list keys \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234
+
 header "Show password history"
 
 ./bin/rucksack set password \
@@ -373,23 +390,25 @@ header "Show password history"
     --db "$DB_FILE" \
     --db-pass 1234 \
     --user sully \
-    --url http://boo.co \
-    --password "*sekrit2!"
+    --url "https://boo.fans.co.uk" \
+    --password "*sekrit2!" --log-level debug
 
 ./bin/rucksack set password \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --user sully \
-    --url http://boo.co \
-    --password "*s3kr1t3!"
+    --url "https://boo.fans.co.uk" \
+    --password "*s3kr1t3!"  --log-level debug
 
 ./bin/rucksack list passwords \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --user sully \
-    --url http://boo.co
+    --url "https://boo.fans.co.uk"  --log-level debug
+
+exit 1
 
 header "Show password history (revealed)"
 
@@ -398,8 +417,8 @@ header "Show password history (revealed)"
     --db "$DB_FILE" \
     --db-pass 1234 \
     --user sully \
-    --url http://boo.co \
-    --reveal
+    --url "https://boo.fans.co.uk" \
+    --reveal --log-level debug
 
 
 header "Export password data"

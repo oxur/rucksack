@@ -335,7 +335,7 @@ pub fn migrate_encrypted_record_from_v080(er: v080::EncryptedRecord) -> Encrypte
 // Utility functions
 
 pub fn key(category: &str, kind: Kind, name: &str, url: &str) -> String {
-    format!("{kind:?}:{category}:{name}:{url}")
+    format!("{name}:{url}:{kind:?}:{category}")
 }
 
 #[cfg(test)]

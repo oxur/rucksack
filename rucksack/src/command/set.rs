@@ -76,8 +76,9 @@ pub fn record_type(matches: &ArgMatches, app: &App) -> Result<()> {
 pub fn password(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting record password ...");
     let mut record = query::record(&app.db, matches)?;
+    let key = record.key();
     record.set_password(option::record_pwd_revealed(matches));
-    app.db.insert(record);
+    app.db.update(key, record);
     app.db.close()?;
     Ok(())
 }
@@ -100,14 +101,9 @@ pub fn url(matches: &ArgMatches, app: &App) -> Result<()> {
     let new_url = option::url_new(matches);
     let key = store::key(&category, kind, &user, &old_url);
     let mut record = query::record_by_key(&app.db, key.clone())?;
+    log::debug!("Got record: {record:?}");
     record.set_url(new_url);
-    let msg = "there was a problem deleting the old record";
-    match app.db.delete(key) {
-        Some(false) => log::error!("{msg}"),
-        Some(_) => (),
-        None => log::error!("{msg}"),
-    }
-    app.db.update(record);
+    app.db.update(key, record);
     app.db.close()?;
     Ok(())
 }
