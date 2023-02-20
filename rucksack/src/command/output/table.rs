@@ -44,6 +44,12 @@ impl Table {
     fn set_columns(&mut self) {
         if self.opts.only_keys {
             self.columns = vec![Column::Key]
+        } else if self.opts.kinds {
+            self.columns = vec![Column::Kind];
+        } else if self.opts.tags {
+            self.columns = vec![Column::Tags];
+        } else if self.opts.categories {
+            self.columns = vec![Column::Category];
         } else if self.opts.password_history {
             self.columns = vec![
                 Column::Password,
@@ -74,12 +80,6 @@ impl Table {
                     Column::Url,
                 ];
             }
-        } else if self.opts.kinds {
-            self.columns = vec![Column::Kind];
-        } else if self.opts.tags {
-            self.columns = vec![Column::Tags];
-        } else if self.opts.categories {
-            self.columns = vec![Column::Category];
         } else if self.opts.with_status {
             self.columns = vec![
                 Column::Name,

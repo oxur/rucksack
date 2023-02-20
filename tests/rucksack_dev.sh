@@ -449,6 +449,15 @@ header "List with latest access counts"
     --db "$DB_FILE" \
     --db-pass 1234
 
+echo
+header "List grouped-by password"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --group-by password
+
 # TODO: Uncomment when JSON exports land ... see ticket:
 # * https://github.com/oxur/rucksack/issues/71
 

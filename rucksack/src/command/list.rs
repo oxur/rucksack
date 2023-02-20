@@ -380,11 +380,9 @@ fn print_password_group(
         sort(&mut group, sort_by);
         password_section(&group[0], opts);
         println!("Records using: {}\nRecords:", group.len());
-        encrypted_header(opts);
+        let mut t = table::new(group.to_owned(), opts.clone());
+        t.display();
         record_count += group.len();
-        for r in group {
-            encrypted_result(&r, opts)
-        }
     }
     (group_count, record_count)
 }
@@ -444,27 +442,6 @@ fn decrypted_no_user_header(_opts: &Opts) {
     // }
 }
 
-fn encrypted_header(_opts: &Opts) {
-    // if opts.with_status {
-    //     println!("\n{USER_HEADER: <30} | {COUNT_HEADER: <12} | {STATUS_HEADER} | {URL_HEADER}",);
-    //     println!(
-    //         "{:30}-+-{:12}-+-{:8}-+-{}",
-    //         "-".repeat(30),
-    //         "-".repeat(12),
-    //         "-".repeat(8),
-    //         "-".repeat(40),
-    //     )
-    // } else {
-    //     println!("\n{USER_HEADER: <30} | {COUNT_HEADER} | {URL_HEADER}",);
-    //     println!(
-    //         "{:30}-+-{:12}-+-{}",
-    //         "-".repeat(30),
-    //         "-".repeat(12),
-    //         "-".repeat(40),
-    //     )
-    // }
-}
-
 fn encrypted_no_user_header(_opts: &Opts) {
     // if opts.with_status {
     //     println!("\n{COUNT_HEADER: <12} | {STATUS_HEADER: <8} | {URL_HEADER}",);
@@ -504,17 +481,6 @@ fn user_section(_r: &result::ResultRow, _opts: &Opts) {
     //         println!("\n\n+{}\n", "=".repeat(40 - 1));
     //         println!("User: {}", r.name)
     //     }
-    // }
-}
-
-fn encrypted_result(_r: &result::ResultRow, _opts: &Opts) {
-    // if opts.with_status {
-    //     println!(
-    //         "{: <30} | {: ^12} | {: <8} | {}",
-    //         r.name, r.access_count, r.status, r.url,
-    //     )
-    // } else {
-    //     println!("{: <30} | {: ^12} | {}", r.name, r.access_count, r.url)
     // }
 }
 
