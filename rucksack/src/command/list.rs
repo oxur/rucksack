@@ -195,7 +195,11 @@ pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
         pwd = hidden();
     }
     results.push(result::password(pwd, md.created, md.updated, md.last_used));
-    for old in record.history() {
+    log::debug!("history length: {}", record.history().len());
+    // Let's get these in order of most recent to oldest:
+    let mut history = record.history();
+    history.reverse();
+    for old in history {
         pwd = old.secrets.password;
         if !opts.reveal {
             pwd = hidden();
@@ -207,6 +211,7 @@ pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
             old.metadata.last_used,
         ));
     }
+    log::debug!("results length: {}", results.len());
     let mut t = table::new(results.to_owned(), opts);
     t.display();
     println!();

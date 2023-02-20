@@ -391,7 +391,7 @@ header "Show password history"
     --db-pass 1234 \
     --user sully \
     --url "https://boo.fans.co.uk" \
-    --password "*sekrit2!" --log-level debug
+    --password "*sekrit2!"
 
 ./bin/rucksack set password \
     --config-file "$CFG_FILE" \
@@ -399,16 +399,14 @@ header "Show password history"
     --db-pass 1234 \
     --user sully \
     --url "https://boo.fans.co.uk" \
-    --password "*s3kr1t3!"  --log-level debug
+    --password "*s3kr1t3!"
 
 ./bin/rucksack list passwords \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --user sully \
-    --url "https://boo.fans.co.uk"  --log-level debug
-
-exit 1
+    --url "https://boo.fans.co.uk"
 
 header "Show password history (revealed)"
 
@@ -418,7 +416,7 @@ header "Show password history (revealed)"
     --db-pass 1234 \
     --user sully \
     --url "https://boo.fans.co.uk" \
-    --reveal --log-level debug
+    --reveal
 
 
 header "Export password data"
