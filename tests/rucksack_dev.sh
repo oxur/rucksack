@@ -456,7 +456,18 @@ header "List grouped-by password"
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234 \
-    --group-by password
+    --group-by password \
+    --decrypt
+
+echo
+header "List grouped-by name"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --group-by name \
+    --decrypt
 
 # TODO: Uncomment when JSON exports land ... see ticket:
 # * https://github.com/oxur/rucksack/issues/71
