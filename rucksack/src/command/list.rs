@@ -225,13 +225,18 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
     let min_score = matches.get_one::<f64>("min-score");
     let reveal = matches.get_one::<bool>("reveal").unwrap();
     let sort_by = matches.get_one::<String>("sort-by").map(|s| s.as_str());
-    let group_by = matches.get_one::<String>("group-by").map(|s| s.as_str());
     let kind = option::record_kind(matches);
     let category = option::category(matches);
     let all_tags = option::all_tags(matches);
     let any_tags = option::any_tags(matches);
     opts.reveal = *reveal;
     opts.decrypted = *matches.get_one::<bool>("decrypt").unwrap();
+    match matches.get_one::<String>("group-by").map(|s| s.as_str()) {
+        Some("name") => opts.group_by_name = true,
+        Some("password") => opts.group_by_password = true,
+        Some(_) => (),
+        None => (),
+    }
     // If we want to see the status of all records, we're going to override
     // skip_deleted and only_deleted:
     match matches.get_one::<bool>("with-status") {
@@ -315,37 +320,28 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
             }
             false => result.add(Column::Password, hidden()),
         }
-        match group_by {
-            Some("password") => {
-                let entry = groups.entry(record.password()).or_default();
-                entry.push(result.clone());
-            }
-            Some("name") => {
-                let entry = groups.entry(record.user()).or_default();
-                entry.push(result.clone());
-            }
-            Some(&_) => (),
-            None => (),
+        if opts.group_by_name {
+            let entry = groups.entry(record.name_or_user()).or_default();
+            entry.push(result.clone());
+        } else if opts.group_by_password {
+            let entry = groups.entry(record.password()).or_default();
+            entry.push(result.clone());
         }
         results.push(result);
     }
     sort(&mut results, sort_by);
-    match group_by {
-        Some("password") => {
-            let (group_count, record_count) = print_password_group(groups, sort_by, &opts);
-            print_group_report(group_count, record_count, app.db.hash_map().len());
-        }
-        Some("name") => {
-            let (group_count, record_count) = print_user_group(groups, sort_by, &opts);
-            print_group_report(group_count, record_count, app.db.hash_map().len());
-        }
-        Some(&_) => (),
-        None => {
-            let mut t = table::new(results.to_owned(), opts.clone());
-            t.display();
-            print_report(results.len(), app.db.hash_map().len());
-        }
+    let mut group_count: i32 = 0;
+    let mut count: usize = results.len();
+    let total: usize = app.db.hash_map().len();
+    if opts.group_by_name {
+        (group_count, count) = print_user_group(groups, sort_by, &opts);
+    } else if opts.group_by_password {
+        (group_count, count) = print_password_group(groups, sort_by, &opts);
+    } else {
+        let mut t = table::new(results.to_owned(), opts.clone());
+        t.display();
     }
+    print_report(group_count, count, total, &opts);
     // With the dash_map iteration finished, the lock is gone, and we can
     // now update all the records whose passwords were revealed:
     for r in results {
@@ -359,10 +355,6 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
     }
     app.db.close()?;
     Ok(())
-}
-
-fn print_report(count: usize, total: usize) {
-    println!("\n{count} records (of {total} total)\n")
 }
 
 fn print_password_group(
@@ -402,108 +394,54 @@ fn print_user_group(
         sort(&mut group, sort_by);
         user_section(&group[0], opts);
         println!("Records using: {}\nRecords:", group.len());
-        match opts.decrypted {
-            true => decrypted_no_user_header(opts),
-            false => encrypted_no_user_header(opts),
-        }
+        let mut t = table::new(group.to_owned(), opts.clone());
+        t.display();
         record_count += group.len();
-        for r in group {
-            match opts.decrypted {
-                true => decrypted_no_user_result(&r, opts),
-                false => encrypted_no_user_result(&r, opts),
-            }
-        }
     }
     (group_count, record_count)
 }
 
-fn print_group_report(count: i32, records: usize, total: usize) {
-    println!("\n{count} groups (with {records} records out of {total} total)\n",)
+fn print_report(group_count: i32, records: usize, total: usize, opts: &Opts) {
+    if opts.group_by_name || opts.group_by_password {
+        println!("\n{group_count} groups (with {records} records out of {total} total)\n",)
+    } else {
+        println!("\n{records} records (of {total} total)\n")
+    }
 }
 
-fn decrypted_no_user_header(_opts: &Opts) {
-    // if opts.with_status {
-    //     println!("\n{PWD_HEADER: <20} | {SCORE_HEADER: <16} | {COUNT_HEADER: <12} | {URL_HEADER}",);
-    //     println!(
-    //         "{: <20}-+-{: <16}-+-{: <12}-+-{}",
-    //         "-".repeat(20),
-    //         "-".repeat(16),
-    //         "-".repeat(12),
-    //         "-".repeat(40),
-    //     )
-    // } else {
-    //     println!("\n{PWD_HEADER: <20} | {SCORE_HEADER: <16} | {URL_HEADER}",);
-    //     println!(
-    //         "{: <20}-+-{: <16}-+-{}",
-    //         "-".repeat(20),
-    //         "-".repeat(16),
-    //         "-".repeat(40),
-    //     )
-    // }
+fn password_section(r: &result::ResultRow, opts: &Opts) {
+    println!("\n\n+{}\n", "=".repeat(40 + 30 + 2));
+    match opts.decrypted {
+        true => {
+            if opts.reveal {
+                println!(
+                    "Password: {} (Score: {})",
+                    r.get(&Column::Password).unwrap(),
+                    r.get(&Column::Score).unwrap()
+                )
+            } else {
+                println!(
+                    "Password: {} (Score: {})",
+                    hidden(),
+                    r.get(&Column::Score).unwrap()
+                )
+            }
+        }
+        false => println!("Password Group"),
+    }
 }
 
-fn encrypted_no_user_header(_opts: &Opts) {
-    // if opts.with_status {
-    //     println!("\n{COUNT_HEADER: <12} | {STATUS_HEADER: <8} | {URL_HEADER}",);
-    //     println!(
-    //         "{:12}-+-{:8}-+-{}",
-    //         "-".repeat(12),
-    //         "-".repeat(8),
-    //         "-".repeat(40),
-    //     )
-    // } else {
-    //     println!("\n{COUNT_HEADER} | {URL_HEADER: <40}");
-    //     println!("{:12}-+-{}", "-".repeat(40), "-".repeat(12))
-    // }
-}
-
-fn password_section(_r: &result::ResultRow, _opts: &Opts) {
-    // println!("\n\n+{}\n", "=".repeat(40 + 30 + 2));
-    // match opts.decrypted {
-    //     true => {
-    //         if opts.reveal {
-    //             println!("Password: {} (Score: {})", r.pwd, r.score)
-    //         } else {
-    //             println!("Password: {} (Score: {})", hidden(), r.score)
-    //         }
-    //     }
-    //     false => println!("Password Group"),
-    // }
-}
-
-fn user_section(_r: &result::ResultRow, _opts: &Opts) {
-    // match opts.decrypted {
-    //     true => {
-    //         println!("\n\n+{}\n", "=".repeat(40 + 20 + 16 + 5));
-    //         println!("User: {}", r.name)
-    //     }
-    //     false => {
-    //         println!("\n\n+{}\n", "=".repeat(40 - 1));
-    //         println!("User: {}", r.name)
-    //     }
-    // }
-}
-
-fn decrypted_no_user_result(_r: &result::ResultRow, _opts: &Opts) {
-    // if opts.with_status {
-    //     println!(
-    //         "{: <20} | {: ^16.2} | {: ^12} | {: <8} | {}",
-    //         r.pwd, r.score, r.access_count, r.status, r.url,
-    //     )
-    // } else {
-    //     println!(
-    //         "{: <20} | {: ^16.2} | {: ^12} | {}",
-    //         r.pwd, r.score, r.access_count, r.url,
-    //     )
-    // }
-}
-
-fn encrypted_no_user_result(_r: &result::ResultRow, _opts: &Opts) {
-    // if opts.with_status {
-    //     println!("{: ^12} | {: <8} | {}", r.access_count, r.status, r.url)
-    // } else {
-    //     println!("{: ^12} | {}", r.access_count, r.url)
-    // }
+fn user_section(r: &result::ResultRow, opts: &Opts) {
+    match opts.decrypted {
+        true => {
+            println!("\n\n+{}\n", "=".repeat(40 + 20 + 16 + 5));
+            println!("User: {}", r.get(&Column::Name).unwrap())
+        }
+        false => {
+            println!("\n\n+{}\n", "=".repeat(40 - 1));
+            println!("User: {}", r.get(&Column::Name).unwrap())
+        }
+    }
 }
 
 fn hidden() -> String {

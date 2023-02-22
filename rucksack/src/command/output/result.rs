@@ -78,7 +78,14 @@ impl ResultRow {
     }
 
     pub fn cell(&self, column: &Column) -> Cell {
-        let mut val = self.get(column).unwrap().clone();
+        let col = match self.get(column) {
+            Some(c) => c.to_string(),
+            None => {
+                log::warn!("Key {} has no value for column {}", self.id(), column);
+                "".to_string()
+            }
+        };
+        let mut val = col.clone();
         if val.len() > 50 {
             val.truncate(47);
             val.push_str("...");
@@ -88,6 +95,9 @@ impl ResultRow {
             Column::Count => c.align(Alignment::RIGHT),
             Column::Score => {
                 c.align(Alignment::RIGHT);
+                if val.is_empty() {
+                    val = "0".to_string();
+                }
                 match val.parse::<i32>().unwrap() {
                     x if x == 100 => {
                         c = c

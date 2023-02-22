@@ -50,6 +50,79 @@ impl Table {
             self.columns = vec![Column::Tags];
         } else if self.opts.categories {
             self.columns = vec![Column::Category];
+        } else if self.opts.group_by_name {
+            if self.opts.with_status {
+                self.columns = vec![
+                    Column::Password,
+                    Column::Score,
+                    Column::Status,
+                    Column::Count,
+                    Column::Url,
+                ];
+            } else {
+                self.columns = vec![Column::Password, Column::Score, Column::Count, Column::Url];
+            }
+        } else if self.opts.group_by_password {
+            if self.opts.with_status {
+                self.columns = vec![
+                    Column::Name,
+                    Column::Kind,
+                    Column::Category,
+                    Column::Status,
+                    Column::Count,
+                    Column::Url,
+                ];
+            } else {
+                self.columns = vec![
+                    Column::Name,
+                    Column::Kind,
+                    Column::Category,
+                    Column::Count,
+                    Column::Url,
+                ];
+            }
+        } else if self.opts.group_by_kind {
+            if self.opts.with_status {
+                self.columns = vec![
+                    Column::Name,
+                    Column::Category,
+                    Column::Password,
+                    Column::Score,
+                    Column::Status,
+                    Column::Count,
+                    Column::Url,
+                ];
+            } else {
+                self.columns = vec![
+                    Column::Name,
+                    Column::Category,
+                    Column::Password,
+                    Column::Score,
+                    Column::Count,
+                    Column::Url,
+                ];
+            }
+        } else if self.opts.group_by_category {
+            if self.opts.with_status {
+                self.columns = vec![
+                    Column::Name,
+                    Column::Kind,
+                    Column::Password,
+                    Column::Score,
+                    Column::Status,
+                    Column::Count,
+                    Column::Url,
+                ];
+            } else {
+                self.columns = vec![
+                    Column::Name,
+                    Column::Kind,
+                    Column::Password,
+                    Column::Score,
+                    Column::Count,
+                    Column::Url,
+                ];
+            }
         } else if self.opts.password_history {
             self.columns = vec![
                 Column::Password,
