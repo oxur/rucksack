@@ -6,7 +6,7 @@
 
 ## Documentation
 
-See the [Rust docs]()<https://docs.rs/rucksack/latest/rucksack-lib/.>
+See the [Rust docs](https://docs.rs/rucksack/latest/rucksack/).
 
 ## License
 
