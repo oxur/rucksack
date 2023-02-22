@@ -85,7 +85,7 @@ impl ResultRow {
                 "".to_string()
             }
         };
-        let mut val = col.clone();
+        let mut val = col;
         if val.len() > 50 {
             val.truncate(47);
             val.push_str("...");
