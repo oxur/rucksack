@@ -19,6 +19,6 @@ Cargo.lock
 # Misc
 /data
 /exports
-/resources/images/drafts/
+/rucksack/resources/images/drafts/
 /workbench
 .DS_Store
