@@ -15,9 +15,7 @@ cargo install rucksack
 echo
 header "Show top-level help"
 echo
-
-RUST_BACKTRACE=1 rucksack help
-
+rucksack help
 
 echo
 header "Show config file (default)"
@@ -54,7 +52,6 @@ header "Generate encoded password"
 rucksack gen --config-file "$CFG_FILE" --type uuid++ --encode
 
 header "Add a new record (shelly)"
-echo
 
 rucksack add \
     --config-file "$CFG_FILE" \
@@ -100,7 +97,6 @@ rucksack list \
     --decrypt
 
 header "Add a new record (sully)"
-echo
 
 rucksack add \
     --config-file "$CFG_FILE" \
@@ -145,7 +141,7 @@ rucksack list \
     --reveal \
     --filter boo
 
-header "Remove an record (clammy)"
+header "Remove a record (clammy)"
 
 rucksack rm \
     --config-file "$CFG_FILE" \
@@ -166,8 +162,17 @@ rucksack list deleted \
     --db "$DB_FILE" \
     --db-pass 1234
 
+header "Change the URL for a record"
+
+rucksack set url \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --user sully \
+    --old-url "http://boo.co" \
+    --new-url "https://boo.fans.co.uk "
+
 header "Add a records for different 'kinds' and categories"
-echo
 
 rucksack add \
     --config-file "$CFG_FILE" \
@@ -376,6 +381,49 @@ rucksack show tags \
     --db "$DB_FILE" \
     --db-pass 1234
 
+header "List just the keys"
+
+rucksack list keys \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234
+
+header "Show password history"
+
+rucksack set password \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --user sully \
+    --url "https://boo.fans.co.uk" \
+    --password "*sekrit2!"
+
+rucksack set password \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --user sully \
+    --url "https://boo.fans.co.uk" \
+    --password "*s3kr1t3!"
+
+rucksack list passwords \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --user sully \
+    --url "https://boo.fans.co.uk"
+
+header "Show password history (revealed)"
+
+rucksack list passwords \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --user sully \
+    --url "https://boo.fans.co.uk" \
+    --reveal
+
+
 header "Export password data"
 
 mkdir -p exports
@@ -405,6 +453,26 @@ rucksack list \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
     --db-pass 1234
+
+echo
+header "List grouped-by password"
+
+rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --group-by password \
+    --decrypt
+
+echo
+header "List grouped-by name"
+
+rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --group-by name \
+    --decrypt
 
 # TODO: Uncomment when JSON exports land ... see ticket:
 # * https://github.com/oxur/rucksack/issues/71
@@ -440,6 +508,32 @@ rucksack list \
 # header "Read an old database (v0.6.0)"
 
 # cp ./tests/testing-data/secrets-v0.6.0.db "$DB_FILE"
+# rucksack show db-version \
+#     --config-file "$CFG_FILE" \
+#     --db "$DB_FILE" \
+#     --db-pass 1234
+
+# rucksack list \
+#     --config-file "$CFG_FILE" \
+#     --db "$DB_FILE" \
+#     --db-pass 1234
+
+# header "Read an old database (v0.7.0)"
+
+# cp ./tests/testing-data/secrets-v0.7.0.db "$DB_FILE"
+# rucksack show db-version \
+#     --config-file "$CFG_FILE" \
+#     --db "$DB_FILE" \
+#     --db-pass 1234
+
+# rucksack list \
+#     --config-file "$CFG_FILE" \
+#     --db "$DB_FILE" \
+#     --db-pass 1234
+
+# header "Read an old database (v0.8.0)"
+
+# cp ./tests/testing-data/secrets-v0.8.0.db "$DB_FILE"
 # rucksack show db-version \
 #     --config-file "$CFG_FILE" \
 #     --db "$DB_FILE" \
