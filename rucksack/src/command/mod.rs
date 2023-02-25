@@ -8,6 +8,7 @@ use crate::constant;
 pub mod add;
 #[doc(hidden)]
 pub mod arg;
+pub mod backup;
 pub mod export;
 pub mod gen;
 pub mod import;
@@ -60,6 +61,22 @@ pub fn setup() -> Command {
             .arg(db::path())
             .arg(db::pwd())
             .arg(db::salt())
+    )
+    .subcommand(
+        Command::new("backup")
+            .about("Operations related to the backing up of the secrets DB; used with no subcommand, perform a backup")
+            .arg(db::path())
+            .arg(db::pwd())
+            .arg(db::salt())
+            .subcommand(
+                Command::new("delete")
+                    .about("Delete one ore more backup files"))
+            .subcommand(
+                Command::new("list")
+                    .about("List all the backup files"))
+            .subcommand(
+                Command::new("restore")
+                    .about("Restore the DB from a backup "))
     )
     .subcommand(
         Command::new("export")

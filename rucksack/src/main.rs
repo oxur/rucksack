@@ -4,7 +4,7 @@ use anyhow::{Context, Result};
 use clap::ArgMatches;
 
 use rucksack::command as cli;
-use rucksack::command::{add, export, gen, import, list, rm, set, show};
+use rucksack::command::{add, backup, export, gen, import, list, rm, set, show};
 use rucksack::constant;
 use rucksack::setup;
 use rucksack_lib::{config, util};
@@ -13,6 +13,13 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
     log::debug!("Preparing to dispatch based upon (sub)command ...");
     match matches.subcommand() {
         Some(("add", add_matches)) => add::new(add_matches, app)?,
+        Some(("backup", backup_matches)) => match backup_matches.subcommand() {
+            Some(("delete", delete_matches)) => backup::delete(delete_matches, app)?,
+            Some(("list", list_matches)) => backup::list(list_matches, app)?,
+            Some(("restore", restore_matches)) => backup::restore(restore_matches, app)?,
+            Some((&_, _)) => todo!(),
+            None => backup::run(backup_matches, app)?,
+        },
         Some(("export", export_matches)) => export::new(export_matches, app)?,
         Some(("gen", gen_matches)) => gen::new(gen_matches)?,
         Some(("import", import_matches)) => import::new(import_matches, app)?,
