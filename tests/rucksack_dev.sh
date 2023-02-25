@@ -12,7 +12,6 @@ header "Show top-level help"
 echo
 ./bin/rucksack help
 
-echo
 header "Show config file (default)"
 
 ./bin/rucksack show config-file --log-level error
@@ -41,7 +40,6 @@ header "Show DB file"
 
 ./bin/rucksack show db-file --config-file "$CFG_FILE" --db "$DB_FILE"
 
-echo
 header "Generate encoded password"
 
 ./bin/rucksack gen --config-file "$CFG_FILE" --type uuid++ --encode
@@ -159,6 +157,12 @@ header "List deleted records"
 
 header "Change the URL for a record"
 
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --filter sully
+
 ./bin/rucksack set url \
     --config-file "$CFG_FILE" \
     --db "$DB_FILE" \
@@ -166,6 +170,12 @@ header "Change the URL for a record"
     --user sully \
     --old-url "http://boo.co" \
     --new-url "https://boo.fans.co.uk "
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --filter sully
 
 header "Add a records for different 'kinds' and categories"
 
@@ -449,7 +459,6 @@ header "List with latest access counts"
     --db "$DB_FILE" \
     --db-pass 1234
 
-echo
 header "List grouped-by password"
 
 ./bin/rucksack list \
@@ -459,7 +468,6 @@ header "List grouped-by password"
     --group-by password \
     --decrypt
 
-echo
 header "List grouped-by name"
 
 ./bin/rucksack list \
