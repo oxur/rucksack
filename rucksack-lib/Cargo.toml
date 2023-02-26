@@ -1,7 +1,7 @@
 [package]
 name = "rucksack-lib"
 description = "The rucksack core library"
-version = "0.8.4"
+version = "0.8.5"
 license = "Apache-2.0"
 authors = ["Duncan McGreggor <oubiwann@gmail.com>"]
 repository = "https://github.com/oxur/rucksack"
@@ -28,6 +28,7 @@ rand = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 shellexpand = "3.0.0"
 twyg = "0.1"
+unix_mode = "0.1"
 uuid = {version = "1.2",  features = ["v4"]}
 versions = "4.1.0"
 

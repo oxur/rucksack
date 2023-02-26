@@ -7,6 +7,8 @@ pub struct Rucksack {
     pub cfg_file: String,
     pub data_dir: String,
     pub db_file: String,
+    pub name: String,
+    pub backup_dir: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

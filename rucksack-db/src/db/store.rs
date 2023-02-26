@@ -32,6 +32,7 @@ use super::{backup, encrypted, versioned};
 #[derive(Clone, Default)]
 pub struct DB {
     pub path: String,
+    pub backups_path: String,
     store_hash: u32,
     store_pwd: String,
     salt: String,
@@ -49,8 +50,8 @@ impl fmt::Debug for DB {
     }
 }
 
-pub fn init(path: String, store_pwd: String, updated: String) -> Result<()> {
-    let db = open(path, store_pwd, updated)?;
+pub fn init(path: String, backups_path: String, store_pwd: String, updated: String) -> Result<()> {
+    let db = open(path, backups_path, store_pwd, updated)?;
     db.close()
 }
 
@@ -60,7 +61,7 @@ pub fn new() -> DB {
     }
 }
 
-pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
+pub fn open(path: String, backups_path: String, store_pwd: String, salt: String) -> Result<DB> {
     log::debug!("Opening database ...");
     let mut hash_map: records::HashMap = DashMap::new();
     let mut store_hash = 0;
@@ -89,6 +90,7 @@ pub fn open(path: String, store_pwd: String, salt: String) -> Result<DB> {
     log::debug!("Setting database path: {}", path);
     Ok(DB {
         path,
+        backups_path,
         store_hash,
         store_pwd,
         salt,
@@ -282,13 +284,11 @@ mod tests {
     fn db_basics() {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
-        let path = NamedTempFile::new()
-            .unwrap()
-            .path()
-            .to_str()
-            .unwrap()
-            .to_string();
-        let tmp_db = super::open(path.clone(), pwd.clone(), salt.clone()).unwrap();
+        let root = NamedTempFile::new().unwrap();
+        let path = root.path().display().to_string();
+        let backup_path = root.path().join("backups").display().to_string();
+        let tmp_db =
+            super::open(path.clone(), backup_path.clone(), pwd.clone(), salt.clone()).unwrap();
         assert!(tmp_db.version() > versions::SemVer::new("0.8.0").unwrap());
         let dpr = testing::data::plaintext_record_v090();
         tmp_db.insert(dpr.clone());
@@ -296,7 +296,7 @@ mod tests {
         assert_eq!(re_dpr.secrets.user, "alice@site.com");
         assert_eq!(re_dpr.secrets.password, "6 s3kr1t");
         assert!(tmp_db.close().is_ok());
-        let tmp_db = super::open(path, pwd, salt).unwrap();
+        let tmp_db = super::open(path, backup_path, pwd, salt).unwrap();
         let read_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(read_dpr.secrets.user, "alice@site.com");
         assert_eq!(read_dpr.secrets.password, "6 s3kr1t");

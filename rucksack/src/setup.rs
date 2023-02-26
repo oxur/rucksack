@@ -39,5 +39,16 @@ pub fn db(matches: &ArgMatches) -> Result<db::DB> {
             log::debug!("No database flag provided; using default ({db_file:})");
         }
     }
-    db::open(db_file, pwd.expose_secret().to_string(), salt)
+    let backup_dir: String;
+    match matches.get_one::<String>("backup_dir") {
+        Some(dir_path) => {
+            log::debug!("Got database backups dir from flag: {}", dir_path);
+            backup_dir = dir_path.to_owned();
+        }
+        None => {
+            backup_dir = util::backup_dir(constant::NAME).display().to_string();
+            log::debug!("No backup dir flag provided; using default ({backup_dir:})");
+        }
+    }
+    db::open(db_file, backup_dir, pwd.expose_secret().to_string(), salt)
 }

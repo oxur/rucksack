@@ -24,6 +24,13 @@ pub fn salt() -> Arg {
         .global(true)
 }
 
+pub fn backup_dir() -> Arg {
+    Arg::new("backup-dir")
+        .help("Path for database backups")
+        .long("backup-dir")
+        .global(true)
+}
+
 fn default_salt() -> String {
     match std::env::var("USER") {
         Ok(user) => user,

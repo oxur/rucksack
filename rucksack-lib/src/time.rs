@@ -2,9 +2,11 @@ use chrono::offset::Local;
 use chrono::{DateTime, TimeZone, Utc};
 
 pub fn simple_timestamp() -> String {
-    chrono::offset::Local::now()
-        .format("%Y%m%d-%H%M%S")
-        .to_string()
+    format_datetime(chrono::offset::Local::now())
+}
+
+pub fn format_datetime(dt: DateTime<Local>) -> String {
+    dt.format("%Y%m%d-%H%M%S").to_string()
 }
 
 pub fn now() -> String {

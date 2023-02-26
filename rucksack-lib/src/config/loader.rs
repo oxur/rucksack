@@ -2,7 +2,8 @@ use confyg::Confygery;
 
 use super::{init, schema};
 
-pub fn load(config_file: String, log_level: String) -> schema::Config {
+pub fn load(config_file: String, log_level: String, name: String) -> schema::Config {
+    println!("Attempting to load {name} config file {config_file} ...");
     let defaults = schema::defaults();
     match init::config(config_file.clone()) {
         Ok(_) => (),
@@ -18,6 +19,7 @@ pub fn load(config_file: String, log_level: String) -> schema::Config {
                 cfg.logging.level = log_level;
             }
             cfg.rucksack.cfg_file = config_file;
+            cfg.rucksack.name = name;
             cfg
         }
         Err(e) => panic!("{}", e),

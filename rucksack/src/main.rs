@@ -11,6 +11,15 @@ use rucksack_lib::{config, util};
 
 fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
     log::debug!("Preparing to dispatch based upon (sub)command ...");
+    let backup_dir = app.backup_dir();
+    if !backup_dir.exists() {
+        log::debug!(
+            "Checking for backup dir {:?} ...",
+            app.backup_dir().display()
+        );
+        util::create_dirs(backup_dir)?;
+        log::info!("Created backup dir.");
+    }
     match matches.subcommand() {
         Some(("add", add_matches)) => add::new(add_matches, app)?,
         Some(("backup", backup_matches)) => match backup_matches.subcommand() {
@@ -73,7 +82,7 @@ fn main() -> Result<()> {
     if let Some(level) = matches.get_one::<String>("log-level") {
         log_level = level.to_string();
     }
-    let mut cfg = config::load(config_file, log_level);
+    let mut cfg = config::load(config_file, log_level, constant::NAME.to_string());
     match twyg::setup_logger(&cfg.logging) {
         Ok(_) => {}
         Err(error) => {
@@ -90,7 +99,7 @@ fn main() -> Result<()> {
             return util::display(rucksack::version().to_string().as_str());
         }
     } else if let Some(shell) = matches.get_one::<clap_complete::Shell>("completions") {
-        clap_complete::generate(*shell, &mut rucksack, constant::NAME, &mut io::stdout());
+        clap_complete::generate(*shell, &mut rucksack, cfg.rucksack.name, &mut io::stdout());
         return Ok(());
     }
 

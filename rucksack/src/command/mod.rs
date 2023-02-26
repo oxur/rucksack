@@ -61,6 +61,7 @@ pub fn setup() -> Command {
             .arg(db::path())
             .arg(db::pwd())
             .arg(db::salt())
+            .arg(db::backup_dir())
     )
     .subcommand(
         Command::new("backup")
@@ -68,6 +69,7 @@ pub fn setup() -> Command {
             .arg(db::path())
             .arg(db::pwd())
             .arg(db::salt())
+            .arg(db::backup_dir())
             .subcommand(
                 Command::new("delete")
                     .about("Delete one ore more backup files"))
@@ -90,6 +92,7 @@ pub fn setup() -> Command {
             .arg(db::path())
             .arg(db::pwd())
             .arg(db::salt())
+            .arg(db::backup_dir())
             .arg(db::serialised_format())
             .arg(record::kind())
             .arg(record::category())
@@ -157,6 +160,7 @@ pub fn setup() -> Command {
             .arg(db::path())
             .arg(db::pwd())
             .arg(db::salt())
+            .arg(db::backup_dir())
     )
     .subcommand(
         Command::new("list")
@@ -234,6 +238,7 @@ pub fn setup() -> Command {
             .arg(db::path())
             .arg(db::pwd())
             .arg(db::salt())
+            .arg(db::backup_dir())
             .arg(record::category().default_value(records::ANY_CATEGORY))
             .arg(record::type_list())
             .arg(record::all_tags())
@@ -266,6 +271,7 @@ pub fn setup() -> Command {
             .arg(db::path())
             .arg(db::pwd())
             .arg(db::salt())
+            .arg(db::backup_dir())
     )
     .subcommand(
         Command::new("set")
@@ -273,6 +279,7 @@ pub fn setup() -> Command {
             .arg(db::path())
             .arg(db::pwd())
             .arg(db::salt())
+            .arg(db::backup_dir())
             .arg(record::category())
             .arg(record::kind())
             .arg(record::name())
@@ -315,7 +322,12 @@ pub fn setup() -> Command {
         Command::new("show")
             .about("Display rucksack-specific information")
             .arg(db::path())
+            .arg(db::backup_dir())
             .arg(db::not_needed())
+            .subcommand(
+                Command::new("backup-dir")
+                    .about("Display the location of the rucksack backup directory")
+            )
             .subcommand(
                 Command::new("categories")
                     .about("Display the categories currently used across all records")

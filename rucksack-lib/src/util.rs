@@ -1,12 +1,19 @@
 use std::collections::HashSet;
 use std::io::Write;
+use std::os::unix::fs::PermissionsExt;
 use std::{env, fs, io, path};
 
 use anyhow::{anyhow, Result};
+use chrono::offset::Local;
+use chrono::DateTime;
 use path_clean::PathClean;
 use rand::Rng;
 
+use crate::time;
+
 const SPECIALS: &[u8] = b"!@#%&*?=+:";
+const DATA_DIR: &str = "data";
+const BACKUP_DIR: &str = "backups";
 
 pub fn abs_path(path: String) -> io::Result<path::PathBuf> {
     let expanded = expanded_path(path);
@@ -63,13 +70,21 @@ pub fn config_file(project: &str) -> String {
 
 pub fn create_parents(path: String) -> Result<path::PathBuf> {
     // Make sure the path is created
-    let ap = abs_path(path.clone())?;
-    match fs::create_dir_all(ap.parent().unwrap()) {
-        Ok(_) => Ok(ap),
+    log::debug!("Attempting to create parent directory of {path} ...");
+    let ap = abs_path(path)?;
+    log::debug!("Attempting to create directory {:}", ap.display());
+    let parent: path::PathBuf = path::PathBuf::from(ap.parent().unwrap());
+    create_dirs(parent)
+}
+
+pub fn create_dirs(path: path::PathBuf) -> Result<path::PathBuf> {
+    let path_name = path.display();
+    match fs::create_dir_all(path.clone()) {
+        Ok(_) => Ok(path),
         Err(e) => {
             let msg = "Could not create missing parent dirs for";
-            log::error!("{} {} ({:})", msg, path, e);
-            Err(anyhow!("{} {} ({:})", msg, path, e))
+            log::error!("{msg} {path_name} ({e:})");
+            Err(anyhow!("{} {} ({:})", msg, path_name, e))
         }
     }
 }
@@ -77,7 +92,14 @@ pub fn create_parents(path: String) -> Result<path::PathBuf> {
 pub fn data_dir(project: &str) -> path::PathBuf {
     let mut path = dirs::data_dir().unwrap();
     path.push(project);
-    path.push("data");
+    path.push(DATA_DIR);
+    path
+}
+
+pub fn backup_dir(project: &str) -> path::PathBuf {
+    let mut path = dirs::data_dir().unwrap();
+    path.push(project);
+    path.push(BACKUP_DIR);
     path
 }
 
@@ -151,6 +173,21 @@ pub fn write_file(data: Vec<u8>, path: String) -> Result<()> {
             Err(anyhow!("{} {} ({:})", msg, path, e))
         }
     }
+}
+
+pub fn files(path: String) -> Result<Vec<(String, String, String)>> {
+    let mut f = Vec::<(String, String, String)>::new();
+    for entry in fs::read_dir(path)? {
+        let dir = entry?;
+        let metadata = dir.metadata()?;
+        let created: DateTime<Local> = metadata.created()?.into();
+        f.push((
+            dir.file_name().to_str().unwrap().to_owned(),
+            time::format_datetime(created),
+            unix_mode::to_string(metadata.permissions().mode()),
+        ));
+    }
+    Ok(f)
 }
 
 #[cfg(test)]
