@@ -283,7 +283,7 @@ impl DB {
 mod tests {
     use tempfile::NamedTempFile;
 
-    use rucksack_lib::time;
+    use rucksack_lib::{time, util};
 
     use crate::testing;
 
@@ -291,11 +291,23 @@ mod tests {
     fn db_basics() {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
-        let root = NamedTempFile::new().unwrap();
-        let path = root.path().display().to_string();
-        let backup_path = root.path().join("backups").display().to_string();
-        let tmp_db =
-            super::open(path.clone(), backup_path.clone(), pwd.clone(), salt.clone()).unwrap();
+        let temp_path = NamedTempFile::new().unwrap();
+        assert!(temp_path.path().exists());
+        let path_name = temp_path.path().display().to_string();
+        println!("Got path_name: {path_name}");
+        let backup_path = temp_path.path().parent().unwrap().join("backups");
+        let res = util::create_dirs(backup_path.clone());
+        assert!(res.is_ok());
+        assert!(backup_path.exists());
+        let backup_path_name = backup_path.display().to_string();
+        println!("Got backup_path: {backup_path_name}");
+        let tmp_db = super::open(
+            path_name.clone(),
+            backup_path_name.clone(),
+            pwd.clone(),
+            salt.clone(),
+        )
+        .unwrap();
         assert!(tmp_db.version() > versions::SemVer::new("0.8.0").unwrap());
         let dpr = testing::data::plaintext_record_v090();
         tmp_db.insert(dpr.clone());
@@ -303,7 +315,7 @@ mod tests {
         assert_eq!(re_dpr.secrets.user, "alice@site.com");
         assert_eq!(re_dpr.secrets.password, "6 s3kr1t");
         assert!(tmp_db.close().is_ok());
-        let tmp_db = super::open(path, backup_path, pwd, salt).unwrap();
+        let tmp_db = super::open(path_name, backup_path_name, pwd, salt).unwrap();
         let read_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(read_dpr.secrets.user, "alice@site.com");
         assert_eq!(read_dpr.secrets.password, "6 s3kr1t");
