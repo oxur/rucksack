@@ -74,7 +74,8 @@ pub fn create_parents(path: String) -> Result<path::PathBuf> {
     let ap = abs_path(path)?;
     log::debug!("Attempting to create directory {:}", ap.display());
     let parent: path::PathBuf = path::PathBuf::from(ap.parent().unwrap());
-    create_dirs(parent)
+    create_dirs(parent)?;
+    Ok(ap)
 }
 
 pub fn create_dirs(path: path::PathBuf) -> Result<path::PathBuf> {

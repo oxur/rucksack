@@ -61,15 +61,16 @@ pub fn new() -> DB {
     }
 }
 
-pub fn open(path: String, backups_path: String, store_pwd: String, salt: String) -> Result<DB> {
+pub fn open(filename: String, backups_path: String, store_pwd: String, salt: String) -> Result<DB> {
     log::debug!("Opening database ...");
     let mut hash_map: records::HashMap = DashMap::new();
     let mut store_hash = 0;
     let mut version = crate::version();
     let vsn_db: versioned::VersionedDB;
-    if std::path::Path::new(&path).exists() {
+    let file_path = util::create_parents(filename.clone())?;
+    if file_path.exists() {
         log::debug!("Creating encrypted DB ...");
-        let enc_db = encrypted::from_file(path.clone(), store_pwd.clone(), salt.clone())?;
+        let enc_db = encrypted::from_file(filename, store_pwd.clone(), salt.clone())?;
         log::debug!("Creating versioned DB ...");
         match versioned::deserialise(enc_db.decrypted()) {
             Ok(db) => {
@@ -87,6 +88,7 @@ pub fn open(path: String, backups_path: String, store_pwd: String, salt: String)
         // Decode the versioned DB's bytes to a hashmap
         hash_map = records::decode_hashmap(vsn_db.bytes(), version.clone())?;
     };
+    let path = file_path.display().to_string();
     log::debug!("Setting database path: {}", path);
     Ok(DB {
         path,
@@ -101,12 +103,17 @@ pub fn open(path: String, backups_path: String, store_pwd: String, salt: String)
 }
 
 impl DB {
+    pub fn backup_path(&self) -> String {
+        self.backups_path.clone()
+    }
+
     pub fn close(&self) -> Result<()> {
         log::debug!("Closing DB file ...");
         let path = util::create_parents(self.path())?;
         if path.exists() {
             log::debug!("Database file exists; backing up ...",);
-            let backup_file = backup::copy(self.path(), self.version().to_string())?;
+            let backup_file =
+                backup::copy(self.path(), self.backup_path(), self.version().to_string())?;
             log::debug!("Backed up file to {backup_file}");
         }
 

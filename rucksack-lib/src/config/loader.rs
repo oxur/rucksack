@@ -3,7 +3,7 @@ use confyg::Confygery;
 use super::{init, schema};
 
 pub fn load(config_file: String, log_level: String, name: String) -> schema::Config {
-    println!("Attempting to load {name} config file {config_file} ...");
+    // println!("Attempting to load {name} config file {config_file} ...");
     let defaults = schema::defaults();
     match init::config(config_file.clone()) {
         Ok(_) => (),

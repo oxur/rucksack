@@ -40,7 +40,7 @@ pub fn db(matches: &ArgMatches) -> Result<db::DB> {
         }
     }
     let backup_dir: String;
-    match matches.get_one::<String>("backup_dir") {
+    match matches.get_one::<String>("backup-dir") {
         Some(dir_path) => {
             log::debug!("Got database backups dir from flag: {}", dir_path);
             backup_dir = dir_path.to_owned();
