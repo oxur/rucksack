@@ -31,6 +31,8 @@ cicd-lint:
 
 check:
 	@cargo deny check
+	@cargo +nightly udeps
+
 test:
 	@RUST_BACKTRACE=1 cargo test
 
@@ -92,3 +94,7 @@ open-docs:
 setup-cargo-deny:
 	@echo ">> Setting up cargo deny ..."
 	@cargo install --locked cargo-deny && cargo deny init
+
+setup-udeps:
+	@echo ">> Setting up cargo udeps ..."
+	@cargo install cargo-udeps --locked

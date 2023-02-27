@@ -27,11 +27,7 @@ path-clean = "0.1.0"
 rand = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 shellexpand = "3.0.0"
-time = "0.3"
 twyg = "0.1"
 unix_mode = "0.1"
 uuid = {version = "1.2",  features = ["v4"]}
 versions = "4.1.0"
-
-[dev-dependencies]
-tempfile = { version = "3", default-features = false}
