@@ -79,8 +79,8 @@ Apache License, Version 2.0
 
 [//]: ---Named-Links---
 
-[logo]: https://github.com/oxur/rucksack/blob/main/rucksack/resources/images/logo-v1-x250.png
-[logo-large]: https://github.com/oxur/rucksack/blob/main/rucksack/resources/images/logo-v1-x1000.png
+[logo]: https://raw.githubusercontent.com/oxur/rucksack/main/rucksack/resources/images/logo-v1-x250.png
+[logo-large]: https://raw.githubusercontent.com/oxur/rucksack/main/rucksack/resources/images/logo-v1-x1000.png
 [build]: https://github.com/oxur/rucksack/actions/workflows/cicd.yml
 [build-badge]: https://github.com/oxur/rucksack/actions/workflows/cicd.yml/badge.svg
 [crate]: https://crates.io/crates/rucksack
