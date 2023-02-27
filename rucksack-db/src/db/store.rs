@@ -281,9 +281,7 @@ impl DB {
 
 #[cfg(test)]
 mod tests {
-    use tempfile::NamedTempFile;
-
-    use rucksack_lib::{time, util};
+    use rucksack_lib::time;
 
     use crate::testing;
 
@@ -291,19 +289,12 @@ mod tests {
     fn db_basics() {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
-        let temp_path = NamedTempFile::new().unwrap();
-        assert!(temp_path.path().exists());
-        let path_name = temp_path.path().display().to_string();
-        println!("Got path_name: {path_name}");
-        let backup_path = temp_path.path().parent().unwrap().join("backups");
-        let res = util::create_dirs(backup_path.clone());
-        assert!(res.is_ok());
-        assert!(backup_path.exists());
-        let backup_path_name = backup_path.display().to_string();
-        println!("Got backup_path: {backup_path_name}");
+        let (_, tempfile_name) = testing::db::tempfile();
+        let (_, backups_path_name) = testing::db::tempbackups();
+        println!("Got backups_path: {backups_path_name}");
         let tmp_db = super::open(
-            path_name.clone(),
-            backup_path_name.clone(),
+            tempfile_name.clone(),
+            backups_path_name.clone(),
             pwd.clone(),
             salt.clone(),
         )
@@ -315,7 +306,7 @@ mod tests {
         assert_eq!(re_dpr.secrets.user, "alice@site.com");
         assert_eq!(re_dpr.secrets.password, "6 s3kr1t");
         assert!(tmp_db.close().is_ok());
-        let tmp_db = super::open(path_name, backup_path_name, pwd, salt).unwrap();
+        let tmp_db = super::open(tempfile_name, backups_path_name, pwd, salt).unwrap();
         let read_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(read_dpr.secrets.user, "alice@site.com");
         assert_eq!(read_dpr.secrets.password, "6 s3kr1t");

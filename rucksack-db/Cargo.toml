@@ -29,12 +29,11 @@ log = "0.4"
 rand = "0.8"
 secrecy = "0.8"
 serde = { version = "1.0", features = ["derive"] }
+tempfile = "3"
 url = "2.3"
 uuid = {version = "1.2",  features = ["v4"]}
 versions = "4.1.0"
 
-[dev-dependencies]
-tempfile = "3"
 
 [dependencies.rucksack-lib]
 path = "../rucksack-lib"
