@@ -29,8 +29,12 @@ cicd-lint:
 	@cargo clippy --version
 	@cargo clippy --all-targets --all-features -- --no-deps -D clippy::all
 
+check:
+	@cargo deny check
 test:
 	@RUST_BACKTRACE=1 cargo test
+
+test-all: list check test
 
 integration:
 	@./tests/rucksack.sh
@@ -84,3 +88,7 @@ docs:
 
 open-docs:
 	@cargo doc --all-features --no-deps --workspace --open
+
+setup-cargo-deny:
+	@echo ">> Setting up cargo deny ..."
+	@cargo install --locked cargo-deny && cargo deny init
