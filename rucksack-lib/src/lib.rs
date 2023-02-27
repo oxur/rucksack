@@ -1,4 +1,5 @@
 pub mod config;
+pub mod file;
 pub mod generator;
 pub mod time;
 pub mod util;

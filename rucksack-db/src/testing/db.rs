@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use rucksack_lib::util;
+use rucksack_lib::file;
 
 pub fn tempdir() -> PathBuf {
     tempfile::tempdir().unwrap().path().to_owned()
@@ -12,7 +12,7 @@ pub fn tempfile() -> (PathBuf, String) {
     file.push("secrets");
     file.with_extension("db");
     let filename = file.display().to_string();
-    let res = util::create_parents(filename.clone());
+    let res = file::create_parents(filename.clone());
     assert!(res.is_ok());
     (file, filename)
 }
@@ -20,7 +20,7 @@ pub fn tempfile() -> (PathBuf, String) {
 pub fn tempbackups() -> (PathBuf, String) {
     let mut dir = tempdir();
     dir.push("backups");
-    let res = util::create_dirs(dir.clone());
+    let res = file::create_dirs(dir.clone());
     assert!(res.is_ok());
     assert!(dir.exists());
     assert!(dir.is_dir());

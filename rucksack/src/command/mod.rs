@@ -376,7 +376,7 @@ pub fn setup() -> Command {
 
 #[doc(hidden)]
 pub fn config_arg() -> Arg {
-    let config_file = rucksack_lib::util::config_file(constant::NAME);
+    let config_file = rucksack_lib::file::config_file(constant::NAME);
     Arg::new("config-file")
         .help("The path to the config file to use or create")
         .long("config-file")

@@ -37,4 +37,4 @@ versions = "4.1.0"
 
 [dependencies.rucksack-lib]
 path = "../rucksack-lib"
-version = "0.8.5"
+version = "0.9.0"

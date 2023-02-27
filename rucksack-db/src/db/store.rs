@@ -22,7 +22,7 @@ use std::fmt;
 use anyhow::{anyhow, Error, Result};
 use dashmap::DashMap;
 
-use rucksack_lib::util;
+use rucksack_lib::{file, util};
 
 use crate::records;
 use crate::records::{DecryptedRecord, EncryptedRecord, Metadata};
@@ -67,7 +67,7 @@ pub fn open(filename: String, backups_path: String, store_pwd: String, salt: Str
     let mut store_hash = 0;
     let mut version = crate::version();
     let vsn_db: versioned::VersionedDB;
-    let file_path = util::create_parents(filename.clone())?;
+    let file_path = file::create_parents(filename.clone())?;
     if file_path.exists() {
         log::debug!("Creating encrypted DB ...");
         let enc_db = encrypted::from_file(filename, store_pwd.clone(), salt.clone())?;
@@ -109,7 +109,7 @@ impl DB {
 
     pub fn close(&self) -> Result<()> {
         log::debug!("Closing DB file ...");
-        let path = util::create_parents(self.path())?;
+        let path = file::create_parents(self.path())?;
         if path.exists() {
             log::debug!("Database file exists; backing up ...",);
             let backup_file =

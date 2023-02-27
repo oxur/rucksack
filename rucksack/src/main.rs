@@ -7,7 +7,7 @@ use rucksack::command as cli;
 use rucksack::command::{add, backup, export, gen, import, list, rm, set, show};
 use rucksack::constant;
 use rucksack::setup;
-use rucksack_lib::{config, util};
+use rucksack_lib::{config, file, util};
 
 fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
     log::debug!("Preparing to dispatch based upon (sub)command ...");
@@ -17,7 +17,7 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
             "Checking for backup dir {:?} ...",
             app.backup_dir().display()
         );
-        util::create_dirs(backup_dir)?;
+        file::create_dirs(backup_dir)?;
         log::info!("Created backup dir.");
     }
     match matches.subcommand() {
@@ -114,7 +114,7 @@ fn main() -> Result<()> {
     log::debug!("Setting up database ...");
     let db = setup::db(subcmd_matches)?;
     cfg.rucksack.db_file = db.path();
-    cfg.rucksack.data_dir = util::dir_parent(db.path());
+    cfg.rucksack.data_dir = file::dir_parent(db.path());
     log::debug!("Setting up rucksack application ...");
     let app = rucksack::app::new(cfg, db);
     run(&matches, &app)

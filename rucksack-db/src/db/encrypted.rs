@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 use secrecy::{ExposeSecret, Secret, SecretString};
 
-use rucksack_lib::util;
+use rucksack_lib::file;
 
 use crate::crypto;
 
@@ -107,7 +107,7 @@ impl EncryptedDB {
 
     pub fn read(&mut self) -> Result<()> {
         log::trace!("Byte len before: {}", self.bytes.len());
-        self.bytes = util::read_file(self.path())?;
+        self.bytes = file::read(self.path())?;
         log::trace!("Byte len after: {}", self.bytes.len());
         Ok(())
     }
@@ -118,6 +118,6 @@ impl EncryptedDB {
 
     pub fn write(&self) -> Result<()> {
         log::debug!("Writing encrypted DB ...");
-        util::write_file(self.bytes(), self.path())
+        file::write(self.bytes(), self.path())
     }
 }

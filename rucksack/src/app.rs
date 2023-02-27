@@ -1,7 +1,7 @@
 use std::path;
 
 use rucksack_db as store;
-use rucksack_lib::{config, util};
+use rucksack_lib::{config, file};
 
 #[derive(Debug)]
 pub struct App {
@@ -20,7 +20,7 @@ impl App {
             path.push(self.cfg.rucksack.backup_dir.clone());
             return path;
         }
-        util::backup_dir(&self.name())
+        file::backup_dir(&self.name())
     }
 
     pub fn config_dir(&self) -> path::PathBuf {
@@ -29,14 +29,14 @@ impl App {
             path.push(self.cfg.rucksack.cfg_dir.clone());
             return path;
         }
-        util::config_dir(&self.name())
+        file::config_dir(&self.name())
     }
 
     pub fn config_file(&self) -> String {
         if self.cfg.rucksack.cfg_file != *"" {
             return self.cfg.rucksack.cfg_file.clone();
         }
-        util::config_file(&self.name())
+        file::config_file(&self.name())
     }
 
     pub fn data_dir(&self) -> path::PathBuf {
@@ -45,14 +45,14 @@ impl App {
             path.push(self.cfg.rucksack.data_dir.clone());
             return path;
         }
-        util::data_dir(&self.name())
+        file::data_dir(&self.name())
     }
 
     pub fn db_file(&self) -> String {
         if self.cfg.rucksack.db_file != *"" {
             return self.cfg.rucksack.db_file.clone();
         }
-        util::db_file(&self.name())
+        file::db_file(&self.name())
     }
 
     pub fn db_version(&self) -> versions::SemVer {

@@ -44,7 +44,7 @@ use anyhow::Result;
 use clap::ArgMatches;
 
 use rucksack_db::records;
-use rucksack_lib::util;
+use rucksack_lib::file;
 
 use crate::app::App;
 
@@ -58,7 +58,7 @@ pub fn config_file(_matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 pub fn config(_matches: &ArgMatches, app: &App) -> Result<()> {
-    match util::read_file(app.config_file()) {
+    match file::read(app.config_file()) {
         Ok(bytes) => {
             println!("\n{}", str::from_utf8(bytes.as_ref()).unwrap());
         }

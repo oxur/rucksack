@@ -16,7 +16,7 @@ use rucksack_db::csv::writer;
 use rucksack_db::csv::{chrome, firefox};
 use rucksack_db::records::DEFAULT_CATEGORY;
 use rucksack_db::{records, DecryptedRecord, Status};
-use rucksack_lib::util::write_file;
+use rucksack_lib::file;
 
 use crate::app::App;
 
@@ -72,7 +72,7 @@ fn to_chrome_csv(matches: &ArgMatches, app: &App, csv_path: String) -> Result<()
     match wtr.into_inner() {
         Ok(data) => {
             print_report(count, app.db.hash_map().len());
-            write_file(data, csv_path)
+            file::write(data, csv_path)
         }
         Err(e) => Err(anyhow!(e)),
     }
@@ -94,7 +94,7 @@ fn to_firefox_csv(matches: &ArgMatches, app: &App, csv_path: String) -> Result<(
     match wtr.into_inner() {
         Ok(data) => {
             print_report(count, app.db.hash_map().len());
-            write_file(data, csv_path)
+            file::write(data, csv_path)
         }
         Err(e) => Err(anyhow!(e)),
     }

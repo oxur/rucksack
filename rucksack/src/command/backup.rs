@@ -6,7 +6,7 @@ use anyhow::Result;
 use clap::ArgMatches;
 
 // use rucksack_db::records;
-use rucksack_lib::util;
+use rucksack_lib::file;
 
 use crate::app::App;
 
@@ -22,7 +22,7 @@ pub fn delete(_matches: &ArgMatches, _app: &App) -> Result<()> {
 pub fn list(_matches: &ArgMatches, app: &App) -> Result<()> {
     let backup_path_name = app.backup_dir().display().to_string();
     log::debug!("Preparing to list backup DB files in {:}", backup_path_name);
-    let mut backups = util::files(backup_path_name)?;
+    let mut backups = file::files(backup_path_name)?;
     backups.sort();
     backups.reverse();
     for (created, name, perms) in backups {
