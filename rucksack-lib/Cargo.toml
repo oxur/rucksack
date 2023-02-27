@@ -17,7 +17,7 @@ name = "rucksack_lib"
 anyhow = "1.0"
 base64 = "0.21"
 bincode = "2.0.0-rc.2"
-chrono = "0.4"
+chrono = { version = "0.4", default-features = false, features = ["serde"] }
 confyg = "0.1"
 dirs = "4.0.0"
 lipsum = "0.8"
@@ -27,9 +27,10 @@ path-clean = "0.1.0"
 rand = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 shellexpand = "3.0.0"
+time = "0.3"
 twyg = "0.1"
 uuid = {version = "1.2",  features = ["v4"]}
 versions = "4.1.0"
 
 [dev-dependencies]
-tempfile = "3"
+tempfile = { version = "3", default-features = false}
