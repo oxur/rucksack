@@ -2,6 +2,7 @@
 //!
 // use std::collections::HashMap;
 // use std::str;
+use anyhow::anyhow;
 use anyhow::Result;
 use clap::ArgMatches;
 
@@ -15,9 +16,15 @@ use super::output::option::Opts;
 use super::output::result;
 use super::output::table;
 
-pub fn delete(_matches: &ArgMatches, _app: &App) -> Result<()> {
-    todo!()
-    // Ok(())
+pub fn delete(matches: &ArgMatches, app: &App) -> Result<()> {
+    let backup_name = matches.get_one::<String>("name").unwrap();
+    log::debug!("Preparing to delete backup DB file '{}'", backup_name);
+    let file_path = app.backup_dir().join(backup_name);
+    if !file_path.exists() {
+        log::error!("Cannot find file {}", file_path.display());
+        return Err(anyhow!("backup file '{}' does not exist", backup_name));
+    }
+    file::delete(file_path)
 }
 
 pub fn list(_matches: &ArgMatches, app: &App) -> Result<()> {

@@ -82,6 +82,16 @@ pub fn db_file(project: &str) -> String {
     path.to_str().unwrap().to_string()
 }
 
+pub fn delete(file_path: path::PathBuf) -> Result<()> {
+    match fs::remove_file(file_path) {
+        Ok(x) => {
+            log::debug!("Deleted file");
+            Ok(x)
+        }
+        Err(e) => Err(anyhow!(e)),
+    }
+}
+
 pub fn dir_parent(dir: String) -> String {
     let mut parent: Vec<&str> = dir.split(std::path::MAIN_SEPARATOR).collect();
     parent.pop();

@@ -10,7 +10,7 @@ use rucksack::setup;
 use rucksack_lib::{config, file, util};
 
 fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
-    log::debug!("Preparing to dispatch based upon (sub)command ...");
+    log::debug!("Dispatching based upon (sub)command ...");
     let backup_dir = app.backup_dir();
     if !backup_dir.exists() {
         log::debug!(

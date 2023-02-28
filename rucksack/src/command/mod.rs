@@ -72,7 +72,10 @@ pub fn setup() -> Command {
             .arg(db::backup_dir())
             .subcommand(
                 Command::new("delete")
-                    .about("Delete one ore more backup files"))
+                    .about("Delete one ore more backup files")
+                    .arg(Arg::new("name")
+                        .help("The name of the backup to delete (get the name from the 'list' command)")
+                        .required(true)))
             .subcommand(
                 Command::new("list")
                     .about("List all the backup files"))
