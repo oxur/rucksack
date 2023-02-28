@@ -477,6 +477,13 @@ header "List grouped-by name"
     --group-by name \
     --decrypt
 
+header "Get the names and permissions for all backup files"
+
+./bin/rucksack backup list \
+    --config-file "$CFG_FILE" \
+    --db "$DB_FILE" \
+    --db-pass 1234
+
 # TODO: Uncomment when JSON exports land ... see ticket:
 # * https://github.com/oxur/rucksack/issues/71
 

@@ -65,23 +65,21 @@ pub fn open(filename: String, backups_path: String, store_pwd: String, salt: Str
     log::debug!("Opening database ...");
     let mut hash_map: records::HashMap = DashMap::new();
     let mut store_hash = 0;
-    let mut version = crate::version();
+    let mut version = records::version();
     let vsn_db: versioned::VersionedDB;
     let file_path = file::create_parents(filename.clone())?;
     if file_path.exists() {
         log::debug!("Creating encrypted DB ...");
         let enc_db = encrypted::from_file(filename, store_pwd.clone(), salt.clone())?;
         log::debug!("Creating versioned DB ...");
-        match versioned::deserialise(enc_db.decrypted()) {
-            Ok(db) => {
-                vsn_db = db;
-            }
+        vsn_db = match versioned::deserialise(enc_db.decrypted()) {
+            Ok(db) => db,
             Err(_) => {
                 log::info!("Given database appears to be non-versioned; be sure to upgrade to the latest micro release of our old version before continuing ...");
                 log::trace!("Bytes: {:?}", enc_db.decrypted());
-                vsn_db = versioned::from_bytes(enc_db.decrypted());
+                versioned::from_bytes(enc_db.decrypted())
             }
-        }
+        };
         log::debug!("Getting database hash ...");
         store_hash = vsn_db.hash();
         version = vsn_db.version();
@@ -159,26 +157,18 @@ impl DB {
         Ok(decrypted)
     }
 
-    fn serialise(&self) -> Result<Vec<u8>> {
-        log::debug!("Serialising data ...");
-        let mut data: Vec<(String, EncryptedRecord)> = Vec::new();
-        for i in self.iter() {
-            data.push((i.key().clone(), i.value().clone()))
+    // Added in v0.7.0
+    pub fn delete(&self, key: String) -> Option<bool> {
+        log::debug!("Deleting record with key {key} ...");
+        match self.hash_map.remove(&key) {
+            Some(_) => Some(true),
+            None => Some(false),
         }
-        log::trace!("Converted hashmap to vec.");
-        data.sort_by_key(|k| k.0.clone());
-        log::trace!("Sorted vec.");
-        match bincode::encode_to_vec(data, util::bincode_cfg()) {
-            Ok(encoded) => {
-                log::trace!("Encoded vector.");
-                Ok(encoded)
-            }
-            Err(e) => {
-                let msg = format!("couldn't encode DB hashmap ({e:?})");
-                log::error!("{}", msg);
-                Err(anyhow!("{}", msg))
-            }
-        }
+    }
+
+    // Added in v0.7.0
+    pub fn enabled(&self) -> bool {
+        self.enabled
     }
 
     pub fn get(&self, key: String) -> Option<DecryptedRecord> {
@@ -226,6 +216,28 @@ impl DB {
         self.salt.clone()
     }
 
+    fn serialise(&self) -> Result<Vec<u8>> {
+        log::debug!("Serialising data ...");
+        let mut data: Vec<(String, EncryptedRecord)> = Vec::new();
+        for i in self.iter() {
+            data.push((i.key().clone(), i.value().clone()))
+        }
+        log::trace!("Converted hashmap to vec.");
+        data.sort_by_key(|k| k.0.clone());
+        log::trace!("Sorted vec.");
+        match bincode::encode_to_vec(data, util::bincode_cfg()) {
+            Ok(encoded) => {
+                log::trace!("Encoded vector.");
+                Ok(encoded)
+            }
+            Err(e) => {
+                let msg = format!("couldn't encode DB hashmap ({e:?})");
+                log::error!("{}", msg);
+                Err(anyhow!("{}", msg))
+            }
+        }
+    }
+
     pub fn store_pwd(&self) -> String {
         self.store_pwd.clone()
     }
@@ -261,19 +273,7 @@ impl DB {
         }
     }
 
-    // V2 schema additions (rucksack >= v0.7.0)
-    pub fn delete(&self, key: String) -> Option<bool> {
-        log::debug!("Deleting record with key {key} ...");
-        match self.hash_map.remove(&key) {
-            Some(_) => Some(true),
-            None => Some(false),
-        }
-    }
-
-    pub fn enabled(&self) -> bool {
-        self.enabled
-    }
-
+    // Added in v0.7.0
     pub fn version(&self) -> versions::SemVer {
         self.version.clone()
     }

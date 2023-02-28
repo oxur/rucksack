@@ -14,3 +14,7 @@ pub use v090::{
     secrets_from_user_pass, types, DecryptedRecord, EncryptedRecord, HashMap, History, Kind,
     Metadata, Secrets, Status, Tag, ANY_CATEGORY, DEFAULT_CATEGORY, VERSION,
 };
+
+pub fn version() -> versions::SemVer {
+    versions::SemVer::new(VERSION).unwrap()
+}
