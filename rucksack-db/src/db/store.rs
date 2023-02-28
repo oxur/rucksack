@@ -111,7 +111,7 @@ impl DB {
         log::debug!("Closing DB file ...");
         let path = file::create_parents(self.path())?;
         if path.exists() {
-            log::debug!("Database file exists; backing up ...",);
+            log::debug!("Database file exists; backing up ...");
             let backup_file =
                 backup::copy(self.path(), self.backup_path(), self.version().to_string())?;
             log::debug!("Backed up file to {backup_file}");

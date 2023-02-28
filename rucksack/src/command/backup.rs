@@ -6,7 +6,7 @@ use anyhow::anyhow;
 use anyhow::Result;
 use clap::ArgMatches;
 
-// use rucksack_db::records;
+use rucksack_db::db::backup;
 use rucksack_lib::file;
 
 use crate::app::App;
@@ -57,7 +57,22 @@ pub fn restore(_matches: &ArgMatches, _app: &App) -> Result<()> {
     // Ok(())
 }
 
-pub fn run(_matches: &ArgMatches, _app: &App) -> Result<()> {
-    todo!()
-    // Ok(())
+pub fn run(_matches: &ArgMatches, app: &App) -> Result<()> {
+    log::debug!("Backing up database ...");
+    let backup_file: String;
+    let r = backup::copy(
+        app.db_file(),
+        app.backup_dir().display().to_string(),
+        app.db_version().to_string(),
+    );
+    match r {
+        Ok(b) => {
+            backup_file = b;
+        }
+        Err(e) => {
+            return Err(anyhow!(e));
+        }
+    };
+    log::debug!("Backed up database to {backup_file}");
+    Ok(())
 }

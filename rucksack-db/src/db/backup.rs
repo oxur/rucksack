@@ -1,3 +1,5 @@
+use std::fs;
+
 use anyhow::{anyhow, Result};
 
 use rucksack_lib::{file, time};
@@ -9,7 +11,7 @@ pub fn copy(src_file: String, dest_dir: String, version: String) -> Result<Strin
         file_path.file_name().unwrap().to_str().unwrap().to_string(),
         version,
     ));
-    match std::fs::copy(src_file.clone(), bu_path.clone()) {
+    match fs::copy(src_file.clone(), bu_path.clone()) {
         Ok(_) => Ok(bu_path.display().to_string()),
         Err(e) => {
             let msg = "Could not copy file";
