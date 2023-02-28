@@ -289,16 +289,15 @@ mod tests {
     fn db_basics() {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
-        let (_, tempfile_name) = testing::db::tempfile();
-        let (_, backups_path_name) = testing::db::tempbackups();
-        println!("Got backups_path: {backups_path_name}");
-        let tmp_db = super::open(
-            tempfile_name.clone(),
-            backups_path_name.clone(),
-            pwd.clone(),
-            salt.clone(),
-        )
-        .unwrap();
+        let mut db_handler = testing::db::new();
+        let mut r = db_handler.setup();
+        assert!(r.is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+        println!("Got db_file: {db_file}");
+        println!("Got backups_path: {backups}");
+        let tmp_db =
+            super::open(db_file.clone(), backups.clone(), pwd.clone(), salt.clone()).unwrap();
         assert!(tmp_db.version() > versions::SemVer::new("0.8.0").unwrap());
         let dpr = testing::data::plaintext_record_v090();
         tmp_db.insert(dpr.clone());
@@ -306,12 +305,14 @@ mod tests {
         assert_eq!(re_dpr.secrets.user, "alice@site.com");
         assert_eq!(re_dpr.secrets.password, "6 s3kr1t");
         assert!(tmp_db.close().is_ok());
-        let tmp_db = super::open(tempfile_name, backups_path_name, pwd, salt).unwrap();
+        let tmp_db = super::open(db_file, backups, pwd, salt).unwrap();
         let read_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(read_dpr.secrets.user, "alice@site.com");
         assert_eq!(read_dpr.secrets.password, "6 s3kr1t");
         assert_eq!(read_dpr.history.len(), 2);
         assert_eq!(read_dpr.history[0].secrets.password, "4 s3kr1t");
         assert_eq!(read_dpr.history[1].secrets.password, "5 s3kr1t");
+        r = db_handler.teardown();
+        assert!(r.is_ok());
     }
 }
