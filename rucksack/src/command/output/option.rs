@@ -1,5 +1,6 @@
 #[derive(Clone, Debug, Default)]
 pub struct Opts {
+    pub backup_files: bool,
     pub categories: bool,
     pub decrypted: bool,
     pub group_by_category: bool,

@@ -16,6 +16,7 @@ pub enum Column {
     LastUpdated,
     Name,
     Password,
+    Permissions,
     Score,
     Status,
     Synced,

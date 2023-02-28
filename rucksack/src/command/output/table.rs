@@ -50,6 +50,8 @@ impl Table {
             self.columns = vec![Column::Tags];
         } else if self.opts.categories {
             self.columns = vec![Column::Category];
+        } else if self.opts.backup_files {
+            self.columns = vec![Column::Name, Column::Permissions];
         } else if self.opts.group_by_name {
             if self.opts.with_status {
                 self.columns = vec![
