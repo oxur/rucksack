@@ -53,22 +53,22 @@ pub fn list(_matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 pub fn restore(_matches: &ArgMatches, _app: &App) -> Result<()> {
+    // TODO: get the latest backup
+    // TODO: before a backup
+    // TODO: replace the db file with the first latest backup
     todo!()
     // Ok(())
 }
 
 pub fn run(_matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Backing up database ...");
-    let backup_file: String;
     let r = backup::copy(
         app.db_file(),
         app.backup_dir().display().to_string(),
         app.db_version().to_string(),
     );
-    match r {
-        Ok(b) => {
-            backup_file = b;
-        }
+    let backup_file: String = match r {
+        Ok(b) => b,
         Err(e) => {
             return Err(anyhow!(e));
         }
