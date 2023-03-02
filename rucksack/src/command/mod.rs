@@ -78,7 +78,13 @@ pub fn setup() -> Command {
                         .required(true)))
             .subcommand(
                 Command::new("list")
-                    .about("List all the backup files"))
+                    .about("List all the backup files")
+                    .arg(
+                        Arg::new("latest")
+                            .help("List only the most recent backup file")
+                            .long("latest")
+                            .action(ArgAction::SetTrue),
+                    ))
             .subcommand(
                 Command::new("restore")
                     .about("Restore the DB from a backup "))

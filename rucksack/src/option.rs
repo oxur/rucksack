@@ -77,6 +77,10 @@ pub fn key(matches: &ArgMatches) -> String {
     )
 }
 
+pub fn latest(matches: &ArgMatches) -> bool {
+    *matches.get_one::<bool>("latest").unwrap_or(&false)
+}
+
 pub fn name(matches: &ArgMatches) -> String {
     match matches.get_one::<String>("name") {
         Some(n) => n.to_string(),
@@ -126,7 +130,7 @@ pub fn record_pwd(matches: &ArgMatches) -> Secret<String> {
 }
 
 pub fn record_pwd_revealed(matches: &ArgMatches) -> String {
-    reveal(record_pwd(matches))
+    reveal_it(record_pwd(matches))
 }
 
 pub fn record_state(matches: &ArgMatches) -> Status {
@@ -139,7 +143,11 @@ pub fn record_state(matches: &ArgMatches) -> Status {
     }
 }
 
-fn reveal(pwd: SecretString) -> String {
+pub fn reveal(matches: &ArgMatches) -> bool {
+    *matches.get_one::<bool>("reveal").unwrap_or(&false)
+}
+
+fn reveal_it(pwd: SecretString) -> String {
     pwd.expose_secret().to_string()
 }
 

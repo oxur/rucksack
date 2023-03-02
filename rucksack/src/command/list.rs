@@ -143,6 +143,8 @@ use super::output::table;
 
 // TODO: once there's config for it, pull from config and pass
 // options here from top-level app.
+// TODO: or not, depending upon the outcome of this ticket:
+// * https://github.com/oxur/rucksack/issues/92
 pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
     process_records(
         matches,
@@ -160,6 +162,8 @@ pub fn backups(matches: &ArgMatches, app: &App) -> Result<()> {
 
 // TODO: once there's config for it, pull from config and pass
 // options here from top-level app.
+// TODO: or not, depending upon the outcome of this ticket:
+// * https://github.com/oxur/rucksack/issues/92
 pub fn deleted(matches: &ArgMatches, app: &App) -> Result<()> {
     process_records(
         matches,
@@ -185,10 +189,9 @@ pub fn keys(matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
-    let reveal = matches.get_one::<bool>("reveal").unwrap_or(&false);
     let opts = Opts {
         decrypted: true,
-        reveal: *reveal,
+        reveal: option::reveal(matches),
         password_history: true,
         ..Default::default()
     };

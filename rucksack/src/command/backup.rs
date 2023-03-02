@@ -28,11 +28,12 @@ pub fn delete(matches: &ArgMatches, app: &App) -> Result<()> {
     file::delete(backup_path)
 }
 
-pub fn list(_matches: &ArgMatches, app: &App) -> Result<()> {
+pub fn list(matches: &ArgMatches, app: &App) -> Result<()> {
     let backup_dir = app.backup_dir();
     log::debug!("Preparing to list backup DB files in {backup_dir:}");
     let opts = Opts {
         backup_files: true,
+        latest_only: option::latest(matches),
         ..Default::default()
     };
     let mut backups = file::files(backup_dir)?;
@@ -40,6 +41,9 @@ pub fn list(_matches: &ArgMatches, app: &App) -> Result<()> {
     backups.reverse();
     let mut results: Vec<result::ResultRow> = Vec::new();
     for (name, _, perms) in backups {
+        if opts.latest_only && results.len() == 1 {
+            break;
+        }
         let mut r = result::ResultRow {
             ..Default::default()
         };

@@ -8,6 +8,7 @@ pub struct Opts {
     pub group_by_name: bool,
     pub group_by_password: bool,
     pub kinds: bool,
+    pub latest_only: bool,
     pub only_deleted: bool,
     pub only_keys: bool,
     pub password_history: bool,

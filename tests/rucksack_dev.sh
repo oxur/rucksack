@@ -541,6 +541,15 @@ header "Get the names and permissions for all backup files (via the alias)"
     --db "$DB_FILE" \
     --db-pass 1234
 
+header "Show only the latest backup file"
+
+./bin/rucksack backup list \
+    --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --latest
+
 header "Show the testing backups dir"
 
 BU_DIR=$(./bin/rucksack show backup-dir \
