@@ -15,10 +15,19 @@ pub struct Rucksack {
     // pub backup_dir: String,
 }
 
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[allow(unused)]
+pub struct Retention {
+    pub purge_on_shutdown: bool,
+    pub archive_deletes: bool,
+    pub delete_inactive: bool,
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[allow(unused)]
 pub struct Config {
     pub logging: twyg::LoggerOpts,
+    pub retention: Retention,
     pub rucksack: Rucksack,
 }
 
@@ -29,6 +38,9 @@ pub fn defaults() -> Config {
             file: None,
             level: "error".to_string(),
             report_caller: true,
+        },
+        retention: Retention {
+            ..Default::default()
         },
         rucksack: Rucksack {
             ..Default::default()
