@@ -30,8 +30,7 @@
 //! rucksack backup restore <name from list command>
 //! ```
 //!
-use anyhow::anyhow;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use clap::ArgMatches;
 
 use rucksack_db::db::backup;

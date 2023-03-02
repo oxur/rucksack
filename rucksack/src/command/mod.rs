@@ -9,6 +9,7 @@ pub mod add;
 #[doc(hidden)]
 pub mod arg;
 pub mod backup;
+pub mod config;
 pub mod export;
 pub mod gen;
 pub mod import;

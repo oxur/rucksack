@@ -4,10 +4,10 @@ use anyhow::{Context, Result};
 use clap::ArgMatches;
 
 use rucksack::command as cli;
-use rucksack::command::{add, backup, export, gen, import, list, rm, set, show};
+use rucksack::command::{add, backup, config, export, gen, import, list, rm, set, show};
 use rucksack::constant;
 use rucksack::setup;
-use rucksack_lib::{config, file, util};
+use rucksack_lib::{file, util};
 
 fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
     log::debug!("Dispatching based upon (sub)command ...");
@@ -28,7 +28,12 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
         Some(("backups", backup_matches)) => match backup_matches.subcommand() {
             Some(("list", list_matches)) => backup::list(list_matches, app)?,
             Some((&_, _)) => todo!(),
-            None => backup::run(backup_matches, app)?,
+            None => todo!(),
+        },
+        Some(("config", config_matches)) => match config_matches.subcommand() {
+            Some(("init", init_matches)) => config::init(init_matches, app)?,
+            Some((&_, _)) => todo!(),
+            None => todo!(),
         },
         Some(("export", export_matches)) => export::new(export_matches, app)?,
         Some(("gen", gen_matches)) => gen::new(gen_matches)?,
@@ -74,6 +79,18 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
     Ok(())
 }
 
+fn shutdown(_matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
+    log::debug!("Performing shutdown operations ...");
+    if app.cfg.retention.purge_on_shutdown {
+        todo!();
+    }
+    if app.cfg.retention.delete_inactive {
+        // TODO: iterate through all inactive records and flag them as deleted
+        todo!();
+    }
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let mut rucksack = cli::setup();
     let matches = rucksack.clone().get_matches();
@@ -85,7 +102,7 @@ fn main() -> Result<()> {
     if let Some(level) = matches.get_one::<String>("log-level") {
         log_level = level.to_string();
     }
-    let cfg = config::load(config_file, log_level, constant::NAME.to_string());
+    let cfg = rucksack_lib::config::load(config_file, log_level, constant::NAME.to_string());
     match twyg::setup_logger(&cfg.logging) {
         Ok(_) => {}
         Err(error) => {
@@ -124,5 +141,6 @@ fn main() -> Result<()> {
     // cfg.rucksack.data_dir = file::dir_parent(db.path());
     log::debug!("Setting up rucksack application ...");
     let app = rucksack::app::new(cfg, db);
-    run(&matches, &app)
+    run(&matches, &app)?;
+    shutdown(&matches, &app)
 }
