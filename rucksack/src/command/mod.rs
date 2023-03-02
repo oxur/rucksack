@@ -14,8 +14,6 @@ pub mod export;
 pub mod gen;
 pub mod import;
 pub mod list;
-#[doc(hidden)]
-pub mod output;
 pub mod rm;
 pub mod set;
 pub mod show;

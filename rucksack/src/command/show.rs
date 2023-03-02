@@ -47,10 +47,7 @@ use rucksack_db::records;
 use rucksack_lib::file;
 
 use crate::app::App;
-
-use super::output::option;
-use super::output::result;
-use super::output::table;
+use crate::output::{option, result, table};
 
 pub fn backup_dir(_matches: &ArgMatches, app: &App) -> Result<()> {
     println!("\n{}\n", app.backup_dir());

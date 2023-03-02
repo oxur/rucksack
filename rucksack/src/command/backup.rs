@@ -38,11 +38,7 @@ use rucksack_lib::file;
 
 use crate::app::App;
 use crate::option;
-
-use super::output::column::Column;
-use super::output::option::Opts;
-use super::output::result;
-use super::output::table;
+use crate::output::{result, table, Column, Opts};
 
 pub fn delete(matches: &ArgMatches, app: &App) -> Result<()> {
     let backup_path = app.backup_path();

@@ -68,6 +68,8 @@ pub mod constant;
 #[doc(hidden)]
 pub mod option;
 #[doc(hidden)]
+pub mod output;
+#[doc(hidden)]
 pub mod prompt;
 #[doc(hidden)]
 pub mod query;

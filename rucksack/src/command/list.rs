@@ -133,13 +133,10 @@ use rucksack_lib::time;
 
 use crate::app::App;
 use crate::option;
+use crate::output::{result, table, Column, Opts};
 use crate::query;
 
 use super::backup;
-use super::output::column::Column;
-use super::output::option::Opts;
-use super::output::result;
-use super::output::table;
 
 // TODO: once there's config for it, pull from config and pass
 // options here from top-level app.
