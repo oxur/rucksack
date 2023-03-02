@@ -48,6 +48,7 @@ header "Add a new record (shelly)"
 
 ./bin/rucksack add \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --url http://example.com \
@@ -56,6 +57,7 @@ header "Add a new record (shelly)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234
 
@@ -63,6 +65,7 @@ header "Show DB file format version"
 
 ./bin/rucksack show db-version \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234
 
@@ -70,6 +73,7 @@ header "Change the record user name"
 
 ./bin/rucksack set user \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --url http://example.com \
@@ -78,6 +82,7 @@ header "Change the record user name"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234
 
@@ -85,6 +90,7 @@ header "List all records (with decrypted data)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt
@@ -93,6 +99,7 @@ header "Add a new record (sully)"
 
 ./bin/rucksack add \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --url http://boo.co \
@@ -102,6 +109,7 @@ header "Add a new record (sully)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234
 
@@ -109,6 +117,7 @@ header "List all records (with decrypted data and revealed passwords)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -118,6 +127,7 @@ header "Filter records with 'exa' (decrypted data and revealed passwords)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt  \
@@ -128,6 +138,7 @@ header "Filter records with 'boo' (decrypted data and revealed passwords)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -138,6 +149,7 @@ header "Remove a record (clammy)"
 
 ./bin/rucksack rm \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --url http://example.com \
@@ -145,6 +157,7 @@ header "Remove a record (clammy)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234
 
@@ -152,6 +165,7 @@ header "List deleted records"
 
 ./bin/rucksack list deleted \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234
 
@@ -159,12 +173,14 @@ header "Change the URL for a record"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --filter sully
 
 ./bin/rucksack set url \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --user sully \
@@ -173,6 +189,7 @@ header "Change the URL for a record"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --filter sully
@@ -181,6 +198,7 @@ header "Add a records for different 'kinds' and categories"
 
 ./bin/rucksack add \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --url http://example.com \
@@ -192,6 +210,7 @@ header "Add a records for different 'kinds' and categories"
 
 ./bin/rucksack add \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --url http://example.com \
@@ -205,6 +224,7 @@ header "Add a records for different 'kinds' and categories"
 
 ./bin/rucksack add \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --url http://example.com \
@@ -219,6 +239,7 @@ header "Add a records for different 'kinds' and categories"
 
 ./bin/rucksack add \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --url http://example.com \
@@ -232,6 +253,7 @@ header "Add a records for different 'kinds' and categories"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -241,6 +263,7 @@ header "Show just password types"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -251,6 +274,7 @@ header "Show just account types"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -261,6 +285,7 @@ header "Show just asymmetric-crypto types"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -271,6 +296,7 @@ header "Show just certificate types"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -281,6 +307,7 @@ header "Show just service credential types"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -290,12 +317,14 @@ header "Show just service credential types"
 header "Show the list of supported types"
 
 ./bin/rucksack show types \
-    --config-file "$CFG_FILE"
+    --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR"
 
 header "Show just 'default' category"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -306,6 +335,7 @@ header "Show just 'personal' category"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -316,6 +346,7 @@ header "Show just 'business' category"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -326,6 +357,7 @@ header "Show all categories"
 
 ./bin/rucksack show categories \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234
 
@@ -333,6 +365,7 @@ header "Show just 'monster'-tagged"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -343,6 +376,7 @@ header "Show just records tagged with 'server' (using --all-tags)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -353,6 +387,7 @@ header "Show just records tagged with 'server' (using --any-tags)"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -363,6 +398,7 @@ header "Show all tagged with 'server' and 'cloud'"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -373,6 +409,7 @@ header "Show all tagged with 'server' or 'cloud'"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -383,6 +420,7 @@ header "Show all tags"
 
 ./bin/rucksack show tags \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234
 
@@ -390,6 +428,7 @@ header "List just the keys"
 
 ./bin/rucksack list keys \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234
 
@@ -397,6 +436,7 @@ header "Show password history"
 
 ./bin/rucksack set password \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --user sully \
@@ -405,6 +445,7 @@ header "Show password history"
 
 ./bin/rucksack set password \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --user sully \
@@ -413,6 +454,7 @@ header "Show password history"
 
 ./bin/rucksack list passwords \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --user sully \
@@ -422,6 +464,7 @@ header "Show password history (revealed)"
 
 ./bin/rucksack list passwords \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --user sully \
@@ -436,6 +479,7 @@ EXPORT_FILE=exports/secrets.csv
 rm -f $EXPORT_FILE
 ./bin/rucksack export \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --type "password" \
@@ -447,6 +491,7 @@ header "Import password export"
 echo
 ./bin/rucksack import \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     -f $EXPORT_FILE
@@ -456,6 +501,7 @@ header "List with latest access counts"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234
 
@@ -463,6 +509,7 @@ header "List grouped-by password"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --group-by password \
@@ -472,6 +519,7 @@ header "List grouped-by name"
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --group-by name \
@@ -481,6 +529,25 @@ header "Get the names and permissions for all backup files"
 
 ./bin/rucksack backup list \
     --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
+    --db "$DB_FILE" \
+    --db-pass 1234
+
+header "Show the testing backups dir"
+
+BU_DIR=$(./bin/rucksack show backup-dir \
+    --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
+    --db "$DB_FILE" | xargs)
+echo
+echo $BU_DIR
+echo
+
+header "Remove the testing the backups dir"
+rm -rf "$BU_DIR"
+./bin/rucksack backup list \
+    --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234
 
@@ -490,11 +557,13 @@ header "Get the names and permissions for all backup files"
 # echo
 # ./bin/rucksack list \
 #     --config-file "$CFG_FILE" \
+#     --backup-dir "$BACKUP_DIR" \
 #     --db "$DB_FILE" \
 #     --db-pass 1234
 
 # ./bin/rucksack export \
 #     --config-file "$CFG_FILE" \
+#     --backup-dir "$BACKUP_DIR" \
 #     --db "$DB_FILE" \
 #     --db-pass 1234 \
 #     --type debug
@@ -507,11 +576,13 @@ header "Get the names and permissions for all backup files"
 # cp ./tests/testing-data/secrets-v0.5.0.db "$DB_FILE"
 # ./bin/rucksack show db-version \
 #     --config-file "$CFG_FILE" \
+#     --backup-dir "$BACKUP_DIR" \
 #     --db "$DB_FILE" \
 #     --db-pass 1234
 
 # ./bin/rucksack list \
 #     --config-file "$CFG_FILE" \
+#     --backup-dir "$BACKUP_DIR" \
 #     --db "$DB_FILE" \
 #     --db-pass 1234
 
@@ -520,11 +591,13 @@ header "Get the names and permissions for all backup files"
 # cp ./tests/testing-data/secrets-v0.6.0.db "$DB_FILE"
 # ./bin/rucksack show db-version \
 #     --config-file "$CFG_FILE" \
+#     --backup-dir "$BACKUP_DIR" \
 #     --db "$DB_FILE" \
 #     --db-pass 1234
 
 # ./bin/rucksack list \
 #     --config-file "$CFG_FILE" \
+#     --backup-dir "$BACKUP_DIR" \
 #     --db "$DB_FILE" \
 #     --db-pass 1234
 
@@ -533,10 +606,12 @@ header "Get the names and permissions for all backup files"
 # cp ./tests/testing-data/secrets-v0.7.0.db "$DB_FILE"
 # ./bin/rucksack show db-version \
 #     --config-file "$CFG_FILE" \
+#     --backup-dir "$BACKUP_DIR" \
 #     --db "$DB_FILE" \
 #     --db-pass 1234
 
 # ./bin/rucksack list \
 #     --config-file "$CFG_FILE" \
+#     --backup-dir "$BACKUP_DIR" \
 #     --db "$DB_FILE" \
 #     --db-pass 1234

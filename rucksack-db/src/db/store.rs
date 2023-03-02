@@ -31,8 +31,8 @@ use super::{backup, encrypted, versioned};
 
 #[derive(Clone, Default)]
 pub struct DB {
-    pub path: String,
-    pub backups_path: String,
+    pub file_name: String,
+    backup_dir: String,
     store_hash: u32,
     store_pwd: String,
     salt: String,
@@ -44,33 +44,41 @@ pub struct DB {
 impl fmt::Debug for DB {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("DB")
-            .field("path", &self.path)
+            .field("path", &self.file_name)
             .field("hash_map", &self.hash_map)
             .finish()
     }
 }
 
-pub fn init(path: String, backups_path: String, store_pwd: String, updated: String) -> Result<()> {
-    let db = open(path, backups_path, store_pwd, updated)?;
+pub fn init(
+    file_name: String,
+    backup_dir: String,
+    store_pwd: String,
+    updated: String,
+) -> Result<()> {
+    let db = open(file_name, backup_dir, store_pwd, updated)?;
     db.close()
 }
 
-pub fn new() -> DB {
+pub fn new(file_name: String, backup_dir: String) -> DB {
     DB {
+        file_name,
+        backup_dir,
+
         ..Default::default()
     }
 }
 
-pub fn open(filename: String, backups_path: String, store_pwd: String, salt: String) -> Result<DB> {
+pub fn open(file_name: String, backup_dir: String, store_pwd: String, salt: String) -> Result<DB> {
     log::debug!("Opening database ...");
     let mut hash_map: records::HashMap = DashMap::new();
     let mut store_hash = 0;
     let mut version = records::version();
     let vsn_db: versioned::VersionedDB;
-    let file_path = file::create_parents(filename.clone())?;
+    let file_path = file::create_parents(file_name.clone())?;
     if file_path.exists() {
         log::debug!("Creating encrypted DB ...");
-        let enc_db = encrypted::from_file(filename, store_pwd.clone(), salt.clone())?;
+        let enc_db = encrypted::from_file(file_name, store_pwd.clone(), salt.clone())?;
         log::debug!("Creating versioned DB ...");
         vsn_db = match versioned::deserialise(enc_db.decrypted()) {
             Ok(db) => db,
@@ -86,11 +94,11 @@ pub fn open(filename: String, backups_path: String, store_pwd: String, salt: Str
         // Decode the versioned DB's bytes to a hashmap
         hash_map = records::decode_hashmap(vsn_db.bytes(), version.clone())?;
     };
-    let path = file_path.display().to_string();
-    log::debug!("Setting database path: {}", path);
+    let file_name = file_path.display().to_string();
+    log::debug!("Setting database path: {}", file_name);
     Ok(DB {
-        path,
-        backups_path,
+        file_name,
+        backup_dir,
         store_hash,
         store_pwd,
         salt,
@@ -101,17 +109,20 @@ pub fn open(filename: String, backups_path: String, store_pwd: String, salt: Str
 }
 
 impl DB {
-    pub fn backup_path(&self) -> String {
-        self.backups_path.clone()
+    pub fn backup_dir(&self) -> String {
+        self.backup_dir.clone()
     }
 
     pub fn close(&self) -> Result<()> {
         log::debug!("Closing DB file ...");
-        let path = file::create_parents(self.path())?;
+        let path = file::create_parents(self.file_name())?;
         if path.exists() {
             log::debug!("Database file exists; backing up ...");
-            let backup_file =
-                backup::copy(self.path(), self.backup_path(), self.version().to_string())?;
+            let backup_file = backup::copy(
+                self.file_name(),
+                self.backup_dir(),
+                records::version().to_string(),
+            )?;
             log::debug!("Backed up file to {backup_file}");
         }
 
@@ -120,8 +131,8 @@ impl DB {
             Ok(x) => Ok(x),
             Err(e) => {
                 let msg = "Could not serialise self";
-                log::error!("{} {:?} ({:})", msg, self.path(), e);
-                Err(anyhow!("{} {:?} ({:})", msg, self.path(), e))
+                log::error!("{} {:?} ({:})", msg, self.file_name(), e);
+                Err(anyhow!("{} {:?} ({:})", msg, self.file_name(), e))
             }
         }?;
         // Create versioned data
@@ -130,8 +141,8 @@ impl DB {
             Ok(x) => Ok(x),
             Err(e) => {
                 let msg = "Could not serialise version db";
-                log::error!("{} {:?} ({:})", msg, self.path(), e);
-                Err(anyhow!("{} {:?} ({:})", msg, self.path(), e))
+                log::error!("{} {:?} ({:})", msg, self.file_name(), e);
+                Err(anyhow!("{} {:?} ({:})", msg, self.file_name(), e))
             }
         }?;
         // Get the hash for the versioned data
@@ -142,7 +153,7 @@ impl DB {
         }
         // Encrypt the versioned data
         let enc_db =
-            encrypted::from_decrypted(encoded, self.path(), self.store_pwd(), self.salt())?;
+            encrypted::from_decrypted(encoded, self.file_name(), self.store_pwd(), self.salt())?;
 
         // Save the encrypted data
         enc_db.write()
@@ -208,8 +219,8 @@ impl DB {
         self.hash_map.iter()
     }
 
-    pub fn path(&self) -> String {
-        self.path.clone()
+    pub fn file_name(&self) -> String {
+        self.file_name.clone()
     }
 
     pub fn salt(&self) -> String {

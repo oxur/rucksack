@@ -5,10 +5,14 @@ use serde::{Deserialize, Serialize};
 pub struct Rucksack {
     pub cfg_dir: String,
     pub cfg_file: String,
-    pub data_dir: String,
-    pub db_file: String,
     pub name: String,
-    pub backup_dir: String,
+    // TODO: for now, we're going to comment these out and explicitly state
+    // that the DB is the source of truth for this. We need to address this
+    // long-term, though ... see this ticket for context:
+    // * https://github.com/oxur/rucksack/issues/92
+    // pub data_dir: String,
+    // pub db_file: String,
+    // pub backup_dir: String,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

@@ -52,6 +52,11 @@ use super::output::option;
 use super::output::result;
 use super::output::table;
 
+pub fn backup_dir(_matches: &ArgMatches, app: &App) -> Result<()> {
+    println!("\n{}\n", app.backup_dir());
+    Ok(())
+}
+
 pub fn config_file(_matches: &ArgMatches, app: &App) -> Result<()> {
     println!("\n{}\n", app.config_file());
     Ok(())
@@ -68,7 +73,7 @@ pub fn config(_matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 pub fn data_dir(_matches: &ArgMatches, app: &App) -> Result<()> {
-    println!("\n{}\n", app.data_dir().to_str().unwrap());
+    println!("\n{}\n", app.data_dir());
     Ok(())
 }
 

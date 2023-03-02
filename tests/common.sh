@@ -1,6 +1,7 @@
 export RUST_BACKTRACE=1
 TMP_DIR=/tmp/$(date +"%Y%m%d.%H%M%S")/rucksack
 DB_FILE=$TMP_DIR/data/secrets.db
+BACKUP_DIR=$TMP_DIR/backups
 CFG_FILE=$TMP_DIR/config.toml
 
 GREEN="\033[0;32m"

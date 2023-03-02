@@ -14,16 +14,21 @@ pub fn new(cfg: config::Config, db: store::db::DB) -> App {
 }
 
 impl App {
-    pub fn backup_dir(&self) -> path::PathBuf {
-        if self.cfg.rucksack.backup_dir != *"" {
-            let mut path = path::PathBuf::new();
-            path.push(self.cfg.rucksack.backup_dir.clone());
-            return path;
-        }
-        file::backup_dir(&self.name())
+    pub fn backup_dir(&self) -> String {
+        self.db.backup_dir()
     }
 
-    pub fn config_dir(&self) -> path::PathBuf {
+    pub fn backup_path(&self) -> path::PathBuf {
+        let mut path = path::PathBuf::new();
+        path.push(self.backup_dir());
+        path
+    }
+
+    pub fn config_dir(&self) -> String {
+        self.config_path().display().to_string()
+    }
+
+    pub fn config_path(&self) -> path::PathBuf {
         if self.cfg.rucksack.cfg_dir != *"" {
             let mut path = path::PathBuf::new();
             path.push(self.cfg.rucksack.cfg_dir.clone());
@@ -39,20 +44,22 @@ impl App {
         file::config_file(&self.name())
     }
 
-    pub fn data_dir(&self) -> path::PathBuf {
-        if self.cfg.rucksack.data_dir != *"" {
-            let mut path = path::PathBuf::new();
-            path.push(self.cfg.rucksack.data_dir.clone());
-            return path;
-        }
-        file::data_dir(&self.name())
+    pub fn data_dir(&self) -> String {
+        self.data_path().display().to_string()
+    }
+
+    pub fn data_path(&self) -> path::PathBuf {
+        self.db_path().parent().unwrap().to_path_buf()
     }
 
     pub fn db_file(&self) -> String {
-        if self.cfg.rucksack.db_file != *"" {
-            return self.cfg.rucksack.db_file.clone();
-        }
-        file::db_file(&self.name())
+        self.db.file_name.clone()
+    }
+
+    pub fn db_path(&self) -> path::PathBuf {
+        let mut path = path::PathBuf::new();
+        path.push(self.db_file());
+        path
     }
 
     pub fn db_version(&self) -> versions::SemVer {

@@ -7,6 +7,7 @@ use rucksack_lib::{file, time};
 pub fn copy(src_file: String, dest_dir: String, version: String) -> Result<String> {
     let file_path = file::abs_path(src_file.clone())?;
     let mut bu_path = file::abs_path(dest_dir)?;
+    file::create_dirs(bu_path.clone())?;
     bu_path.push(backup_name(
         file_path.file_name().unwrap().to_str().unwrap().to_string(),
         version,

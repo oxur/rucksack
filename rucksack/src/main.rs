@@ -11,13 +11,10 @@ use rucksack_lib::{config, file, util};
 
 fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
     log::debug!("Dispatching based upon (sub)command ...");
-    let backup_dir = app.backup_dir();
-    if !backup_dir.exists() {
-        log::debug!(
-            "Checking for backup dir {:?} ...",
-            app.backup_dir().display()
-        );
-        file::create_dirs(backup_dir)?;
+    let backup_path = app.backup_path();
+    if !backup_path.exists() {
+        log::debug!("Checking for backup dir {:?} ...", app.backup_dir());
+        file::create_dirs(backup_path)?;
         log::info!("Created backup dir.");
     }
     match matches.subcommand() {
@@ -50,6 +47,7 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
             None => todo!(),
         },
         Some(("show", show_matches)) => match show_matches.subcommand() {
+            Some(("backup-dir", bud_matches)) => show::backup_dir(bud_matches, app)?,
             Some(("categories", cat_matches)) => show::categories(cat_matches, app)?,
             Some(("config-file", cfgfile_matches)) => show::config_file(cfgfile_matches, app)?,
             Some(("config", cfg_matches)) => show::config(cfg_matches, app)?,
@@ -82,7 +80,7 @@ fn main() -> Result<()> {
     if let Some(level) = matches.get_one::<String>("log-level") {
         log_level = level.to_string();
     }
-    let mut cfg = config::load(config_file, log_level, constant::NAME.to_string());
+    let cfg = config::load(config_file, log_level, constant::NAME.to_string());
     match twyg::setup_logger(&cfg.logging) {
         Ok(_) => {}
         Err(error) => {
@@ -113,8 +111,12 @@ fn main() -> Result<()> {
     let (_, subcmd_matches) = matches.subcommand().unwrap();
     log::debug!("Setting up database ...");
     let db = setup::db(subcmd_matches)?;
-    cfg.rucksack.db_file = db.path();
-    cfg.rucksack.data_dir = file::dir_parent(db.path());
+    // TODO: let's decide what the SoT should be for data in the running app,
+    // and then consolidate all data there (from CLI flags, env vars, config,
+    // etc.). See ticket for more details:
+    // * https://github.com/oxur/rucksack/issues/92
+    // cfg.rucksack.db_file = db.path();
+    // cfg.rucksack.data_dir = file::dir_parent(db.path());
     log::debug!("Setting up rucksack application ...");
     let app = rucksack::app::new(cfg, db);
     run(&matches, &app)

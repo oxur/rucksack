@@ -10,6 +10,7 @@ use rucksack_db::db::backup;
 use rucksack_lib::file;
 
 use crate::app::App;
+use crate::option;
 
 use super::output::column::Column;
 use super::output::option::Opts;
@@ -17,24 +18,24 @@ use super::output::result;
 use super::output::table;
 
 pub fn delete(matches: &ArgMatches, app: &App) -> Result<()> {
-    let backup_name = matches.get_one::<String>("name").unwrap();
+    let backup_path = app.backup_path();
+    let backup_name = option::backup_name(matches);
     log::debug!("Preparing to delete backup DB file '{}'", backup_name);
-    let file_path = app.backup_dir().join(backup_name);
-    if !file_path.exists() {
-        log::error!("Cannot find file {}", file_path.display());
+    if !backup_path.exists() {
+        log::error!("Cannot find file {}", backup_path.display());
         return Err(anyhow!("backup file '{}' does not exist", backup_name));
     }
-    file::delete(file_path)
+    file::delete(backup_path)
 }
 
 pub fn list(_matches: &ArgMatches, app: &App) -> Result<()> {
-    let backup_path_name = app.backup_dir().display().to_string();
-    log::debug!("Preparing to list backup DB files in {:}", backup_path_name);
+    let backup_dir = app.backup_dir();
+    log::debug!("Preparing to list backup DB files in {backup_dir:}");
     let opts = Opts {
         backup_files: true,
         ..Default::default()
     };
-    let mut backups = file::files(backup_path_name)?;
+    let mut backups = file::files(backup_dir)?;
     backups.sort();
     backups.reverse();
     let mut results: Vec<result::ResultRow> = Vec::new();
@@ -64,7 +65,7 @@ pub fn run(_matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Backing up database ...");
     let r = backup::copy(
         app.db_file(),
-        app.backup_dir().display().to_string(),
+        app.backup_dir(),
         app.db_version().to_string(),
     );
     let backup_file: String = match r {

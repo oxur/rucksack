@@ -14,9 +14,9 @@ const BACKUP_DIR: &str = "backups";
 const DEFAULT_DB_NAME: &str = "secrets";
 const DB_EXTENSION: &str = "db";
 
-pub fn abs_path(path: String) -> io::Result<path::PathBuf> {
-    let expanded = expanded_path(path);
-    let path = std::path::Path::new(expanded.as_str());
+pub fn abs_path(path_name: String) -> io::Result<path::PathBuf> {
+    let expanded = expanded_name(path_name);
+    let path = path::Path::new(expanded.as_str());
     let absolute_path = if path.is_absolute() {
         path.to_path_buf()
     } else {
@@ -98,14 +98,14 @@ pub fn dir_parent(dir: String) -> String {
     parent.join(std::path::MAIN_SEPARATOR.to_string().as_str())
 }
 
-pub fn expanded_path(path: String) -> String {
-    let expanded = shellexpand::tilde(path.as_str());
+pub fn expanded_name(path_name: String) -> String {
+    let expanded = shellexpand::tilde(path_name.as_str());
     expanded.to_string()
 }
 
-pub fn files(path: String) -> Result<Vec<(String, String, String)>> {
+pub fn files(dir: String) -> Result<Vec<(String, String, String)>> {
     let mut f = Vec::<(String, String, String)>::new();
-    for entry in fs::read_dir(path)? {
+    for entry in fs::read_dir(dir)? {
         let dir = entry?;
         let metadata = dir.metadata()?;
         let created: DateTime<Local> = metadata.created()?.into();
@@ -118,8 +118,8 @@ pub fn files(path: String) -> Result<Vec<(String, String, String)>> {
     Ok(f)
 }
 
-pub fn read(path: String) -> Result<Vec<u8>> {
-    let expanded = expanded_path(path);
+pub fn read(file_name: String) -> Result<Vec<u8>> {
+    let expanded = expanded_name(file_name);
     log::debug!("Reading file {:?} ...", expanded);
     match fs::read(expanded) {
         Ok(bytes) => Ok(bytes),
