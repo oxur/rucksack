@@ -103,7 +103,10 @@ pub fn expanded_name(path_name: String) -> String {
     expanded.to_string()
 }
 
-pub fn files(dir: String) -> Result<Vec<(String, String, String)>> {
+pub type Data = (String, String, String);
+pub type Listing = Vec<Data>;
+
+pub fn files(dir: String) -> Result<Listing> {
     let mut f = Vec::<(String, String, String)>::new();
     for entry in fs::read_dir(dir)? {
         let dir = entry?;

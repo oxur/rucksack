@@ -36,14 +36,13 @@ pub fn list(matches: &ArgMatches, app: &App) -> Result<()> {
         latest_only: option::latest(matches),
         ..Default::default()
     };
-    let mut backups = file::files(backup_dir)?;
-    backups.sort();
-    backups.reverse();
+    let backups: file::Listing = if opts.latest_only {
+        vec![backup::latest(backup_dir)?]
+    } else {
+        backup::list(backup_dir)?
+    };
     let mut results: Vec<result::ResultRow> = Vec::new();
     for (name, _, perms) in backups {
-        if opts.latest_only && results.len() == 1 {
-            break;
-        }
         let mut r = result::ResultRow {
             ..Default::default()
         };

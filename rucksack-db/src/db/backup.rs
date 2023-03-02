@@ -25,3 +25,20 @@ pub fn copy(src_file: String, dest_dir: String, version: String) -> Result<Strin
 pub fn backup_name(src_file: String, version: String) -> String {
     format!("{src_file}-{}-v{version}", time::simple_timestamp())
 }
+
+pub fn list(backup_dir: String) -> Result<file::Listing> {
+    let mut backups = file::files(backup_dir)?;
+    backups.sort();
+    backups.reverse();
+    Ok(backups)
+}
+
+pub fn latest(backup_dir: String) -> Result<file::Data> {
+    match list(backup_dir) {
+        Ok(all) => match all.first() {
+            Some(data) => Ok(data.clone()),
+            None => Err(anyhow!("no backup files found")),
+        },
+        Err(e) => Err(anyhow!(e)),
+    }
+}
