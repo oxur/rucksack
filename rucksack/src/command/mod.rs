@@ -77,6 +77,19 @@ pub fn setup() -> Command {
                         .help("The name of the backup to delete (get the name from the 'list' command)")
                         .required(true)))
             .subcommand(
+                Command::new("restore")
+                    .about("Restore the DB from a backup ")
+                    .arg(Arg::new("name")
+                        .help("The name of the backup to restore")))
+    )
+    .subcommand(
+        Command::new("backups")
+            .about("Operations related to the backing up of the secrets DB; used with no subcommand, perform a backup")
+            .arg(db::path())
+            .arg(db::pwd())
+            .arg(db::salt())
+            .arg(db::backup_dir())
+            .subcommand(
                 Command::new("list")
                     .about("List all the backup files")
                     .arg(
@@ -85,11 +98,6 @@ pub fn setup() -> Command {
                             .long("latest")
                             .action(ArgAction::SetTrue),
                     ))
-            .subcommand(
-                Command::new("restore")
-                    .about("Restore the DB from a backup ")
-                    .arg(Arg::new("name")
-                        .help("The name of the backup to restore")))
     )
     .subcommand(
         Command::new("export")

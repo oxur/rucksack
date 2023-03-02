@@ -1,7 +1,35 @@
 //! # Displaying and Working with Backups
 //!
-// use std::collections::HashMap;
-// use std::str;
+//! Create a new backup of your current secrets DB:
+//!
+//! ```shell
+//! rucksack backup
+//! ```
+//!
+//! Get a list of current backup files:
+//!
+//! ```shell
+//! rucksack backups list
+//! ```
+//!
+//! Show just the latest backup file:
+//!
+//! ```shell
+//! rucksack backups list --latest
+//! ```
+//!
+//! Delete a specific backup:
+//!
+//! ```shell
+//! rucksack backup delete <name from list command>
+//! ```
+//!
+//! Restore the DB from a previous backup:
+//!
+//! ```shell
+//! rucksack backup restore <name from list command>
+//! ```
+//!
 use anyhow::anyhow;
 use anyhow::Result;
 use clap::ArgMatches;

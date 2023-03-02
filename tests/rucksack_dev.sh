@@ -527,7 +527,7 @@ header "List grouped-by name"
 
 header "Get the names and permissions for all backup files"
 
-./bin/rucksack backup list \
+./bin/rucksack backups list \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
@@ -543,13 +543,17 @@ header "Get the names and permissions for all backup files (via the alias)"
 
 header "Performn a new backup"
 
+sleep 1
+
 ./bin/rucksack backup \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234
 
-./bin/rucksack backup list \
+sleep 1
+
+./bin/rucksack backups list \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
@@ -557,14 +561,14 @@ header "Performn a new backup"
 
 header "Show only the latest backup file"
 
-./bin/rucksack backup list \
+./bin/rucksack backups list \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --latest
 
-BACKUP_FILE=$(./bin/rucksack backup list \
+BACKUP_FILE=$(./bin/rucksack backups list \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
@@ -619,7 +623,7 @@ echo
 
 header "Remove the testing the backups dir"
 rm -rf "$BU_DIR"
-./bin/rucksack backup list \
+./bin/rucksack backups list \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \

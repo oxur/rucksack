@@ -21,8 +21,12 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
         Some(("add", add_matches)) => add::new(add_matches, app)?,
         Some(("backup", backup_matches)) => match backup_matches.subcommand() {
             Some(("delete", delete_matches)) => backup::delete(delete_matches, app)?,
-            Some(("list", list_matches)) => backup::list(list_matches, app)?,
             Some(("restore", restore_matches)) => backup::restore(restore_matches, app)?,
+            Some((&_, _)) => todo!(),
+            None => backup::run(backup_matches, app)?,
+        },
+        Some(("backups", backup_matches)) => match backup_matches.subcommand() {
+            Some(("list", list_matches)) => backup::list(list_matches, app)?,
             Some((&_, _)) => todo!(),
             None => backup::run(backup_matches, app)?,
         },

@@ -49,7 +49,7 @@ pub fn restore(
     dest_path: path::PathBuf,
 ) -> Result<()> {
     let mut old_path = backup_path;
-    old_path.push(old_name.clone());
+    old_path.push(old_name);
     log::debug!(
         "Restoring backup from {} to {} ...",
         old_path.display(),
