@@ -31,7 +31,7 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
             None => todo!(),
         },
         Some(("config", config_matches)) => match config_matches.subcommand() {
-            Some(("init", init_matches)) => config::init(init_matches, app)?,
+            Some(("re-init", init_matches)) => config::re_init(init_matches, app)?,
             Some((&_, _)) => todo!(),
             None => todo!(),
         },
@@ -80,7 +80,7 @@ fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
 }
 
 fn shutdown(_matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
-    log::debug!("Performing shutdown operations ...");
+    log::info!("Performing shutdown operations ...");
     if app.cfg.retention.purge_on_shutdown {
         todo!();
     }
@@ -141,6 +141,7 @@ fn main() -> Result<()> {
     // cfg.rucksack.data_dir = file::dir_parent(db.path());
     log::debug!("Setting up rucksack application ...");
     let app = rucksack::app::new(cfg, db);
+    log::info!("Executing rucksack command ...");
     run(&matches, &app)?;
     shutdown(&matches, &app)
 }

@@ -101,6 +101,13 @@ pub fn setup() -> Command {
                     ))
     )
     .subcommand(
+        Command::new("config")
+            .about("Operations related to rucksack configuration")
+            .arg(db::not_needed())
+            .subcommand(
+                Command::new("re-init")
+                    .about("Re-initialise (overwrite) the rucksack config"))
+    ).subcommand(
         Command::new("export")
             .about("Export the rucksack db")
             .arg(
