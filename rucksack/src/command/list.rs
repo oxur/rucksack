@@ -135,6 +135,7 @@ use crate::app::App;
 use crate::option;
 use crate::query;
 
+use super::backup;
 use super::output::column::Column;
 use super::output::option::Opts;
 use super::output::result;
@@ -151,6 +152,10 @@ pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
             ..Default::default()
         },
     )
+}
+
+pub fn backups(matches: &ArgMatches, app: &App) -> Result<()> {
+    backup::list(matches, app)
 }
 
 // TODO: once there's config for it, pull from config and pass

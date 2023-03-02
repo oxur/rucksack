@@ -169,6 +169,13 @@ pub fn setup() -> Command {
         Command::new("list")
             .about("List all secrets")
             .arg(
+                Arg::new("backups")
+                    .help("List all the backup files")
+                    .long("backups")
+                    .action(ArgAction::SetTrue)
+                    .global(true)
+            )
+            .arg(
                 Arg::new("decrypt")
                     .help("Using this flag causes all secrets to be decrypted to allow for scoring, etc.")
                     .long("decrypt")
@@ -247,6 +254,9 @@ pub fn setup() -> Command {
             .arg(record::all_tags())
             .arg(record::any_tags())
             .arg(record::name())
+            .subcommand(
+                Command::new("backups")
+                    .about("List all the backup files"))
             .subcommand(
                 Command::new("deleted")
                     .about("List the records that have been flagged for deletion"))
