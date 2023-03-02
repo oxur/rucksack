@@ -87,7 +87,9 @@ pub fn setup() -> Command {
                     ))
             .subcommand(
                 Command::new("restore")
-                    .about("Restore the DB from a backup "))
+                    .about("Restore the DB from a backup ")
+                    .arg(Arg::new("name")
+                        .help("The name of the backup to restore")))
     )
     .subcommand(
         Command::new("export")

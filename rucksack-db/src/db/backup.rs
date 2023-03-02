@@ -44,14 +44,20 @@ pub fn list(backup_dir: String) -> Result<file::Listing> {
 }
 
 pub fn restore(
-    mut backup_path: path::PathBuf,
+    backup_path: path::PathBuf,
     old_name: String,
     dest_path: path::PathBuf,
 ) -> Result<()> {
-    backup_path.push(old_name.clone());
-    let old_file = backup_path.display().to_string();
-    let dest_parent = dest_path.parent().unwrap();
-    match fs::copy(old_file.clone(), dest_parent.display().to_string()) {
+    let mut old_path = backup_path;
+    old_path.push(old_name.clone());
+    log::debug!(
+        "Restoring backup from {} to {} ...",
+        old_path.display(),
+        dest_path.display()
+    );
+    let old_file = old_path.display().to_string();
+    // let dest_parent = dest_path.parent().unwrap();
+    match fs::copy(old_path, dest_path) {
         Ok(_) => (),
         Err(e) => {
             let msg = "Could not copy file";
@@ -59,8 +65,8 @@ pub fn restore(
             return Err(anyhow!("{msg} {old_file:?} ({e:})"));
         }
     }
-    let mut copied = dest_parent.clone().to_owned();
-    copied.push(old_name);
-    fs::rename(copied, dest_path)?;
+    // let mut copied = dest_parent.to_owned();
+    // copied.push(old_name);
+    // fs::rename(copied, dest_path)?;
     Ok(())
 }

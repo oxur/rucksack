@@ -589,7 +589,17 @@ header "Add a new record that won't be in the backup"
     --db "$DB_FILE" \
     --db-pass 1234
 
+sleep 2
+
 header "Restore from backup and show records in restored db"
+
+./bin/rucksack backup restore "$BACKUP_FILE" \
+    --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
+    --db "$DB_FILE" \
+    --db-pass 1234
+
+sleep 2
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
