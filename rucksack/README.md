@@ -25,9 +25,10 @@
 * [x] Split repo into rucksack-lib, rucksack-db, and rucksack crates (0.8.0)
 * [x] Colourised and fully tabular output (0.8.0)
 * [x] Password history (0.8.0)
-* [ ] [Database restores](https://github.com/oxur/rucksack/milestone/11)
-* [ ] [1Password Support](https://github.com/oxur/rucksack/milestone/12)
+* [ ] Database backups, restores, and data retention logic (0.9.0)
+* [ ] [Alternate storage backends](https://github.com/oxur/rucksack/milestone/12)
 * [ ] [Local network sync](https://github.com/oxur/rucksack/milestone/13)
+* [ ] [1Password, JSON, import/export improvements](https://github.com/oxur/rucksack/milestone/14), etc.
 
 ## Documentation
 
