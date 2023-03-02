@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, path};
 
 use anyhow::{anyhow, Result};
 
@@ -26,13 +26,6 @@ pub fn backup_name(src_file: String, version: String) -> String {
     format!("{src_file}-{}-v{version}", time::simple_timestamp())
 }
 
-pub fn list(backup_dir: String) -> Result<file::Listing> {
-    let mut backups = file::files(backup_dir)?;
-    backups.sort();
-    backups.reverse();
-    Ok(backups)
-}
-
 pub fn latest(backup_dir: String) -> Result<file::Data> {
     match list(backup_dir) {
         Ok(all) => match all.first() {
@@ -41,4 +34,33 @@ pub fn latest(backup_dir: String) -> Result<file::Data> {
         },
         Err(e) => Err(anyhow!(e)),
     }
+}
+
+pub fn list(backup_dir: String) -> Result<file::Listing> {
+    let mut backups = file::files(backup_dir)?;
+    backups.sort();
+    backups.reverse();
+    Ok(backups)
+}
+
+pub fn restore(
+    mut backup_path: path::PathBuf,
+    old_name: String,
+    dest_path: path::PathBuf,
+) -> Result<()> {
+    backup_path.push(old_name.clone());
+    let old_file = backup_path.display().to_string();
+    let dest_parent = dest_path.parent().unwrap();
+    match fs::copy(old_file.clone(), dest_parent.display().to_string()) {
+        Ok(_) => (),
+        Err(e) => {
+            let msg = "Could not copy file";
+            log::error!("{msg} {old_file:?} ({e:})");
+            return Err(anyhow!("{msg} {old_file:?} ({e:})"));
+        }
+    }
+    let mut copied = dest_parent.clone().to_owned();
+    copied.push(old_name);
+    fs::rename(copied, dest_path)?;
+    Ok(())
 }

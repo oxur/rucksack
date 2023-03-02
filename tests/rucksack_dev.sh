@@ -541,6 +541,20 @@ header "Get the names and permissions for all backup files (via the alias)"
     --db "$DB_FILE" \
     --db-pass 1234
 
+header "Performn a new backup"
+
+./bin/rucksack backup \
+    --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
+    --db "$DB_FILE" \
+    --db-pass 1234
+
+./bin/rucksack backup list \
+    --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
+    --db "$DB_FILE" \
+    --db-pass 1234
+
 header "Show only the latest backup file"
 
 ./bin/rucksack backup list \
@@ -549,6 +563,39 @@ header "Show only the latest backup file"
     --db "$DB_FILE" \
     --db-pass 1234 \
     --latest
+
+BACKUP_FILE=$(./bin/rucksack backup list \
+    --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --latest | grep secrets.db | awk '{print $2}')
+# echo "Backup file: $BACKUP_FILE"
+
+header "Add a new record that won't be in the backup"
+
+./bin/rucksack add \
+    --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
+    --db "$DB_FILE" \
+    --db-pass 1234 \
+    --url http://wut.co \
+    --user mrpotatoe \
+    --password mrspotatoe
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
+    --db "$DB_FILE" \
+    --db-pass 1234
+
+header "Restore from backup and show records in restored db"
+
+./bin/rucksack list \
+    --config-file "$CFG_FILE" \
+    --backup-dir "$BACKUP_DIR" \
+    --db "$DB_FILE" \
+    --db-pass 1234
 
 header "Show the testing backups dir"
 

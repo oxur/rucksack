@@ -121,7 +121,7 @@ impl DB {
             let backup_file = backup::copy(
                 self.file_name(),
                 self.backup_dir(),
-                records::version().to_string(),
+                self.schema_version().to_string(),
             )?;
             log::debug!("Backed up file to {backup_file}");
         }
@@ -287,6 +287,11 @@ impl DB {
     // Added in v0.7.0
     pub fn version(&self) -> versions::SemVer {
         self.version.clone()
+    }
+
+    // Added in v0.10.1
+    pub fn schema_version(&self) -> versions::SemVer {
+        records::version()
     }
 }
 

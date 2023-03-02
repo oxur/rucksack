@@ -56,12 +56,14 @@ pub fn list(matches: &ArgMatches, app: &App) -> Result<()> {
     Ok(())
 }
 
-pub fn restore(_matches: &ArgMatches, _app: &App) -> Result<()> {
-    // TODO: get the latest backup
-    // TODO: before a backup
-    // TODO: replace the db file with the first latest backup
-    todo!()
-    // Ok(())
+pub fn restore(matches: &ArgMatches, app: &App) -> Result<()> {
+    let backup_dir = app.backup_dir();
+    let (_, latest, _) = backup::latest(backup_dir)?;
+    // Do a backup before we go any further
+    run(matches, app)?;
+    backup::restore(app.backup_path(), latest, app.db_path())?;
+    log::info!("Successfully restored XXX to XXX");
+    Ok(())
 }
 
 pub fn run(_matches: &ArgMatches, app: &App) -> Result<()> {

@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use rucksack_lib::util;
 
+use crate::records;
+
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub struct VersionedDB {
     bytes: Vec<u8>,
@@ -29,7 +31,7 @@ pub fn deserialise(bytes: Vec<u8>) -> Result<VersionedDB> {
 
 pub fn from_bytes(bytes: Vec<u8>) -> VersionedDB {
     log::debug!("Initialising versioned DB with encoded hashmap ...");
-    new(bytes, crate::version().to_string())
+    new(bytes, records::version().to_string())
 }
 
 pub fn new(bytes: Vec<u8>, version: String) -> VersionedDB {
