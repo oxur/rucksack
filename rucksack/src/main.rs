@@ -101,7 +101,12 @@ fn main() -> Result<()> {
     if let Some(level) = matches.get_one::<String>("log-level") {
         log_level = level.to_string();
     }
-    let cfg = input::config::load(config_file, log_level, input::constant::NAME.to_string());
+    let cfg = input::config::load(
+        input::config::Opts::new()
+            .file_name(config_file)
+            .log_level(log_level)
+            .name(input::constant::NAME.to_string()),
+    )?;
     match twyg::setup_logger(&cfg.logging) {
         Ok(_) => {}
         Err(error) => {

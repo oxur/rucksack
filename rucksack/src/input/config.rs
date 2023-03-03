@@ -1,3 +1,5 @@
+use std::str;
+
 use anyhow::Result;
 use confyg::Confygery;
 use serde::{Deserialize, Serialize};
@@ -23,37 +25,50 @@ show_deleted = false
 
 #[derive(Clone, Default)]
 pub struct Opts {
-    pub force: bool,
-    pub in_memory: bool,
+    config: String,
+    file_name: String,
+    force: bool,
+    in_memory: bool,
+    log_level: String,
+    name: String,
 }
 
-pub fn default_opts() -> Opts {
-    Opts {
-        ..Default::default()
+impl Opts {
+    pub fn new() -> Opts {
+        Opts {
+            ..Default::default()
+        }
     }
-}
 
-pub fn force_opts() -> Opts {
-    Opts {
-        force: true,
-        ..Default::default()
+    pub fn config(&mut self, data: String) -> &mut Opts {
+        self.config = data;
+        self
     }
-}
 
-pub fn in_memory_opts() -> Opts {
-    Opts {
-        in_memory: true,
-        ..Default::default()
+    pub fn file_name(&mut self, name: String) -> &mut Opts {
+        self.file_name = name;
+        self
     }
-}
 
-pub fn init(filename: String, opts: Opts) -> Result<()> {
-    let file_path = file::create_parents(filename.clone())?;
-    if file_path.exists() && !opts.force {
-        log::debug!("File already exists; skipping init ...");
-        return Ok(());
+    pub fn force(&mut self) -> &mut Opts {
+        self.force = true;
+        self
     }
-    file::write(DEFAULT_TOML.as_bytes().to_vec(), filename)
+
+    pub fn in_memory(&mut self) -> &mut Opts {
+        self.in_memory = true;
+        self
+    }
+
+    pub fn log_level(&mut self, level: String) -> &mut Opts {
+        self.log_level = level;
+        self
+    }
+
+    pub fn name(&mut self, name: String) -> &mut Opts {
+        self.name = name;
+        self
+    }
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -104,27 +119,38 @@ pub fn defaults() -> Config {
     }
 }
 
-pub fn load(config_file: String, log_level: String, name: String) -> Config {
-    let defaults = defaults();
-    match init(config_file.clone(), default_opts()) {
+pub fn init(opts: &Opts) -> Result<()> {
+    let file_path = file::create_parents(opts.file_name.clone())?;
+    if file_path.exists() && !opts.force {
+        log::debug!("File already exists; skipping init ...");
+        return Ok(());
+    }
+    file::write(DEFAULT_TOML.as_bytes().to_vec(), opts.file_name.clone())
+}
+
+pub fn load(opts: &Opts) -> Result<Config> {
+    match init(opts) {
         Ok(_) => (),
         Err(e) => panic!("{e}"),
     }
-    match Confygery::new()
-        .add_file(&config_file)
-        .add_struct(&defaults)
-        .build::<Config>()
-    {
-        Ok(mut cfg) => {
-            if !log_level.is_empty() {
-                cfg.logging.level = log_level;
-            }
-            cfg.rucksack.cfg_file = config_file;
-            cfg.rucksack.name = name;
-            cfg
-        }
-        Err(e) => panic!("{e}"),
+    let mut cfg: Config;
+    if opts.in_memory {
+        cfg = Confygery::new()
+            .add_str(&opts.config)
+            .add_struct(&defaults())
+            .build::<Config>()?;
+    } else {
+        cfg = Confygery::new()
+            .add_file(&opts.file_name)
+            .add_struct(&defaults())
+            .build::<Config>()?;
     }
+    if !opts.log_level.is_empty() {
+        cfg.logging.level = opts.log_level.clone();
+    }
+    cfg.rucksack.cfg_file = opts.file_name.clone();
+    cfg.rucksack.name = opts.name.clone();
+    Ok(cfg)
 }
 
 #[cfg(test)]
