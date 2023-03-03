@@ -7,7 +7,7 @@ use rucksack_db as store;
 use rucksack_db::records;
 use rucksack_db::records::{new_tags, Status, Tag};
 
-use crate::prompt;
+use super::prompt;
 
 pub fn account_id(matches: &ArgMatches) -> String {
     matches

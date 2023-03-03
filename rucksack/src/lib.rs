@@ -64,13 +64,9 @@
 pub mod app;
 pub mod command;
 #[doc(hidden)]
-pub mod constant;
-#[doc(hidden)]
-pub mod option;
+pub mod input;
 #[doc(hidden)]
 pub mod output;
-#[doc(hidden)]
-pub mod prompt;
 #[doc(hidden)]
 pub mod query;
 #[doc(hidden)]

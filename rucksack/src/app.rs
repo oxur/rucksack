@@ -1,7 +1,9 @@
 use std::path;
 
 use rucksack_db as store;
-use rucksack_lib::{config, file};
+use rucksack_lib::file;
+
+use crate::input::config;
 
 #[derive(Debug)]
 pub struct App {

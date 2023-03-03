@@ -37,12 +37,12 @@ use rucksack_db::db::backup;
 use rucksack_lib::file;
 
 use crate::app::App;
-use crate::option;
+use crate::input::options;
 use crate::output::{result, table, Column, Opts};
 
 pub fn delete(matches: &ArgMatches, app: &App) -> Result<()> {
     let backup_path = app.backup_path();
-    let backup_name = option::backup_name(matches);
+    let backup_name = options::backup_name(matches);
     log::debug!("Preparing to delete backup DB file '{}'", backup_name);
     if !backup_path.exists() {
         log::error!("Cannot find file {}", backup_path.display());
@@ -56,7 +56,7 @@ pub fn list(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Preparing to list backup DB files in {backup_dir:}");
     let opts = Opts {
         backup_files: true,
-        latest_only: option::latest(matches),
+        latest_only: options::latest(matches),
         ..Default::default()
     };
     let backups: file::Listing = if opts.latest_only {
@@ -81,7 +81,7 @@ pub fn list(matches: &ArgMatches, app: &App) -> Result<()> {
 
 pub fn restore(matches: &ArgMatches, app: &App) -> Result<()> {
     let backup_dir = app.backup_dir();
-    let mut backup_name = option::backup_name(matches);
+    let mut backup_name = options::backup_name(matches);
     if backup_name.is_empty() {
         let (_, latest, _) = backup::latest(backup_dir)?;
         backup_name = latest;

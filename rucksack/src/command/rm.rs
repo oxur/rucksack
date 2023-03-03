@@ -22,11 +22,11 @@ use clap::ArgMatches;
 use rucksack_db::records::Status;
 
 use crate::app::App;
-use crate::option;
+use crate::input::options;
 use crate::query;
 
 pub fn one(matches: &ArgMatches, app: &App) -> Result<()> {
-    let key = option::key(matches);
+    let key = options::key(matches);
     log::debug!("Marking record '{}' as deleted ...", key);
     let mut record = query::record(&app.db, matches)?;
     record.set_status(Status::Deleted);

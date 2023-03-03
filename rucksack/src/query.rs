@@ -5,10 +5,10 @@ use secrecy::{ExposeSecret, SecretString};
 use rucksack_db::db;
 use rucksack_db::records::DecryptedRecord;
 
-use crate::option;
+use crate::input::options;
 
 pub fn record(app_db: &db::DB, matches: &ArgMatches) -> Result<DecryptedRecord> {
-    record_by_key(app_db, option::key(matches))
+    record_by_key(app_db, options::key(matches))
 }
 
 pub fn record_by_key(app_db: &db::DB, key: String) -> Result<DecryptedRecord> {
@@ -24,7 +24,7 @@ pub fn record_by_key(app_db: &db::DB, key: String) -> Result<DecryptedRecord> {
 }
 
 pub fn remove(app_db: &db::DB, matches: &ArgMatches) -> Result<()> {
-    remove_by_key(app_db, option::key(matches))
+    remove_by_key(app_db, options::key(matches))
 }
 
 pub fn remove_by_key(app_db: &db::DB, key: String) -> Result<()> {

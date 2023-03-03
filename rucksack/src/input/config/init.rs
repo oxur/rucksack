@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use crate::file;
+use rucksack_lib::file;
 
 const DEFAULT_TOML: &str = r#"[rucksack]
 

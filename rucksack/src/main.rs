@@ -5,8 +5,7 @@ use clap::ArgMatches;
 
 use rucksack::command as cli;
 use rucksack::command::{add, backup, config, export, gen, import, list, rm, set, show};
-use rucksack::constant;
-use rucksack::setup;
+use rucksack::{input, setup};
 use rucksack_lib::{file, util};
 
 fn run(matches: &ArgMatches, app: &rucksack::App) -> Result<()> {
@@ -102,7 +101,7 @@ fn main() -> Result<()> {
     if let Some(level) = matches.get_one::<String>("log-level") {
         log_level = level.to_string();
     }
-    let cfg = rucksack_lib::config::load(config_file, log_level, constant::NAME.to_string());
+    let cfg = input::config::load(config_file, log_level, input::constant::NAME.to_string());
     match twyg::setup_logger(&cfg.logging) {
         Ok(_) => {}
         Err(error) => {

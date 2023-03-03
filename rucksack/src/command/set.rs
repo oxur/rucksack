@@ -61,13 +61,13 @@ use clap::ArgMatches;
 use rucksack_db as store;
 
 use crate::app::App;
-use crate::option;
+use crate::input::options;
 use crate::query;
 
 pub fn record_type(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting record type ...");
     let mut record = query::record(&app.db, matches)?;
-    record.set_kind(option::record_kind(matches));
+    record.set_kind(options::record_kind(matches));
     app.db.insert(record);
     app.db.close()?;
     Ok(())
@@ -77,7 +77,7 @@ pub fn password(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting record password ...");
     let mut record = query::record(&app.db, matches)?;
     let key = record.key();
-    record.set_password(option::record_pwd_revealed(matches));
+    record.set_password(options::record_pwd_revealed(matches));
     app.db.update(key, record);
     app.db.close()?;
     Ok(())
@@ -86,7 +86,7 @@ pub fn password(matches: &ArgMatches, app: &App) -> Result<()> {
 pub fn status(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting record status ...");
     let mut record = query::record(&app.db, matches)?;
-    record.set_status(option::record_state(matches));
+    record.set_status(options::record_state(matches));
     app.db.insert(record);
     app.db.close()?;
     Ok(())
@@ -94,11 +94,11 @@ pub fn status(matches: &ArgMatches, app: &App) -> Result<()> {
 
 pub fn url(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting record URL ...");
-    let category = option::category(matches);
-    let kind = option::record_kind(matches);
-    let user = option::user(matches);
-    let old_url = option::url_old(matches);
-    let new_url = option::url_new(matches);
+    let category = options::category(matches);
+    let kind = options::record_kind(matches);
+    let user = options::user(matches);
+    let old_url = options::url_old(matches);
+    let new_url = options::url_new(matches);
     let key = store::key(&category, kind, &user, &old_url);
     let mut record = query::record_by_key(&app.db, key.clone())?;
     log::debug!("Got record: {record:?}");
@@ -110,11 +110,11 @@ pub fn url(matches: &ArgMatches, app: &App) -> Result<()> {
 
 pub fn user(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting record user ...");
-    let category = option::category(matches);
-    let kind = option::record_kind(matches);
-    let old_user = option::user_old(matches);
-    let new_user = option::user_new(matches);
-    let url = option::url(matches);
+    let category = options::category(matches);
+    let kind = options::record_kind(matches);
+    let old_user = options::user_old(matches);
+    let new_user = options::user_new(matches);
+    let url = options::url(matches);
     let key = store::key(&category, kind, &old_user, &url);
     let mut record = query::record_by_key(&app.db, key.clone())?;
     record.set_user(new_user);

@@ -932,6 +932,7 @@ dependencies = [
  "anyhow",
  "clap",
  "clap_complete",
+ "confyg",
  "log",
  "passwords",
  "prettytable-rs",
@@ -939,6 +940,7 @@ dependencies = [
  "rucksack-db",
  "rucksack-lib",
  "secrecy",
+ "serde",
  "twyg",
  "versions",
 ]

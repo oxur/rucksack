@@ -18,11 +18,13 @@ name = "rucksack"
 anyhow = "1.0"
 clap = { version = "4.0", features = ["string"] }
 clap_complete = "4.0"
+confyg = "0.1"
 log = "0.4"
 passwords = "3.1"
 prettytable-rs = "0.10.0"
 rpassword = "7.1"
 secrecy = "0.8"
+serde = { version = "1.0", features = ["derive"] }
 twyg = "0.1"
 versions = "4.1.0"
 

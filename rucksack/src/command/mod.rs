@@ -3,7 +3,7 @@ use clap::{Arg, ArgAction, Command};
 
 use rucksack_db::records;
 
-use crate::constant;
+use crate::input::constant;
 
 pub mod add;
 #[doc(hidden)]

@@ -5,12 +5,10 @@ use secrecy::{ExposeSecret, SecretString};
 use rucksack_db::db;
 use rucksack_lib::file;
 
-use crate::{constant, prompt};
-
-use super::option;
+use crate::input::{constant, options, prompt};
 
 pub fn db(matches: &ArgMatches) -> Result<db::DB> {
-    let db_file = match option::db(matches) {
+    let db_file = match options::db(matches) {
         Some(file_path) => {
             log::debug!("Got database file from flag: {}", file_path);
             file_path
@@ -21,7 +19,7 @@ pub fn db(matches: &ArgMatches) -> Result<db::DB> {
             file_name
         }
     };
-    let mut backup_dir = option::backup_dir(matches);
+    let mut backup_dir = options::backup_dir(matches);
     if backup_dir.is_empty() {
         let dir_path = file::backup_dir(constant::NAME);
         backup_dir = dir_path.display().to_string();

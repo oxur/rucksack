@@ -132,7 +132,7 @@ use rucksack_db::Status;
 use rucksack_lib::time;
 
 use crate::app::App;
-use crate::option;
+use crate::input::options;
 use crate::output::{result, table, Column, Opts};
 use crate::query;
 
@@ -188,7 +188,7 @@ pub fn keys(matches: &ArgMatches, app: &App) -> Result<()> {
 pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
     let opts = Opts {
         decrypted: true,
-        reveal: option::reveal(matches),
+        reveal: options::reveal(matches),
         password_history: true,
         ..Default::default()
     };
@@ -230,10 +230,10 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
     let min_score = matches.get_one::<f64>("min-score");
     let reveal = matches.get_one::<bool>("reveal").unwrap();
     let sort_by = matches.get_one::<String>("sort-by").map(|s| s.as_str());
-    let kind = option::record_kind(matches);
-    let category = option::category(matches);
-    let all_tags = option::all_tags(matches);
-    let any_tags = option::any_tags(matches);
+    let kind = options::record_kind(matches);
+    let category = options::category(matches);
+    let all_tags = options::all_tags(matches);
+    let any_tags = options::any_tags(matches);
     opts.reveal = *reveal;
     opts.decrypted = *matches.get_one::<bool>("decrypt").unwrap();
     match matches.get_one::<String>("group-by").map(|s| s.as_str()) {
