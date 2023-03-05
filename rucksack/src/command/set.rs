@@ -61,8 +61,7 @@ use clap::ArgMatches;
 use rucksack_db as store;
 
 use crate::app::App;
-use crate::input::options;
-use crate::query;
+use crate::input::{options, query};
 
 pub fn record_type(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting record type ...");

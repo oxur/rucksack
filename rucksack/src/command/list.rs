@@ -132,9 +132,8 @@ use rucksack_db::Status;
 use rucksack_lib::time;
 
 use crate::app::App;
-use crate::input::options;
+use crate::input::{options, query};
 use crate::output::{result, table, Column, Opts};
-use crate::query;
 
 use super::backup;
 

@@ -2,13 +2,13 @@ use std::path;
 
 use anyhow::Result;
 use clap::ArgMatches;
+use secrecy::{ExposeSecret, SecretString};
 
 use rucksack_db as store;
 use rucksack_lib::file;
 
 use crate::command::{add, backup, config, export, gen, import, list, rm, set, show};
-use crate::input::Config;
-use crate::setup;
+use crate::input::{constant, options, prompt, Config};
 
 #[derive(Debug)]
 pub struct App {
@@ -18,7 +18,7 @@ pub struct App {
 
 pub fn new(cfg: Config, matches: &ArgMatches) -> Result<App> {
     log::debug!("Setting up rucksack application ...");
-    let db = setup::db(matches)?;
+    let db = setup_db(matches)?;
     Ok(App { cfg, db })
 }
 
@@ -159,4 +159,41 @@ impl App {
         }
         Ok(())
     }
+}
+
+pub fn setup_db(matches: &ArgMatches) -> Result<store::db::DB> {
+    log::debug!("Setting up database ...");
+    let db_file = match options::db(matches) {
+        Some(file_path) => {
+            log::debug!("Got database file from flag: {}", file_path);
+            file_path
+        }
+        None => {
+            let file_name = file::db_file(constant::NAME);
+            log::debug!("No database flag provided; using default ({file_name:})");
+            file_name
+        }
+    };
+    let mut backup_dir = options::backup_dir(matches);
+    if backup_dir.is_empty() {
+        let dir_path = file::backup_dir(constant::NAME);
+        backup_dir = dir_path.display().to_string();
+        log::debug!("No backup dir flag provided; using default");
+    };
+    log::debug!("Got backup dir {backup_dir:}");
+    match matches.get_one::<bool>("db-needed") {
+        Some(false) => {
+            log::debug!("Database not needed for this command; skipping load ...");
+            return Ok(store::db::new(db_file, backup_dir));
+        }
+        Some(true) => (),
+        None => (),
+    }
+    log::debug!("Database is needed; preparing for read ...");
+    let pwd = match matches.get_one::<String>("db-pass") {
+        Some(flag_pwd) => SecretString::new(flag_pwd.to_owned()),
+        None => prompt::secret("Enter db password: ").unwrap(),
+    };
+    let salt = matches.get_one::<String>("salt").unwrap().to_string();
+    store::db::open(db_file, backup_dir, pwd.expose_secret().to_string(), salt)
 }

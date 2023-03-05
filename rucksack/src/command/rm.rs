@@ -22,8 +22,7 @@ use clap::ArgMatches;
 use rucksack_db::records::Status;
 
 use crate::app::App;
-use crate::input::options;
-use crate::query;
+use crate::input::{options, query};
 
 pub fn one(matches: &ArgMatches, app: &App) -> Result<()> {
     let key = options::key(matches);

@@ -33,8 +33,7 @@ use rucksack_db::records;
 use rucksack_db::{default_metadata, DecryptedRecord};
 
 use crate::app::App;
-use crate::input::options;
-use crate::query;
+use crate::input::{options, query};
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Running 'add' subcommand ...");

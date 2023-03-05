@@ -67,10 +67,6 @@ pub mod command;
 pub mod input;
 #[doc(hidden)]
 pub mod output;
-#[doc(hidden)]
-pub mod query;
-#[doc(hidden)]
-pub mod setup;
 
 #[doc(hidden)]
 pub use app::App;
