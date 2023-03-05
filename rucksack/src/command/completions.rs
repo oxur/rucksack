@@ -17,18 +17,13 @@
 //! * powershell
 //! * zsh
 //!
-use std::io::Stdout;
+use std::io;
 
 use anyhow::Result;
 use clap::Command;
 use clap_complete::Shell;
 
-pub fn completions(
-    shell: Shell,
-    mut cmd: Command,
-    name: String,
-    mut output: &Stdout,
-) -> Result<()> {
-    clap_complete::generate(shell, &mut cmd, name, &mut output);
+pub fn completions(shell: Shell, mut cmd: Command, name: String) -> Result<()> {
+    clap_complete::generate(shell, &mut cmd, name, &mut io::stdout());
     Ok(())
 }

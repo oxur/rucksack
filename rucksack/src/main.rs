@@ -1,5 +1,3 @@
-use std::io;
-
 use anyhow::{Context, Result};
 
 use rucksack::input::{config, options};
@@ -20,7 +18,7 @@ fn main() -> Result<()> {
     if options::version(&matches) {
         return command::version();
     } else if let Some(shell) = options::completions(&matches) {
-        return command::completions(shell, rucksack, cfg.rucksack.name, &io::stdout());
+        return command::completions(shell, rucksack, cfg.rucksack.name);
     }
 
     // With top-level flags sorted, let's try for subcommands:
