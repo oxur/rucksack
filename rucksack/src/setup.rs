@@ -8,6 +8,7 @@ use rucksack_lib::file;
 use crate::input::{constant, options, prompt};
 
 pub fn db(matches: &ArgMatches) -> Result<db::DB> {
+    log::debug!("Setting up database ...");
     let db_file = match options::db(matches) {
         Some(file_path) => {
             log::debug!("Got database file from flag: {}", file_path);

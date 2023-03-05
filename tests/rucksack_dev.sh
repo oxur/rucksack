@@ -11,6 +11,7 @@ echo
 header "Show top-level help"
 echo
 ./bin/rucksack help
+echo
 
 header "Show config file (default)"
 
