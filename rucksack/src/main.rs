@@ -1,10 +1,10 @@
-use anyhow::{Context, Result};
+use anyhow::Result;
 
 use rucksack::input::{config, options};
 use rucksack::{command, input};
 
 fn main() -> Result<()> {
-    let mut rucksack = command::setup();
+    let rucksack = command::setup();
     let matches = rucksack.clone().get_matches();
     let cfg = config::load(
         config::Opts::new()
@@ -24,9 +24,7 @@ fn main() -> Result<()> {
     // With top-level flags sorted, let's try for subcommands:
     let subcommand = matches.subcommand();
     if subcommand.is_none() {
-        return rucksack
-            .print_long_help()
-            .with_context(|| "failed to print help".to_string());
+        return command::long_help(rucksack);
     }
 
     // If there are subcommands, let's fire up the app and dispatch appropriately:

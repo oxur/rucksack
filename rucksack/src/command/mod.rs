@@ -13,6 +13,8 @@ pub mod completions;
 pub mod config;
 pub mod export;
 pub mod gen;
+#[doc(hidden)]
+pub mod help;
 pub mod import;
 pub mod list;
 pub mod rm;
@@ -23,6 +25,7 @@ pub mod version;
 
 use arg::{db, record};
 pub use completions::completions;
+pub use help::long_help;
 pub use version::version;
 
 #[doc(hidden)]
