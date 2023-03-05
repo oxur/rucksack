@@ -155,8 +155,37 @@ pub fn load(opts: &Opts) -> Result<Config> {
 
 #[cfg(test)]
 mod tests {
-    // use crate::testing;
+    use crate::input::testing;
+    #[test]
+    fn in_memory_test() {
+        let r = super::load(&super::Opts {
+            in_memory: true,
+            config: super::DEFAULT_TOML.to_string(),
+            ..Default::default()
+        });
+        assert!(r.is_ok());
+        assert!(!r.unwrap().retention.purge_on_shutdown);
+    }
 
     #[test]
-    fn in_memory_test() {}
+    fn in_memory_purge_test() {
+        let r = super::load(&super::Opts {
+            in_memory: true,
+            config: testing::configs::PURGE_TOML.to_string(),
+            ..Default::default()
+        });
+        assert!(r.is_ok());
+        assert!(r.unwrap().retention.purge_on_shutdown);
+    }
+
+    #[test]
+    fn in_memory_inactive_test() {
+        let r = super::load(&super::Opts {
+            in_memory: true,
+            config: testing::configs::DELETE_INACTIVE_TOML.to_string(),
+            ..Default::default()
+        });
+        assert!(r.is_ok());
+        assert!(r.unwrap().retention.delete_inactive);
+    }
 }

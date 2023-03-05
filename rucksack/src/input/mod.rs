@@ -6,5 +6,7 @@ pub mod constant;
 pub mod options;
 #[doc(hidden)]
 pub mod prompt;
+#[doc(hidden)]
+pub mod testing;
 
 pub use config::Config;
