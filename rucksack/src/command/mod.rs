@@ -9,6 +9,7 @@ pub mod add;
 #[doc(hidden)]
 pub mod arg;
 pub mod backup;
+pub mod completions;
 pub mod config;
 pub mod export;
 pub mod gen;
@@ -17,8 +18,12 @@ pub mod list;
 pub mod rm;
 pub mod set;
 pub mod show;
+#[doc(hidden)]
+pub mod version;
 
 use arg::{db, record};
+pub use completions::completions;
+pub use version::version;
 
 #[doc(hidden)]
 pub fn setup() -> Command {

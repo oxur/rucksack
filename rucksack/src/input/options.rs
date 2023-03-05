@@ -57,6 +57,12 @@ pub fn category(matches: &ArgMatches) -> String {
         .to_string()
 }
 
+pub fn completions(matches: &ArgMatches) -> Option<clap_complete::Shell> {
+    matches
+        .get_one::<clap_complete::Shell>("completions")
+        .copied()
+}
+
 pub fn config_file(matches: &ArgMatches) -> String {
     match matches.get_one::<String>("config-file").cloned() {
         Some(file) => file,
@@ -232,4 +238,8 @@ pub fn user_old(matches: &ArgMatches) -> String {
         .unwrap()
         .trim()
         .to_string()
+}
+
+pub fn version(matches: &ArgMatches) -> bool {
+    *matches.get_one::<bool>("version").unwrap_or(&false)
 }

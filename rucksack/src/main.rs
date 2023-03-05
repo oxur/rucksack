@@ -2,13 +2,11 @@ use std::io;
 
 use anyhow::{Context, Result};
 
-use rucksack::command as cli;
-use rucksack::input;
 use rucksack::input::{config, options};
-use rucksack_lib::util;
+use rucksack::{command, input};
 
 fn main() -> Result<()> {
-    let mut rucksack = cli::setup();
+    let mut rucksack = command::setup();
     let matches = rucksack.clone().get_matches();
     let cfg = config::load(
         config::Opts::new()
@@ -17,31 +15,24 @@ fn main() -> Result<()> {
             .name(input::constant::NAME.to_string()),
     )?;
 
-    // Shell completion generation is completely independent, so perform it before
-    // any config or subcommand operations.
-    if let Some(is_version) = matches.get_one::<bool>("version") {
-        if *is_version {
-            return util::display(rucksack::version().to_string().as_str());
-        }
-    } else if let Some(shell) = matches.get_one::<clap_complete::Shell>("completions") {
-        clap_complete::generate(*shell, &mut rucksack, cfg.rucksack.name, &mut io::stdout());
-        return Ok(());
+    // Top-level short-circuit commands: the following are completely
+    // independent, so perform them before any config or subcommand operations.
+    if options::version(&matches) {
+        return command::version();
+    } else if let Some(shell) = options::completions(&matches) {
+        return command::completions(shell, rucksack, cfg.rucksack.name, &io::stdout());
     }
 
-    if matches.subcommand().is_none() {
+    // With top-level flags sorted, let's try for subcommands:
+    let subcommand = matches.subcommand();
+    if subcommand.is_none() {
         return rucksack
-            .clone()
             .print_long_help()
             .with_context(|| "failed to print help".to_string());
     }
 
-    let (_, subcmd_matches) = matches.subcommand().unwrap();
-    // TODO: let's decide what the SoT should be for data in the running app,
-    // and then consolidate all data there (from CLI flags, env vars, config,
-    // etc.). See ticket for more details:
-    // * https://github.com/oxur/rucksack/issues/92
-    // cfg.rucksack.db_file = db.path();
-    // cfg.rucksack.data_dir = file::dir_parent(db.path());
+    // If there are subcommands, let's fire up the app and dispatch appropriately:
+    let (_, subcmd_matches) = subcommand.unwrap();
     let app = rucksack::app::new(cfg, subcmd_matches)?;
     app.run(&matches)?;
     app.shutdown(&matches)
