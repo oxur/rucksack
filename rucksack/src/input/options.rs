@@ -57,6 +57,13 @@ pub fn category(matches: &ArgMatches) -> String {
         .to_string()
 }
 
+pub fn config_file(matches: &ArgMatches) -> String {
+    match matches.get_one::<String>("config-file").cloned() {
+        Some(file) => file,
+        None => "".to_string(),
+    }
+}
+
 pub fn db(matches: &ArgMatches) -> Option<String> {
     matches.get_one::<String>("db").cloned()
 }
@@ -79,6 +86,13 @@ pub fn key(matches: &ArgMatches) -> String {
 
 pub fn latest(matches: &ArgMatches) -> bool {
     *matches.get_one::<bool>("latest").unwrap_or(&false)
+}
+
+pub fn log_level(matches: &ArgMatches) -> String {
+    match matches.get_one::<String>("log-level").cloned() {
+        Some(level) => level,
+        None => "".to_string(),
+    }
 }
 
 pub fn name(matches: &ArgMatches) -> String {

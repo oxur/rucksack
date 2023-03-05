@@ -4,33 +4,18 @@ use anyhow::{Context, Result};
 
 use rucksack::command as cli;
 use rucksack::input;
+use rucksack::input::{config, options};
 use rucksack_lib::util;
 
 fn main() -> Result<()> {
     let mut rucksack = cli::setup();
     let matches = rucksack.clone().get_matches();
-    let mut config_file = String::new();
-    if let Some(cfg_file) = matches.get_one::<String>("config-file") {
-        config_file = cfg_file.to_string();
-    }
-    let mut log_level = String::new();
-    if let Some(level) = matches.get_one::<String>("log-level") {
-        log_level = level.to_string();
-    }
-    let cfg = input::config::load(
-        input::config::Opts::new()
-            .file_name(config_file)
-            .log_level(log_level)
+    let cfg = config::load(
+        config::Opts::new()
+            .file_name(options::config_file(&matches))
+            .log_level(options::log_level(&matches))
             .name(input::constant::NAME.to_string()),
     )?;
-    match twyg::setup_logger(&cfg.logging) {
-        Ok(_) => {}
-        Err(error) => {
-            panic!("Could not setup logger: {error:?}")
-        }
-    }
-    log::debug!("Config setup complete (using {})", cfg.rucksack.cfg_file);
-    log::debug!("Logger setup complete");
 
     // Shell completion generation is completely independent, so perform it before
     // any config or subcommand operations.

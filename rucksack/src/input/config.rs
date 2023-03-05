@@ -148,8 +148,16 @@ pub fn load(opts: &Opts) -> Result<Config> {
     if !opts.log_level.is_empty() {
         cfg.logging.level = opts.log_level.clone();
     }
+    match twyg::setup_logger(&cfg.logging) {
+        Ok(_) => {}
+        Err(error) => {
+            panic!("Could not setup logger: {error:?}")
+        }
+    }
     cfg.rucksack.cfg_file = opts.file_name.clone();
+    log::debug!("Config setup complete (using {})", cfg.rucksack.cfg_file);
     cfg.rucksack.name = opts.name.clone();
+    log::debug!("Logger setup complete");
     Ok(cfg)
 }
 
