@@ -1,12 +1,14 @@
 use std::str;
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use confyg::Confygery;
 use serde::{Deserialize, Serialize};
 
 use rucksack_lib::file;
 
-const DEFAULT_TOML: &str = r#"[rucksack]
+use super::constant;
+
+const DEFAULT: &str = r#"[rucksack]
 
 [logging]
 coloured = true
@@ -125,7 +127,7 @@ pub fn init(opts: &Opts) -> Result<()> {
         log::debug!("File already exists; skipping init ...");
         return Ok(());
     }
-    file::write(DEFAULT_TOML.as_bytes().to_vec(), opts.file_name.clone())
+    file::write(DEFAULT.as_bytes().to_vec(), opts.file_name.clone())
 }
 
 pub fn load(opts: &Opts) -> Result<Config> {
@@ -145,15 +147,23 @@ pub fn load(opts: &Opts) -> Result<Config> {
             .add_struct(&defaults())
             .build::<Config>()?;
     }
+    cfg.logging.level = constant::DEFAULT_LOG_LEVEL.to_string();
     if !opts.log_level.is_empty() {
         cfg.logging.level = opts.log_level.clone();
     }
     match twyg::setup_logger(&cfg.logging) {
-        Ok(_) => {}
-        Err(error) => {
-            panic!("Could not setup logger: {error:?}")
+        Ok(_) => Ok(()),
+        Err(e) => {
+            // We can update this when this twyg ticket is closed:
+            // * https://github.com/oxur/twyg/issues/4
+            let msg = format!("{e}");
+            if msg.contains("logging system was already initialized") {
+                Ok(())
+            } else {
+                Err(anyhow!(e))
+            }
         }
-    }
+    }?;
     cfg.rucksack.cfg_file = opts.file_name.clone();
     log::debug!("Config setup complete (using {})", cfg.rucksack.cfg_file);
     cfg.rucksack.name = opts.name.clone();
@@ -168,7 +178,7 @@ mod tests {
     fn in_memory_test() {
         let r = super::load(&super::Opts {
             in_memory: true,
-            config: super::DEFAULT_TOML.to_string(),
+            config: super::DEFAULT.to_string(),
             ..Default::default()
         });
         assert!(r.is_ok());
