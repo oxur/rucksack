@@ -7,7 +7,7 @@ use secrecy::{ExposeSecret, SecretString};
 use rucksack_db as store;
 use rucksack_lib::file;
 
-use crate::command::{add, backup, config, export, gen, import, list, rm, set, show};
+use crate::handlers::{add, backup, config, export, gen, import, list, rm, set, show};
 use crate::input::{constant, options, prompt, Config};
 
 #[derive(Debug)]

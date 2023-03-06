@@ -63,6 +63,7 @@
 #[doc(hidden)]
 pub mod app;
 pub mod command;
+pub mod handlers;
 #[doc(hidden)]
 pub mod input;
 #[doc(hidden)]
