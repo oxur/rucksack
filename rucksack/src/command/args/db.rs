@@ -31,6 +31,8 @@ pub fn backup_dir() -> Arg {
         .global(true)
 }
 
+// TODO: let's unify this when we tackle SoT data in this ticket:
+// * https://github.com/oxur/rucksack/issues/92
 fn default_salt() -> String {
     match std::env::var("USER") {
         Ok(user) => user,
@@ -38,6 +40,7 @@ fn default_salt() -> String {
     }
 }
 
+// TODO: let's look at the other bool flags and make sure we're being consistent
 pub fn not_needed() -> Arg {
     Arg::new("db-needed")
         .hide(true)
@@ -47,6 +50,7 @@ pub fn not_needed() -> Arg {
         .global(true)
 }
 
+// TODO: let's look at the other bool flags and make sure we're being consistent
 pub fn needed() -> Arg {
     Arg::new("db-needed")
         .hide(true)
