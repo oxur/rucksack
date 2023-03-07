@@ -124,10 +124,14 @@ pub fn setup_db(matches: &ArgMatches) -> Result<store::db::DB> {
         log::debug!("No backup dir flag provided; using default");
     };
     log::debug!("Got backup dir {backup_dir:}");
-    if !options::db_needed(matches) {
-        log::debug!("Database not needed for this command; skipping load ...");
-        return Ok(store::db::new(db_file, backup_dir));
-    }
+    match options::db_needed(matches) {
+        Some(false) => {
+            log::debug!("Database not needed for this command; skipping load ...");
+            return Ok(store::db::new(db_file, backup_dir));
+        }
+        Some(true) => (),
+        None => (),
+    };
     log::debug!("Database is needed; preparing for read ...");
     let pwd = options::db_pwd(matches);
     store::db::open(
