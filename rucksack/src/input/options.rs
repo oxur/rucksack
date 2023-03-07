@@ -74,8 +74,8 @@ pub fn db(matches: &ArgMatches) -> Option<String> {
     matches.get_one::<String>("db").cloned()
 }
 
-pub fn db_needed(matches: &ArgMatches) -> bool {
-    *matches.get_one::<bool>("db-needed").unwrap_or(&false)
+pub fn db_needed(matches: &ArgMatches) -> Option<bool> {
+    matches.get_one::<bool>("db-needed").cloned()
 }
 
 pub fn db_pwd(matches: &ArgMatches) -> Secret<String> {
