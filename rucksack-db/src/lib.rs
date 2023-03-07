@@ -1,12 +1,8 @@
 pub mod crypto;
 pub mod csv;
-
-// This is just a temporary solution ... we'll have a backend module that
-// will use the enabled feature, probably using https://crates.io/crates/cfg-if ...
-#[cfg(feature = "filesystem")]
 pub mod db;
-
 pub mod records;
+pub mod store;
 pub mod testing;
 
 pub use records::{
