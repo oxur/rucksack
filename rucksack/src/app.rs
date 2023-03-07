@@ -16,13 +16,13 @@ pub struct App {
     pub db: store::db::DB,
 }
 
-pub fn new(cfg: Config, matches: &ArgMatches) -> Result<App> {
-    log::debug!("Setting up rucksack application ...");
-    let db = setup_db(matches)?;
-    Ok(App { cfg, db })
-}
-
 impl App {
+    pub fn new(cfg: Config, matches: &ArgMatches) -> Result<App> {
+        log::debug!("Setting up rucksack application ...");
+        let db = setup_db(matches)?;
+        Ok(App { cfg, db })
+    }
+
     pub fn backup_dir(&self) -> String {
         self.db.backup_dir()
     }

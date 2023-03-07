@@ -70,6 +70,10 @@ pub fn config_file(matches: &ArgMatches) -> String {
     }
 }
 
+pub fn daemonise(matches: &ArgMatches) -> bool {
+    *matches.get_one::<bool>("daemonise").unwrap_or(&false)
+}
+
 pub fn db(matches: &ArgMatches) -> Option<String> {
     matches.get_one::<String>("db").cloned()
 }

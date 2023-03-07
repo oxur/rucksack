@@ -1,5 +1,6 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 
+use rucksack::daemon;
 use rucksack::input::{config, options};
 use rucksack::{command, handlers, input};
 
@@ -21,12 +22,24 @@ fn main() -> Result<()> {
         return handlers::completions(shell, rucksack, cfg.rucksack.name);
     }
 
-    // With top-level short-circuit flags sorted, let's try for subcommands:
-    if let Some((_, subcmd_matches)) = matches.subcommand() {
-        let app = rucksack::app::new(cfg, subcmd_matches)?;
-        app.run(&matches)?;
-        app.shutdown(&matches)
-    } else {
-        handlers::long_help(rucksack)
+    // With top-level short-circuit flags sorted, let's try for subcommands,
+    // checking first to see if we're going to be running rucksack as a
+    // daemon.
+    match matches.subcommand() {
+        // Daemon:
+        Some(("start", start_matches)) => {
+            let sys = daemon::start(cfg, start_matches)?;
+            match sys.run() {
+                Ok(_) => Ok(()),
+                Err(e) => Err(anyhow!(e)),
+            }
+        }
+        // CLI:
+        Some((_, subcmd_matches)) => {
+            let app = rucksack::App::new(cfg, subcmd_matches)?;
+            app.run(&matches)?;
+            app.shutdown(&matches)
+        }
+        None => handlers::long_help(rucksack),
     }
 }

@@ -45,14 +45,19 @@
 //!
 //! Be sure to see the documentation for the following `rucksack` CLI subcommands
 //! here:
-//! * [add](command/add/index.html)
-//! * [export](command/export/index.html)
-//! * [gen](command/gen/index.html)
-//! * [import](command/import/index.html)
-//! * [list](command/list/index.html)
-//! * [rm](command/rm/index.html)
-//! * [set](command/set/index.html)
-//! * [show](command/show/index.html)
+//! * [add](handlers/add/index.html)
+//! * [backup](handlers/backup/index.html)
+//! * [completions](handlers/completions/index.html)
+//! * [config](handlers/config/index.html)
+//! * [export](handlers/export/index.html)
+//! * [gen](handlers/gen/index.html)
+//! * [help](handlers/help/index.html)
+//! * [import](handlers/import/index.html)
+//! * [list](handlers/list/index.html)
+//! * [rm](handlers/rm/index.html)
+//! * [set](handlers/set/index.html)
+//! * [show](handlers/show/index.html)
+//! * [version](handlers/version/index.html)
 //!
 //! # License
 //!
@@ -63,6 +68,8 @@
 #[doc(hidden)]
 pub mod app;
 pub mod command;
+#[doc(hidden)]
+pub mod daemon;
 pub mod handlers;
 #[doc(hidden)]
 pub mod input;

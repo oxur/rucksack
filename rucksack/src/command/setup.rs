@@ -296,7 +296,8 @@ pub fn run() -> Command {
             .arg(db::path())
             .arg(db::pwd())
             .arg(db::salt())
-            .arg(db::backup_dir())
+            .arg(db::backup_dir()
+        )
     )
     .subcommand(
         Command::new("set")
@@ -340,8 +341,7 @@ pub fn run() -> Command {
                 Command::new("type")
                     .about("Change the type of the given record")
                     .arg(record::user().required(true))
-                    .arg(record::url().required(true))
-            )
+                    .arg(record::url().required(true)))
     )
     .subcommand(
         Command::new("show")
@@ -394,5 +394,13 @@ pub fn run() -> Command {
                 Command::new("types")
                     .about("Display the record types supported")
             )
+    )
+    .subcommand(
+        Command::new("start")
+            .about("Run rucksack as a daemon, enabling local network syncing services")
+            .arg(db::path())
+            .arg(db::pwd())
+            .arg(db::salt())
+            .arg(db::backup_dir())
     )
 }
