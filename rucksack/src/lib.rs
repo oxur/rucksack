@@ -68,14 +68,12 @@
 #[doc(hidden)]
 pub mod app;
 pub mod command;
-#[doc(hidden)]
-pub mod daemon;
 pub mod handlers;
 #[doc(hidden)]
 pub mod input;
 #[doc(hidden)]
 pub mod output;
-
+pub mod service;
 #[doc(hidden)]
 pub use app::App;
 

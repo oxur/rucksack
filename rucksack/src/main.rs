@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
 
-use rucksack::daemon;
 use rucksack::input::{config, options};
+use rucksack::service::actor::Commander;
 use rucksack::{command, handlers, input};
 
 fn main() -> Result<()> {
@@ -28,8 +28,8 @@ fn main() -> Result<()> {
     match matches.subcommand() {
         // Daemon:
         Some(("start", start_matches)) => {
-            let sys = daemon::start(cfg, start_matches)?;
-            match sys.run() {
+            let daemon = Commander::start(cfg, start_matches)?;
+            match daemon.run() {
                 Ok(_) => Ok(()),
                 Err(e) => Err(anyhow!(e)),
             }
