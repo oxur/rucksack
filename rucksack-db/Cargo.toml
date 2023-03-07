@@ -14,6 +14,11 @@ edition = "2021"
 [lib]
 name = "rucksack_db"
 
+[features]
+dashmap = ["dep:dashmap"]
+persy = ["dep:persy"]
+redb = ["dep:redb"]
+
 [dependencies]
 aead = "0.5"
 aes-gcm = "0.10"
@@ -22,11 +27,13 @@ bincode = "2.0.0-rc.2"
 chrono = { version = "0.4", default-features = false, features = ["serde"] }
 crc32fast = "1.3"
 csv = "1.1"
-dashmap = { version = "5.4.0", features = ["serde"] }
+dashmap = { version = "5.4.0", features = ["serde"], optional = true }
 enum-iterator = "1.2.0"
 heck = "0.4.1"
 log = "0.4"
+persy = { version = "1.4", optional = true }
 rand = "0.8"
+redb = { version = "0.13", optional = true }
 secrecy = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 tempfile = { version = "3", default-features = false}
