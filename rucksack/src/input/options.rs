@@ -74,6 +74,10 @@ pub fn db(matches: &ArgMatches) -> Option<String> {
     matches.get_one::<String>("db").cloned()
 }
 
+pub fn db_needed(matches: &ArgMatches) -> bool {
+    *matches.get_one::<bool>("db-needed").unwrap_or(&false)
+}
+
 pub fn db_pwd(matches: &ArgMatches) -> Secret<String> {
     match matches.get_one::<String>("db-pass") {
         Some(flag_pwd) => SecretString::new(flag_pwd.to_owned()),
@@ -150,7 +154,7 @@ pub fn record_pwd(matches: &ArgMatches) -> Secret<String> {
 }
 
 pub fn record_pwd_revealed(matches: &ArgMatches) -> String {
-    reveal_it(record_pwd(matches))
+    record_pwd(matches).expose_secret().to_string()
 }
 
 pub fn record_state(matches: &ArgMatches) -> Status {
@@ -167,16 +171,16 @@ pub fn reveal(matches: &ArgMatches) -> bool {
     *matches.get_one::<bool>("reveal").unwrap_or(&false)
 }
 
-fn reveal_it(pwd: SecretString) -> String {
-    pwd.expose_secret().to_string()
-}
-
 pub fn root(matches: &ArgMatches) -> Vec<u8> {
     matches
         .get_one::<String>("root")
         .unwrap()
         .as_bytes()
         .to_vec()
+}
+
+pub fn salt(matches: &ArgMatches) -> String {
+    matches.get_one::<String>("salt").cloned().unwrap()
 }
 
 pub fn service_key(matches: &ArgMatches) -> String {

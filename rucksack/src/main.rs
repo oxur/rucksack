@@ -13,7 +13,7 @@ fn main() -> Result<()> {
             .name(input::constant::NAME.to_string()),
     )?;
 
-    // Top-level short-circuit commands: the following are completely
+    // Top-level short-circuit flags: the following are completely
     // independent, so perform them before any config or subcommand operations.
     if options::version(&matches) {
         return handlers::version();
@@ -21,15 +21,12 @@ fn main() -> Result<()> {
         return handlers::completions(shell, rucksack, cfg.rucksack.name);
     }
 
-    // With top-level flags sorted, let's try for subcommands:
-    let subcommand = matches.subcommand();
-    if subcommand.is_none() {
-        return handlers::long_help(rucksack);
+    // With top-level short-circuit flags sorted, let's try for subcommands:
+    if let Some((_, subcmd_matches)) = matches.subcommand() {
+        let app = rucksack::app::new(cfg, subcmd_matches)?;
+        app.run(&matches)?;
+        app.shutdown(&matches)
+    } else {
+        handlers::long_help(rucksack)
     }
-
-    // If there are subcommands, let's fire up the app and dispatch appropriately:
-    let (_, subcmd_matches) = subcommand.unwrap();
-    let app = rucksack::app::new(cfg, subcmd_matches)?;
-    app.run(&matches)?;
-    app.shutdown(&matches)
 }

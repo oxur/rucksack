@@ -2,13 +2,13 @@ use std::path;
 
 use anyhow::Result;
 use clap::ArgMatches;
-use secrecy::{ExposeSecret, SecretString};
+use secrecy::ExposeSecret;
 
 use rucksack_db as store;
 use rucksack_lib::file;
 
-use crate::handlers::{add, backup, config, export, gen, import, list, rm, set, show};
-use crate::input::{constant, options, prompt, Config};
+use crate::command;
+use crate::input::{constant, options, Config};
 
 #[derive(Debug)]
 pub struct App {
@@ -86,64 +86,7 @@ impl App {
             file::create_dirs(self.backup_path())?;
             log::info!("Created backup dir.");
         }
-        match matches.subcommand() {
-            Some(("add", add_matches)) => add::new(add_matches, self)?,
-            Some(("backup", backup_matches)) => match backup_matches.subcommand() {
-                Some(("delete", delete_matches)) => backup::delete(delete_matches, self)?,
-                Some(("restore", restore_matches)) => backup::restore(restore_matches, self)?,
-                Some((&_, _)) => todo!(),
-                None => backup::run(backup_matches, self)?,
-            },
-            Some(("backups", backup_matches)) => match backup_matches.subcommand() {
-                Some(("list", list_matches)) => backup::list(list_matches, self)?,
-                Some((&_, _)) => todo!(),
-                None => todo!(),
-            },
-            Some(("config", config_matches)) => match config_matches.subcommand() {
-                Some(("re-init", init_matches)) => config::re_init(init_matches, self)?,
-                Some((&_, _)) => todo!(),
-                None => todo!(),
-            },
-            Some(("export", export_matches)) => export::new(export_matches, self)?,
-            Some(("gen", gen_matches)) => gen::new(gen_matches)?,
-            Some(("import", import_matches)) => import::new(import_matches, self)?,
-            Some(("list", list_matches)) => match list_matches.subcommand() {
-                Some(("backups", backups_matches)) => list::backups(backups_matches, self)?,
-                Some(("deleted", deleted_matches)) => list::deleted(deleted_matches, self)?,
-                Some(("keys", key_matches)) => list::keys(key_matches, self)?,
-                Some(("passwords", passwords_matches)) => list::passwords(passwords_matches, self)?,
-                Some((&_, _)) => todo!(),
-                None => list::all(list_matches, self)?,
-            },
-            Some(("rm", rm_matches)) => rm::one(rm_matches, self)?,
-            Some(("set", set_matches)) => match set_matches.subcommand() {
-                Some(("password", password_matches)) => set::password(password_matches, self)?,
-                Some(("status", status_matches)) => set::status(status_matches, self)?,
-                Some(("url", url_matches)) => set::url(url_matches, self)?,
-                Some(("user", user_matches)) => set::user(user_matches, self)?,
-                Some(("type", type_matches)) => set::record_type(type_matches, self)?,
-                Some((&_, _)) => todo!(),
-                None => todo!(),
-            },
-            Some(("show", show_matches)) => match show_matches.subcommand() {
-                Some(("backup-dir", bud_matches)) => show::backup_dir(bud_matches, self)?,
-                Some(("categories", cat_matches)) => show::categories(cat_matches, self)?,
-                Some(("config-file", cfgfile_matches)) => show::config_file(cfgfile_matches, self)?,
-                Some(("config", cfg_matches)) => show::config(cfg_matches, self)?,
-                Some(("data-dir", datadir_matches)) => show::data_dir(datadir_matches, self)?,
-                Some(("db-file", dbfile_matches)) => show::db_file(dbfile_matches, self)?,
-                Some(("db-version", dbvsn_matches)) => show::db_version(dbvsn_matches, self)?,
-                Some(("tags", tag_matches)) => show::tags(tag_matches, self)?,
-                Some(("types", type_matches)) => show::types(type_matches, self)?,
-                Some((&_, _)) => todo!(),
-                None => todo!(),
-            },
-            Some((cmd, _)) => {
-                log::warn!("unknown command: {}", cmd);
-                todo!()
-            }
-            None => todo!(),
-        }
+        command::dispatch(self, matches)?;
         log::debug!("Command execution complete.");
         Ok(())
     }
@@ -181,19 +124,16 @@ pub fn setup_db(matches: &ArgMatches) -> Result<store::db::DB> {
         log::debug!("No backup dir flag provided; using default");
     };
     log::debug!("Got backup dir {backup_dir:}");
-    match matches.get_one::<bool>("db-needed") {
-        Some(false) => {
-            log::debug!("Database not needed for this command; skipping load ...");
-            return Ok(store::db::new(db_file, backup_dir));
-        }
-        Some(true) => (),
-        None => (),
+    if !options::db_needed(matches) {
+        log::debug!("Database not needed for this command; skipping load ...");
+        return Ok(store::db::new(db_file, backup_dir));
     }
     log::debug!("Database is needed; preparing for read ...");
-    let pwd = match matches.get_one::<String>("db-pass") {
-        Some(flag_pwd) => SecretString::new(flag_pwd.to_owned()),
-        None => prompt::secret("Enter db password: ").unwrap(),
-    };
-    let salt = matches.get_one::<String>("salt").unwrap().to_string();
-    store::db::open(db_file, backup_dir, pwd.expose_secret().to_string(), salt)
+    let pwd = options::db_pwd(matches);
+    store::db::open(
+        db_file,
+        backup_dir,
+        pwd.expose_secret().to_string(),
+        options::salt(matches),
+    )
 }

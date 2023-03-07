@@ -47,6 +47,9 @@ header "Generate encoded password"
 
 header "Add a new record (shelly)"
 
+ls -al "$DB_FILE"
+ls -al "$BACKUP_DIR"
+
 ./bin/rucksack add \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
@@ -54,7 +57,9 @@ header "Add a new record (shelly)"
     --db-pass 1234 \
     --url http://example.com \
     --user shelly \
-    --password whyyyyyy
+    --password whyyyyyy --log-level trace
+
+sleep 1
 
 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
@@ -62,13 +67,25 @@ header "Add a new record (shelly)"
     --db "$DB_FILE" \
     --db-pass 1234
 
+sleep 1
+
+ls -al "$DB_FILE"
+ls -al "$BACKUP_DIR"
+
+
 header "Show DB file format version"
 
 ./bin/rucksack show db-version \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
-    --db-pass 1234
+    --db-pass 1234  --log-level trace
+
+ls -al "$DB_FILE"
+ls -al "$BACKUP_DIR"
+cat "$DB_FILE"
+echo
+exit 1
 
 header "Change the record user name"
 

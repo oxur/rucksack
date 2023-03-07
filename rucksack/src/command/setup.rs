@@ -5,7 +5,7 @@ use rucksack_db::records;
 
 use crate::input::constant;
 
-use super::args::{db, record};
+use super::args::{db, record, top};
 pub use crate::handlers::completions::completions;
 pub use crate::handlers::help::long_help;
 pub use crate::handlers::version::version;
@@ -15,8 +15,8 @@ pub fn run() -> Command {
     Command::new(constant::NAME)
     .about(format!("{}: {}", constant::NAME, constant::DESC))
     .arg_required_else_help(true)
-    .arg(config_arg())
-    .arg(log_level_arg())
+    .arg(top::config())
+    .arg(top::log_level())
     .arg(
         Arg::new("completions")
             .help("Emit shell tab completions")
@@ -395,26 +395,4 @@ pub fn run() -> Command {
                     .about("Display the record types supported")
             )
     )
-}
-
-// Top-level Flags
-
-#[doc(hidden)]
-pub fn config_arg() -> Arg {
-    let config_file = rucksack_lib::file::config_file(constant::NAME);
-    Arg::new("config-file")
-        .help("The path to the config file to use or create")
-        .long("config-file")
-        .default_value(config_file)
-        .global(true)
-}
-
-#[doc(hidden)]
-pub fn log_level_arg() -> Arg {
-    Arg::new("log-level")
-        .help("Override the configured log-level setting")
-        .long("log-level")
-        .default_value("")
-        .value_parser(["error", "warn", "info", "debug", "trace", ""])
-        .global(true)
 }
