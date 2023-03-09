@@ -33,7 +33,7 @@
 use anyhow::{anyhow, Result};
 use clap::ArgMatches;
 
-use rucksack_db::db::backup;
+use rucksack_db::store::backup;
 use rucksack_lib::file;
 
 use crate::app::App;

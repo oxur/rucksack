@@ -1,9 +1,10 @@
 use anyhow::Result;
 
-use crate::db::backup;
 use crate::db::encrypted;
 use crate::db::encrypted::EncryptedDB;
 use crate::store::manager::StoreManager;
+
+use super::backup;
 
 #[derive(Clone, Default)]
 pub struct FileSystemBackend {}

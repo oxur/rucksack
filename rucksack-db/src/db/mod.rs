@@ -1,4 +1,3 @@
-pub mod backup;
 pub mod encrypted;
 pub mod manager;
 pub mod versioned;

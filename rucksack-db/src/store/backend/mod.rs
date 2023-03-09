@@ -1,3 +1,4 @@
+pub mod backup;
 #[cfg(feature = "filesystem")]
 pub mod filesystem;
 #[cfg(feature = "persy")]
