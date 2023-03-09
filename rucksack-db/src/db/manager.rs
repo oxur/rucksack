@@ -26,18 +26,20 @@ use rucksack_lib::{file, util};
 
 use crate::records;
 use crate::records::{DecryptedRecord, EncryptedRecord, Metadata};
+use crate::store;
+use crate::store::manager::StoreManager;
 
-use super::{backup, encrypted, versioned};
+use super::{encrypted, versioned};
 
-#[derive(Clone, Default)]
 pub struct DB {
     pub file_name: String,
     backup_dir: String,
-    store_hash: u32,
-    store_pwd: String,
-    salt: String,
-    hash_map: records::HashMap,
     enabled: bool,
+    hash_map: records::HashMap,
+    manager: Box<dyn StoreManager>,
+    salt: Option<String>,
+    store_hash: u32,
+    store_pwd: Option<String>,
     version: versions::SemVer,
 }
 
@@ -50,65 +52,69 @@ impl fmt::Debug for DB {
     }
 }
 
-pub fn init(
-    file_name: String,
-    backup_dir: String,
-    store_pwd: String,
-    updated: String,
-) -> Result<()> {
-    let db = open(file_name, backup_dir, store_pwd, updated)?;
-    db.close()
-}
-
-pub fn new(file_name: String, backup_dir: String) -> DB {
-    DB {
-        file_name,
-        backup_dir,
-
-        ..Default::default()
-    }
-}
-
-pub fn open(file_name: String, backup_dir: String, store_pwd: String, salt: String) -> Result<DB> {
-    log::debug!("Opening database ...");
-    let mut hash_map: records::HashMap = DashMap::new();
-    let mut store_hash = 0;
-    let mut version = records::version();
-    let vsn_db: versioned::VersionedDB;
-    let file_path = file::create_parents(file_name.clone())?;
-    if file_path.exists() {
-        log::debug!("Creating encrypted DB ...");
-        let enc_db = encrypted::from_file(file_name, store_pwd.clone(), salt.clone())?;
-        log::debug!("Creating versioned DB ...");
-        vsn_db = match versioned::deserialise(enc_db.decrypted()) {
-            Ok(db) => db,
-            Err(_) => {
-                log::info!("Given database appears to be non-versioned; be sure to upgrade to the latest micro release of our old version before continuing ...");
-                log::trace!("Bytes: {:?}", enc_db.decrypted());
-                versioned::from_bytes(enc_db.decrypted())
-            }
-        };
-        log::debug!("Getting database hash ...");
-        store_hash = vsn_db.hash();
-        version = vsn_db.version();
-        // Decode the versioned DB's bytes to a hashmap
-        hash_map = records::decode_hashmap(vsn_db.bytes(), version.clone())?;
-    };
-    let file_name = file_path.display().to_string();
-    log::debug!("Setting database path: {}", file_name);
-    Ok(DB {
-        file_name,
-        backup_dir,
-        store_hash,
-        store_pwd,
-        salt,
-        hash_map,
-        enabled: true,
-        version,
-    })
-}
-
 impl DB {
+    pub fn new(
+        file_name: String,
+        backup_dir: String,
+        store_pwd: Option<String>,
+        salt: Option<String>,
+    ) -> DB {
+        DB {
+            file_name,
+            backup_dir,
+            store_pwd,
+            salt,
+            manager: store::manager::new(),
+            enabled: true,
+            hash_map: DashMap::new(),
+            store_hash: 0,
+            version: records::version(),
+        }
+    }
+
+    // Moved in v0.9.0
+    pub fn init(
+        file_name: String,
+        backup_dir: String,
+        store_pwd: Option<String>,
+        salt: Option<String>,
+    ) -> Result<()> {
+        log::debug!("Initialising database ...");
+        let mut db = DB::new(file_name, backup_dir, store_pwd, salt);
+        db.open()?;
+        db.close()
+    }
+
+    // Moved in v0.9.0
+    pub fn open(&mut self) -> Result<()> {
+        log::debug!("Opening database ...");
+        let store_pwd = self.store_pwd.clone().unwrap();
+        let salt = self.salt.clone().unwrap();
+        let file_path = file::create_parents(self.file_name.clone())?;
+        if file_path.exists() {
+            log::debug!("Creating encrypted DB ...");
+            let enc_db = self.manager.read(self.file_name.clone(), store_pwd, salt)?;
+            let vsn_db = match versioned::deserialise(enc_db.decrypted()) {
+                Ok(db) => db,
+                Err(_) => {
+                    log::info!("Given database appears to be non-versioned; be sure to upgrade to the latest micro release of our old version before continuing ...");
+                    log::trace!("Bytes: {:?}", enc_db.decrypted());
+                    versioned::from_bytes(enc_db.decrypted())
+                }
+            };
+            log::debug!("Getting database hash ...");
+            self.store_hash = vsn_db.hash();
+            self.version = vsn_db.version();
+            // Decode the versioned DB's bytes to a hashmap
+            self.hash_map = records::decode_hashmap(vsn_db.bytes(), self.version.clone())?;
+        };
+
+        self.file_name = file_path.display().to_string();
+        self.enabled = true;
+        log::debug!("Set database path: {}", self.file_name);
+        Ok(())
+    }
+
     pub fn backup_dir(&self) -> String {
         self.backup_dir.clone()
     }
@@ -118,7 +124,7 @@ impl DB {
         let path = file::create_parents(self.file_name())?;
         if path.exists() {
             log::debug!("Database file exists; backing up ...");
-            let backup_file = backup::copy(
+            let backup_file = self.manager.backup(
                 self.file_name(),
                 self.backup_dir(),
                 self.schema_version().to_string(),
@@ -224,7 +230,7 @@ impl DB {
     }
 
     pub fn salt(&self) -> String {
-        self.salt.clone()
+        self.salt.clone().unwrap()
     }
 
     fn serialise(&self) -> Result<Vec<u8>> {
@@ -250,7 +256,7 @@ impl DB {
     }
 
     pub fn store_pwd(&self) -> String {
-        self.store_pwd.clone()
+        self.store_pwd.clone().unwrap()
     }
 
     // Note that the key has to be passed here, even though the
@@ -303,8 +309,8 @@ mod tests {
 
     #[test]
     fn db_basics() {
-        let pwd = testing::data::store_pwd();
-        let salt = time::now();
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
         let mut db_handler = testing::db::new();
         let mut r = db_handler.setup();
         assert!(r.is_ok());
@@ -312,8 +318,11 @@ mod tests {
         let backups = db_handler.backups_path().unwrap().display().to_string();
         println!("Got db_file: {db_file}");
         println!("Got backups_path: {backups}");
-        let tmp_db =
-            super::open(db_file.clone(), backups.clone(), pwd.clone(), salt.clone()).unwrap();
+
+        // Store data and close
+        let mut tmp_db =
+            super::DB::new(db_file.clone(), backups.clone(), pwd.clone(), salt.clone());
+        assert!(tmp_db.open().is_ok());
         assert!(tmp_db.version() > versions::SemVer::new("0.8.0").unwrap());
         let dpr = testing::data::plaintext_record_v090();
         tmp_db.insert(dpr.clone());
@@ -321,13 +330,17 @@ mod tests {
         assert_eq!(re_dpr.secrets.user, "alice@site.com");
         assert_eq!(re_dpr.secrets.password, "6 s3kr1t");
         assert!(tmp_db.close().is_ok());
-        let tmp_db = super::open(db_file, backups, pwd, salt).unwrap();
+
+        // Re-open DB and check stored data
+        let mut tmp_db = super::DB::new(db_file, backups, pwd, salt);
+        assert!(tmp_db.open().is_ok());
         let read_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(read_dpr.secrets.user, "alice@site.com");
         assert_eq!(read_dpr.secrets.password, "6 s3kr1t");
         assert_eq!(read_dpr.history.len(), 2);
         assert_eq!(read_dpr.history[0].secrets.password, "4 s3kr1t");
         assert_eq!(read_dpr.history[1].secrets.password, "5 s3kr1t");
+        assert!(tmp_db.close().is_ok());
         r = db_handler.teardown();
         assert!(r.is_ok());
     }

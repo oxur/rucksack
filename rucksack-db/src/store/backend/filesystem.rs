@@ -5,7 +5,14 @@ use crate::db::encrypted;
 use crate::db::encrypted::EncryptedDB;
 use crate::store::manager::StoreManager;
 
+#[derive(Clone, Default)]
 pub struct FileSystemBackend {}
+
+impl FileSystemBackend {
+    pub fn new() -> FileSystemBackend {
+        FileSystemBackend {}
+    }
+}
 
 impl StoreManager for FileSystemBackend {
     fn backup(&self, src_file: String, dest_dir: String, version: String) -> Result<String> {

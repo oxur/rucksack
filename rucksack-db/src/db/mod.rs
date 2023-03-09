@@ -1,9 +1,9 @@
 pub mod backup;
 pub mod encrypted;
-pub mod store;
+pub mod manager;
 pub mod versioned;
 
-pub use store::{init, new, open, DB};
+pub use manager::DB;
 
 use crate::records;
 

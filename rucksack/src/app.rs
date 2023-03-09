@@ -4,7 +4,7 @@ use anyhow::Result;
 use clap::ArgMatches;
 use secrecy::ExposeSecret;
 
-use rucksack_db as store;
+use rucksack_db::db::DB;
 use rucksack_lib::file;
 
 use crate::command;
@@ -13,7 +13,7 @@ use crate::input::{constant, options, Config};
 #[derive(Debug)]
 pub struct App {
     pub cfg: Config,
-    pub db: store::db::DB,
+    pub db: DB,
 }
 
 impl App {
@@ -104,7 +104,7 @@ impl App {
     }
 }
 
-pub fn setup_db(matches: &ArgMatches) -> Result<store::db::DB> {
+pub fn setup_db(matches: &ArgMatches) -> Result<DB> {
     log::debug!("Setting up database ...");
     let db_file = match options::db(matches) {
         Some(file_path) => {
@@ -127,17 +127,19 @@ pub fn setup_db(matches: &ArgMatches) -> Result<store::db::DB> {
     match options::db_needed(matches) {
         Some(false) => {
             log::debug!("Database not needed for this command; skipping load ...");
-            return Ok(store::db::new(db_file, backup_dir));
+            return Ok(DB::new(db_file, backup_dir, None, None));
         }
         Some(true) => (),
         None => (),
     };
     log::debug!("Database is needed; preparing for read ...");
     let pwd = options::db_pwd(matches);
-    store::db::open(
+    let mut db = DB::new(
         db_file,
         backup_dir,
-        pwd.expose_secret().to_string(),
-        options::salt(matches),
-    )
+        Some(pwd.expose_secret().to_string()),
+        Some(options::salt(matches)),
+    );
+    db.open()?;
+    Ok(db)
 }
