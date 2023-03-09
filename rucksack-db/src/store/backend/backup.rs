@@ -56,7 +56,6 @@ pub fn restore(
         dest_path.display()
     );
     let old_file = old_path.display().to_string();
-    // let dest_parent = dest_path.parent().unwrap();
     match fs::copy(old_path, dest_path) {
         Ok(_) => (),
         Err(e) => {
@@ -65,8 +64,5 @@ pub fn restore(
             return Err(anyhow!("{msg} {old_file:?} ({e:})"));
         }
     }
-    // let mut copied = dest_parent.to_owned();
-    // copied.push(old_name);
-    // fs::rename(copied, dest_path)?;
     Ok(())
 }

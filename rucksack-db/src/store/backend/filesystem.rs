@@ -1,6 +1,5 @@
 use anyhow::Result;
 
-use crate::db::encrypted;
 use crate::db::encrypted::EncryptedDB;
 use crate::store::manager::StoreManager;
 
@@ -21,6 +20,6 @@ impl StoreManager for FileSystemBackend {
     }
 
     fn read(&self, path: String, pwd: String, salt: String) -> Result<EncryptedDB> {
-        encrypted::from_file(path, pwd, salt)
+        EncryptedDB::from_file(path, pwd, salt)
     }
 }

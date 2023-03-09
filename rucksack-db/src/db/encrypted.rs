@@ -13,59 +13,59 @@ pub struct EncryptedDB {
     salt: SecretString,
 }
 
-pub fn from_decrypted(
-    decrypted: Vec<u8>,
-    path: String,
-    pwd: String,
-    salt: String,
-) -> Result<EncryptedDB> {
-    new(None, Some(decrypted), path, pwd, salt)
-}
-
-pub fn from_encrypted(
-    encrypted: Vec<u8>,
-    path: String,
-    pwd: String,
-    salt: String,
-) -> Result<EncryptedDB> {
-    new(Some(encrypted), None, path, pwd, salt)
-}
-
-pub fn from_file(path: String, pwd: String, salt: String) -> Result<EncryptedDB> {
-    new(None, None, path, pwd, salt)
-}
-
-pub fn new(
-    bytes: Option<Vec<u8>>,
-    decrypted: Option<Vec<u8>>,
-    path: String,
-    pwd: String,
-    salt: String,
-) -> Result<EncryptedDB> {
-    let mut edb = EncryptedDB {
-        bytes: Vec::new(),
-        decrypted: Secret::new(Vec::new()),
-        path,
-        pwd: SecretString::new(pwd),
-        salt: SecretString::new(salt),
-    };
-    if bytes.is_none() && decrypted.is_none() {
-        log::debug!("No bytes provided; reading from file ...");
-        edb.read()?;
-        edb.decrypt()?;
-    } else if let Some(b) = bytes {
-        log::debug!("Got encrypted bytes; decrypting ...");
-        edb.bytes = b;
-        edb.decrypt()?;
-    } else if let Some(d) = decrypted {
-        log::debug!("Got decrypted bytes; encrypting ...");
-        edb.decrypted = Secret::new(d);
-        edb.encrypt();
-    }
-    Ok(edb)
-}
-
 impl EncryptedDB {
+    pub fn from_decrypted(
+        decrypted: Vec<u8>,
+        path: String,
+        pwd: String,
+        salt: String,
+    ) -> Result<EncryptedDB> {
+        EncryptedDB::new(None, Some(decrypted), path, pwd, salt)
+    }
+
+    pub fn from_encrypted(
+        encrypted: Vec<u8>,
+        path: String,
+        pwd: String,
+        salt: String,
+    ) -> Result<EncryptedDB> {
+        EncryptedDB::new(Some(encrypted), None, path, pwd, salt)
+    }
+
+    pub fn from_file(path: String, pwd: String, salt: String) -> Result<EncryptedDB> {
+        EncryptedDB::new(None, None, path, pwd, salt)
+    }
+
+    pub fn new(
+        bytes: Option<Vec<u8>>,
+        decrypted: Option<Vec<u8>>,
+        path: String,
+        pwd: String,
+        salt: String,
+    ) -> Result<EncryptedDB> {
+        let mut edb = EncryptedDB {
+            bytes: Vec::new(),
+            decrypted: Secret::new(Vec::new()),
+            path,
+            pwd: SecretString::new(pwd),
+            salt: SecretString::new(salt),
+        };
+        if bytes.is_none() && decrypted.is_none() {
+            log::debug!("No bytes provided; reading from file ...");
+            edb.read()?;
+            edb.decrypt()?;
+        } else if let Some(b) = bytes {
+            log::debug!("Got encrypted bytes; decrypting ...");
+            edb.bytes = b;
+            edb.decrypt()?;
+        } else if let Some(d) = decrypted {
+            log::debug!("Got decrypted bytes; encrypting ...");
+            edb.decrypted = Secret::new(d);
+            edb.encrypt();
+        }
+        Ok(edb)
+    }
+
     pub fn bytes(&self) -> Vec<u8> {
         self.bytes.clone()
     }

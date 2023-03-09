@@ -24,12 +24,12 @@ use dashmap::DashMap;
 
 use rucksack_lib::{file, util};
 
+use crate::db::encrypted::EncryptedDB;
+use crate::db::versioned::VersionedDB;
 use crate::records;
 use crate::records::{DecryptedRecord, EncryptedRecord, Metadata};
 use crate::store;
 use crate::store::manager::StoreManager;
-
-use super::{encrypted, versioned};
 
 pub struct DB {
     pub file_name: String,
@@ -94,12 +94,12 @@ impl DB {
         if file_path.exists() {
             log::debug!("Creating encrypted DB ...");
             let enc_db = self.manager.read(self.file_name.clone(), store_pwd, salt)?;
-            let vsn_db = match versioned::deserialise(enc_db.decrypted()) {
+            let vsn_db = match VersionedDB::deserialise(enc_db.decrypted()) {
                 Ok(db) => db,
                 Err(_) => {
                     log::info!("Given database appears to be non-versioned; be sure to upgrade to the latest micro release of our old version before continuing ...");
                     log::trace!("Bytes: {:?}", enc_db.decrypted());
-                    versioned::from_bytes(enc_db.decrypted())
+                    VersionedDB::from_bytes(enc_db.decrypted())
                 }
             };
             log::debug!("Getting database hash ...");
@@ -142,7 +142,7 @@ impl DB {
             }
         }?;
         // Create versioned data
-        let vsn_db = versioned::from_bytes(srl);
+        let vsn_db = VersionedDB::from_bytes(srl);
         let encoded = match vsn_db.serialise() {
             Ok(x) => Ok(x),
             Err(e) => {
@@ -159,7 +159,7 @@ impl DB {
         }
         // Encrypt the versioned data
         let enc_db =
-            encrypted::from_decrypted(encoded, self.file_name(), self.store_pwd(), self.salt())?;
+            EncryptedDB::from_decrypted(encoded, self.file_name(), self.store_pwd(), self.salt())?;
 
         // Save the encrypted data
         enc_db.write()

@@ -13,8 +13,8 @@ impl ReDBBackend {
 }
 
 impl StoreManager for ReDBBackend {
-    fn backup(&self, _src_file: String, _dest_dir: String, _version: String) -> Result<String> {
-        todo!()
+    fn backup(&self, src_file: String, dest_dir: String, version: String) -> Result<String> {
+        backup::copy(src_file, dest_dir, version)
     }
 
     fn read(&self, _path: String, _pwd: String, _salt: String) -> Result<EncryptedDB> {

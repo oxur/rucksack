@@ -12,33 +12,31 @@ pub struct VersionedDB {
     version: String,
 }
 
-pub fn deserialise(bytes: Vec<u8>) -> Result<VersionedDB> {
-    log::debug!("Creating versioned DB from previously serialised versioned DB ...");
-    let versioned: VersionedDB;
-    match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
-        Ok((result, _len)) => {
-            versioned = result;
-            log::trace!("deserialised versioned DB bytes: {:?}", versioned);
-            Ok(versioned)
-        }
-        Err(e) => {
-            let msg = format!("couldn't deserialise versioned database file: {e:?}");
-            log::error!("{}", msg);
-            Err(anyhow!(msg))
+impl VersionedDB {
+    pub fn new(bytes: Vec<u8>, version: String) -> VersionedDB {
+        VersionedDB { bytes, version }
+    }
+
+    pub fn deserialise(bytes: Vec<u8>) -> Result<VersionedDB> {
+        log::debug!("Creating versioned DB from previously serialised versioned DB ...");
+        match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
+            Ok((result, _len)) => {
+                log::trace!("deserialised versioned DB bytes: {:?}", result);
+                Ok(result)
+            }
+            Err(e) => {
+                let msg = format!("couldn't deserialise versioned database file: {e:?}");
+                log::error!("{}", msg);
+                Err(anyhow!(msg))
+            }
         }
     }
-}
 
-pub fn from_bytes(bytes: Vec<u8>) -> VersionedDB {
-    log::debug!("Initialising versioned DB with encoded hashmap ...");
-    new(bytes, records::version().to_string())
-}
+    pub fn from_bytes(bytes: Vec<u8>) -> VersionedDB {
+        log::debug!("Initialising versioned DB with encoded hashmap ...");
+        VersionedDB::new(bytes, records::version().to_string())
+    }
 
-pub fn new(bytes: Vec<u8>, version: String) -> VersionedDB {
-    VersionedDB { bytes, version }
-}
-
-impl VersionedDB {
     pub fn bytes(&self) -> Vec<u8> {
         self.bytes.clone()
     }
@@ -69,7 +67,7 @@ mod tests {
 
     #[test]
     fn db_bytes() {
-        let vsn_db = super::new(vec![2, 4, 16], "1.2.3".to_string());
+        let vsn_db = super::VersionedDB::new(vec![2, 4, 16], "1.2.3".to_string());
         assert!(vsn_db.version() > versions::SemVer::new("0.3.0").unwrap());
         assert_eq!(vsn_db.hash(), 2233391132);
         assert_eq!(vsn_db.version(), versions::SemVer::new("1.2.3").unwrap());
