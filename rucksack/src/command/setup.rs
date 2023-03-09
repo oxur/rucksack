@@ -6,9 +6,9 @@ use rucksack_db::records;
 use crate::input::constant;
 
 use super::args::{db, record, top};
-pub use crate::handlers::completions::completions;
-pub use crate::handlers::help::long_help;
-pub use crate::handlers::version::version;
+pub use crate::command::handlers::completions::completions;
+pub use crate::command::handlers::help::long_help;
+pub use crate::command::handlers::version::version;
 
 #[doc(hidden)]
 pub fn run() -> Command {

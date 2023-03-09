@@ -3,7 +3,7 @@
 //! By default, accounts are not removed; instead, they are flagged as `deleted`. To delete an account entry:
 //!
 //! ```shell
-//! rucksack rm \
+//! rucksack delete \
 //!     --url http://example.com \
 //!     --user clammy
 //! ```

@@ -3,7 +3,8 @@ use anyhow::Result;
 use clap::ArgMatches;
 
 use crate::app::App;
-use crate::handlers::{add, backup, config, export, gen, import, list, rm, set, show};
+
+use super::handlers::{add, backup, config, delete, export, gen, import, list, set, show};
 
 pub fn run(app: &App, matches: &ArgMatches) -> Result<()> {
     match matches.subcommand() {
@@ -35,7 +36,7 @@ pub fn run(app: &App, matches: &ArgMatches) -> Result<()> {
             Some((&_, _)) => todo!(),
             None => list::all(list_matches, app),
         },
-        Some(("rm", rm_matches)) => rm::one(rm_matches, app),
+        Some(("rm", rm_matches)) => delete::one(rm_matches, app),
         Some(("set", set_matches)) => match set_matches.subcommand() {
             Some(("password", password_matches)) => set::password(password_matches, app),
             Some(("status", status_matches)) => set::status(status_matches, app),

@@ -148,7 +148,7 @@ header "Filter records with 'boo' (decrypted data and revealed passwords)"
 
 header "Remove a record (clammy)"
 
-./bin/rucksack rm \
+./bin/rucksack delete \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \

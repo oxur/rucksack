@@ -2,7 +2,7 @@ use anyhow::{anyhow, Result};
 
 use rucksack::input::{config, options};
 use rucksack::service::actor::Commander;
-use rucksack::{command, handlers, input};
+use rucksack::{command, input};
 
 fn main() -> Result<()> {
     let rucksack = command::setup();
@@ -17,9 +17,9 @@ fn main() -> Result<()> {
     // Top-level short-circuit flags: the following are completely
     // independent, so perform them before any config or subcommand operations.
     if options::version(&matches) {
-        return handlers::version();
+        return command::handlers::version();
     } else if let Some(shell) = options::completions(&matches) {
-        return handlers::completions(shell, rucksack, cfg.rucksack.name);
+        return command::handlers::completions(shell, rucksack, cfg.rucksack.name);
     }
 
     // With top-level short-circuit flags sorted, let's try for subcommands,
@@ -40,6 +40,6 @@ fn main() -> Result<()> {
             app.run(&matches)?;
             app.shutdown(&matches)
         }
-        None => handlers::long_help(rucksack),
+        None => command::handlers::long_help(rucksack),
     }
 }
