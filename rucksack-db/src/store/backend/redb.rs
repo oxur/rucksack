@@ -3,6 +3,8 @@ use anyhow::Result;
 use crate::db::encrypted::EncryptedDB;
 use crate::store::manager::StoreManager;
 
+use super::backup;
+
 #[derive(Clone, Default)]
 pub struct ReDBBackend {}
 
