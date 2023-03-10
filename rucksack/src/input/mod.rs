@@ -3,6 +3,8 @@ pub mod config;
 #[doc(hidden)]
 pub mod constant;
 #[doc(hidden)]
+pub mod model;
+#[doc(hidden)]
 pub mod options;
 #[doc(hidden)]
 pub mod prompt;
