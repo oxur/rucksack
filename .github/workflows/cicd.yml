@@ -21,7 +21,11 @@ jobs:
     - name: Lint
       run: make cicd-lint
     - name: Run checks
-      run: make check
+      run: |
+        make nightly
+        make install-cargo-deny
+        make install-udeps
+        make check
     - name: Run tests
       run: make test
     - name: Build docs

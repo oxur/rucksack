@@ -87,14 +87,17 @@ docs:
 	@echo " * file://$(shell pwd)/$(DOCS_PATH)/index.html"
 	@echo
 
-
 open-docs:
 	@cargo doc --all-features --no-deps --workspace --open
 
-setup-cargo-deny:
-	@echo ">> Setting up cargo deny ..."
-	@cargo install --locked cargo-deny && cargo deny init
+install-cargo-deny:
+	@echo ">> Installing cargo deny ..."
+	@cargo install --locked cargo-deny
 
-setup-udeps:
+setup-cargo-deny: install-cargo-deny
+	@echo ">> Setting up cargo deny ..."
+	@cargo deny init
+
+install-udeps:
 	@echo ">> Setting up cargo udeps ..."
 	@cargo install cargo-udeps --locked
