@@ -280,32 +280,29 @@ header "Show just account types"
 
 header "Show just asymmetric-crypto types"
 
-./bin/rucksack list \
+RUXAK_REVEAL=true ./bin/rucksack list \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
-    --reveal \
     --type asymmetric-crypto
 
 header "Show just certificate types"
 
-./bin/rucksack list \
+RUXAK_DECRYPT=true ./bin/rucksack list \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
-    --decrypt \
     --reveal \
     --type certs
 
 header "Show just service credential types"
 
-./bin/rucksack list \
+RUXAK_DB="$DB_FILE" ./bin/rucksack list \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
-    --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
     --reveal \
@@ -313,15 +310,13 @@ header "Show just service credential types"
 
 header "Show the list of supported types"
 
-./bin/rucksack show types \
-    --config-file "$CFG_FILE" \
+RUXAK_CONFIG_FILE="$CFG_FILE" ./bin/rucksack show types \
     --backup-dir "$BACKUP_DIR"
 
 header "Show just 'default' category"
 
-./bin/rucksack list \
+RUXAK_BACKUP_DIR="$BACKUP_DIR" ./bin/rucksack list \
     --config-file "$CFG_FILE" \
-    --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
     --db-pass 1234 \
     --decrypt \
@@ -330,11 +325,10 @@ header "Show just 'default' category"
 
 header "Show just 'personal' category"
 
-./bin/rucksack list \
+RUXAK_DB_PASS=1234 ./bin/rucksack list \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
-    --db-pass 1234 \
     --decrypt \
     --reveal \
     --category "personal"

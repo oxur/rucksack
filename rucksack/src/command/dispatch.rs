@@ -36,7 +36,7 @@ pub fn run(app: &App, matches: &ArgMatches) -> Result<()> {
             Some((&_, _)) => todo!(),
             None => list::all(list_matches, app),
         },
-        Some(("rm", rm_matches)) => delete::one(rm_matches, app),
+        Some(("delete", delete_matches)) => delete::one(delete_matches, app),
         Some(("set", set_matches)) => match set_matches.subcommand() {
             Some(("password", password_matches)) => set::password(password_matches, app),
             Some(("status", status_matches)) => set::status(status_matches, app),

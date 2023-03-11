@@ -95,7 +95,23 @@ pub fn run() -> Command {
             .subcommand(
                 Command::new("re-init")
                     .about("Re-initialise (overwrite) the rucksack config"))
-    ).subcommand(
+    )
+    .subcommand(
+        Command::new("delete")
+            .about("Delete a single record")
+            .visible_aliases(["rm","remove"])
+            .arg(record::category())
+            .arg(record::kind())
+            .arg(record::name())
+            .arg(record::user().required(true))
+            .arg(record::url().required(true))
+            .arg(db::path())
+            .arg(db::pwd())
+            .arg(db::salt())
+            .arg(db::backup_dir()
+        )
+    )
+    .subcommand(
         Command::new("export")
             .about("Export the rucksack db")
             .arg(
@@ -300,21 +316,6 @@ pub fn run() -> Command {
                     .arg(record::name())
                     .arg(record::user().required(true))
                     .arg(record::url().required(true)))
-    )
-    .subcommand(
-        Command::new("rm")
-            .about("Delete a single record")
-            .visible_aliases(["delete","remove"])
-            .arg(record::category())
-            .arg(record::kind())
-            .arg(record::name())
-            .arg(record::user().required(true))
-            .arg(record::url().required(true))
-            .arg(db::path())
-            .arg(db::pwd())
-            .arg(db::salt())
-            .arg(db::backup_dir()
-        )
     )
     .subcommand(
         Command::new("set")
