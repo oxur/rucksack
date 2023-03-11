@@ -5,6 +5,7 @@ pub fn path() -> Arg {
         .help("Path to the encrypted database to use")
         .short('d')
         .long("db")
+        .env("RUXAK_DB")
         .global(true)
 }
 
@@ -12,6 +13,7 @@ pub fn pwd() -> Arg {
     Arg::new("db-pass")
         .help("Password used to encrypt the database")
         .long("db-pass")
+        .env("RUXAK_DB_PASS")
         .global(true)
 }
 
@@ -21,6 +23,7 @@ pub fn salt() -> Arg {
         .default_value(default_salt())
         .short('s')
         .long("salt")
+        .env("RUXAK_SALT")
         .global(true)
 }
 
@@ -28,6 +31,7 @@ pub fn backup_dir() -> Arg {
     Arg::new("backup-dir")
         .help("Path for database backups")
         .long("backup-dir")
+        .env("RUXAK_BACKUP_DIR")
         .global(true)
 }
 
@@ -64,6 +68,7 @@ pub fn serialised_format() -> Arg {
     Arg::new("format")
         .help("the de/serialisation format to use for import/export")
         .long("format")
+        .env("RUXAK_FORMAT")
         .value_parser(["", "chrome", "debug", "firefox"])
         .global(true)
 }

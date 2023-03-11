@@ -102,7 +102,8 @@ pub fn run() -> Command {
                 Arg::new("output")
                     .help("Path to the file that will contain the exported data")
                     .short('o')
-                    .long("output"),
+                    .long("output")
+                    .env("RUXAK_OUTPUT"),
             )
             .arg(db::path())
             .arg(db::pwd())
@@ -122,6 +123,7 @@ pub fn run() -> Command {
                     .short('t')
                     .long("type")
                     .default_value("uuid++")
+                    .env("RUXAK_TYPE")
                     .value_parser(["lipsum", "random", "uuid", "uuid+", "uuid++", ]),
             )
             .arg(
@@ -129,21 +131,24 @@ pub fn run() -> Command {
                     .help("The character length of secret to generate (ignored for fixed-length generator types)")
                     .short('l')
                     .long("length")
-                    .value_parser(clap::value_parser!(usize))
-                    .default_value("12"),
+                    .default_value("12")
+                    .env("RUXAK_LENGTH")
+                    .value_parser(clap::value_parser!(usize)),
             )
             .arg(
                 Arg::new("suffix-length")
                     .help("The character length of a random suffix (for generator types that support suffixes)")
                     .long("suffix-length")
-                    .value_parser(clap::value_parser!(usize))
-                    .default_value("4"),
+                    .default_value("4")
+                    .env("RUXAK_SUFFIX_LENGTH")
+                    .value_parser(clap::value_parser!(usize)),
             )
             .arg(
                 Arg::new("word-count")
                     .help("The number of words to generate (for generator types that assemble words)")
                     .short('w')
                     .long("word-count")
+                    .env("RUXAK_WORD_COUNT")
                     .value_parser(clap::value_parser!(usize))
                     .default_value("4"),
             )
@@ -159,18 +164,20 @@ pub fn run() -> Command {
                     .help("Encode the generated password (uses base64)")
                     .short('e')
                     .long("encode")
+                    .env("RUXAK_ENCODE")
                     .action(ArgAction::SetTrue),
             ),
     )
     .subcommand(
         Command::new("import")
-            .about("Pull in creds from other sources")
+            .about("Pull in secrets from other sources")
             .arg(db::serialised_format())
             .arg(
                 Arg::new("file")
-                    .help("Credential file to import (for file-based importers)")
+                    .help("File to import (for file-based importers)")
                     .short('f')
-                    .long("file"),
+                    .long("file")
+                    .env("RUXAK_FILE"),
             )
             .arg(db::path())
             .arg(db::pwd())
@@ -184,6 +191,7 @@ pub fn run() -> Command {
                 Arg::new("backups")
                     .help("List all the backup files")
                     .long("backups")
+                    .env("RUXAK_BACKUPS")
                     .action(ArgAction::SetTrue)
                     .global(true)
             )
@@ -191,6 +199,7 @@ pub fn run() -> Command {
                 Arg::new("decrypt")
                     .help("Using this flag causes all secrets to be decrypted to allow for scoring, etc.")
                     .long("decrypt")
+                    .env("RUXAK_DECRYPT")
                     .action(ArgAction::SetTrue)
                     .global(true)
             )
@@ -200,6 +209,7 @@ pub fn run() -> Command {
                     .short('f')
                     .long("filter")
                     .visible_alias("include")
+                    .env("RUXAK_FILTER")
                     .global(true)
             )
             .arg(
@@ -207,6 +217,7 @@ pub fn run() -> Command {
                     .help("Don't show records where the user or the URL contain the given string")
                     .short('x')
                     .long("exclude")
+                    .env("RUXAK_EXCLUDE")
                     .global(true)
             )
             .arg(
@@ -215,6 +226,7 @@ pub fn run() -> Command {
                     .short('g')
                     .long("group-by")
                     .visible_alias("partition")
+                    .env("RUXAK_GROUP_BY")
                     .value_parser(["password", "name"])
                     .global(true)
             )
@@ -224,19 +236,22 @@ pub fn run() -> Command {
                     .long("max-score")
                     .value_parser(clap::value_parser!(f64))
                     .default_value("100")
+                    .env("RUXAK_MAX_SCORE")
                     .global(true)
             )
             .arg(
                 Arg::new("min-score")
                     .help("Limit results to secrets that are not less than the given minimum score")
                     .long("min-score")
-                    .value_parser(clap::value_parser!(f64))
                     .default_value("0").global(true)
+                    .env("RUXAK_MIN_SCORE")
+                    .value_parser(clap::value_parser!(f64))
             )
             .arg(
                 Arg::new("reveal")
                     .help("Display the actual the passwords")
                     .long("reveal")
+                    .env("RUXAK_REVEAL")
                     .action(ArgAction::SetTrue)
                     .global(true)
             )
@@ -247,6 +262,7 @@ pub fn run() -> Command {
                     .long("sort-by")
                     .visible_alias("order-by")
                     .default_value("url")
+                    .env("RUXAK_SORT_BY")
                     .value_parser(["score", "url", "name"])
                     .global(true)
             )
@@ -254,6 +270,7 @@ pub fn run() -> Command {
                 Arg::new("with-status")
                     .help("Display the actual state of the record")
                     .long("with-status")
+                    .env("RUXAK_WITH_STATUS")
                     .action(ArgAction::SetTrue)
                     .global(true)
             )

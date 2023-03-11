@@ -223,7 +223,7 @@ header "Add a records for different 'kinds' and categories"
     --public "abc" \
     --private "def" \
 
-./bin/rucksack add \
+RUXAK_CATEGORY=business RUXAK_ROOT_CERT=ghi ./bin/rucksack add \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
@@ -231,14 +231,12 @@ header "Add a records for different 'kinds' and categories"
     --url http://example.com \
     --user alice \
     --password 1234 \
-    --category "business" \
     --tags http,"rest server",cloud,server \
     --type certs \
     --public "abc" \
-    --private "def" \
-    --root "ghi"
+    --private "def"
 
-./bin/rucksack add \
+RUXAK_TYPE="service-creds" RUXAK_KEY=abc ./bin/rucksack add \
     --config-file "$CFG_FILE" \
     --backup-dir "$BACKUP_DIR" \
     --db "$DB_FILE" \
@@ -248,8 +246,6 @@ header "Add a records for different 'kinds' and categories"
     --password 1234 \
     --category "business" \
     --tags "api keys",cloud \
-    --type service-creds \
-    --key "abc" \
     --secret "def"
 
 ./bin/rucksack list \

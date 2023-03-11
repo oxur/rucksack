@@ -7,6 +7,7 @@ pub fn category() -> Arg {
         .help("The user-supplied category of the given record")
         .long("category")
         .default_value(records::DEFAULT_CATEGORY)
+        .env("RUXAK_CATEGORY")
         .global(true)
 }
 
@@ -14,6 +15,7 @@ pub fn status() -> Arg {
     Arg::new("status")
         .help("The status of the given record")
         .default_value("active")
+        .env("RUXAK_STATUS")
         .value_parser(["active", "inactive", "deleted"])
 }
 
@@ -42,6 +44,7 @@ pub fn base_type() -> Arg {
         .help("The type of secret for the record")
         .short('t')
         .long("type")
+        .env("RUXAK_TYPE")
         .global(true)
 }
 
@@ -58,7 +61,10 @@ pub fn type_list() -> Arg {
 }
 
 pub fn name() -> Arg {
-    Arg::new("name").help("the record name").long("name")
+    Arg::new("name")
+        .help("the record name")
+        .long("name")
+        .env("RUXAK_NAME")
 }
 
 pub fn user() -> Arg {
@@ -66,6 +72,7 @@ pub fn user() -> Arg {
         .help("The user/login identifier")
         .short('u')
         .long("user")
+        .env("RUXAK_USER")
 }
 
 pub fn user_old() -> Arg {
@@ -86,10 +93,14 @@ pub fn pass() -> Arg {
     Arg::new("password")
         .help("The login password")
         .long("password")
+        .env("RUXAK_PASSWORD")
 }
 
 pub fn url() -> Arg {
-    Arg::new("url").help("the login URL").long("url")
+    Arg::new("url")
+        .help("the login URL")
+        .long("url")
+        .env("RUXAK_URL")
 }
 
 pub fn url_old() -> Arg {
@@ -108,36 +119,42 @@ pub fn account_id() -> Arg {
     Arg::new("account-id")
         .help("The account ID for secrets of type 'account'")
         .long("account-id")
+        .env("RUXAK_ACCOUNT_ID")
 }
 
 pub fn secret_public() -> Arg {
     Arg::new("public")
         .help("The public key for asymmetric-crypto secrets; the public cert for certificate-based secrets")
         .long("public")
+        .env("RUXAK_PUBLIC_KEY")
 }
 
 pub fn secret_private() -> Arg {
     Arg::new("private")
         .help("The private key for asymmetric-crypto secrets; the private cert for certificate-based secrets")
         .long("private")
+        .env("RUXAK_PRIVATE_KEY")
 }
 
 pub fn root_cert() -> Arg {
     Arg::new("root")
         .help("The root cert for certificate-based secrets")
         .long("root")
+        .env("RUXAK_ROOT_CERT")
 }
 
 pub fn key() -> Arg {
     Arg::new("key")
         .help("The key for service-credential-based secrets")
         .long("key")
+        .env("RUXAK_KEY")
 }
 
 pub fn secret() -> Arg {
     Arg::new("secret")
         .help("The secret for service-credential-based secrets")
         .long("secret")
+        .env("RUXAK_SECRET")
 }
 
 pub fn tags() -> Arg {
