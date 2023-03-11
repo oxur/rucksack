@@ -1,6 +1,6 @@
 use std::str;
 
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use confyg::Confygery;
 use serde::{Deserialize, Serialize};
 
@@ -123,19 +123,7 @@ pub fn load(opts: &Opts) -> Result<Config> {
     if !opts.log_level.is_empty() {
         cfg.logging.level = opts.log_level.clone();
     }
-    match twyg::setup_logger(&cfg.logging.to_twyg()) {
-        Ok(_) => Ok(()),
-        Err(e) => {
-            // We can update this when this twyg ticket is closed:
-            // * https://github.com/oxur/twyg/issues/4
-            let msg = format!("{e}");
-            if msg.contains("logging system was already initialized") {
-                Ok(())
-            } else {
-                Err(anyhow!(e))
-            }
-        }
-    }?;
+    twyg::setup_logger(&cfg.logging.to_twyg())?;
     cfg.rucksack.cfg_file = opts.file_name.clone();
     log::debug!("Config setup complete (using {})", cfg.rucksack.cfg_file);
     cfg.rucksack.name = opts.name.clone();
