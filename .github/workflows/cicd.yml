@@ -20,6 +20,8 @@ jobs:
       run: make build
     - name: Lint
       run: make cicd-lint
+    - name: Run checks
+      run: make check
     - name: Run tests
       run: make test
     - name: Build docs
