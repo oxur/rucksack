@@ -13,8 +13,18 @@
 //! The ordering of this list represents the order precedence for these as
 //! well, from highest priority to lowest priority.
 //!
-use serde::{Deserialize, Serialize};
 use secrecy::{Secret, SecretString};
+use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Debug, Default)]
+pub struct Inputs {
+    pub db: Db,
+    pub generation: Generation,
+    pub logging: Logging,
+    pub records: Records,
+    pub retention: Retention,
+    pub rucksack: Rucksack,
+}
 
 #[derive(Clone, Debug)]
 #[allow(unused)]
@@ -39,7 +49,7 @@ impl Default for Db {
                 ..Default::default()
             },
         }
-     }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -55,7 +65,7 @@ impl Default for DbSecrets {
             password: SecretString::new(String::new()),
             salt: SecretString::new(String::new()),
         }
-     }
+    }
 }
 
 #[derive(Clone, Debug, Default)]
@@ -67,7 +77,7 @@ pub struct DbDefaults {
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[allow(unused)]
 pub struct Generation {
-    pub defaults: GenDefaults
+    pub defaults: GenDefaults,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
@@ -115,7 +125,7 @@ impl Logging {
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[allow(unused)]
 pub struct Records {
-    pub defaults: RecordDefaults
+    pub defaults: RecordDefaults,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]

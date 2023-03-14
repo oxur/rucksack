@@ -57,6 +57,7 @@ pub struct Opts {
     name: String,
 }
 
+// These opts are used for bootstrapping the config
 impl Opts {
     pub fn new() -> Opts {
         Opts {
@@ -103,6 +104,22 @@ pub struct DbConfig {
     pub backup_dir: String,
 }
 
+impl DbConfig {
+    pub fn to_db(&self) -> model::Db {
+        let mut db = model::Db::default();
+        if !self.path.is_empty() {
+            db.path = self.path.clone();
+        }
+        if !self.data_dir.is_empty() {
+            db.data_dir = self.data_dir.clone();
+        }
+        if !self.backup_dir.is_empty() {
+            db.backup_dir = self.backup_dir.clone();
+        }
+        db
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[allow(unused)]
 pub struct Config {
@@ -114,63 +131,84 @@ pub struct Config {
     pub rucksack: model::Rucksack,
 }
 
-pub fn defaults() -> Config {
-    Config {
-        db: DbConfig {
-            ..Default::default()
-        },
-        generation: model::Generation {
-            ..Default::default()
-        },
-        logging: model::Logging::new(),
-        records: model::Records {
-            ..Default::default()
-        },
-        retention: model::Retention {
-            ..Default::default()
-        },
-        rucksack: model::Rucksack {
-            ..Default::default()
-        },
+impl Default for Config {
+    fn default() -> Self {
+        Config {
+            db: DbConfig {
+                ..Default::default()
+            },
+            generation: model::Generation {
+                ..Default::default()
+            },
+            logging: model::Logging::new(),
+            records: model::Records {
+                ..Default::default()
+            },
+            retention: model::Retention {
+                ..Default::default()
+            },
+            rucksack: model::Rucksack {
+                ..Default::default()
+            },
+        }
     }
 }
 
-pub fn init(opts: &Opts) -> Result<()> {
-    let file_path = file::create_parents(opts.file_name.clone())?;
-    if file_path.exists() && !opts.force {
-        log::debug!("File already exists; skipping init ...");
-        return Ok(());
+impl Config {
+    pub fn init(opts: &Opts) -> Result<()> {
+        let file_path = file::create_parents(opts.file_name.clone())?;
+        if file_path.exists() && !opts.force {
+            log::debug!("File already exists; skipping init ...");
+            return Ok(());
+        }
+        file::write(DEFAULT.as_bytes().to_vec(), opts.file_name.clone())
     }
-    file::write(DEFAULT.as_bytes().to_vec(), opts.file_name.clone())
-}
 
-pub fn load(opts: &Opts) -> Result<Config> {
-    match init(opts) {
-        Ok(_) => (),
-        Err(e) => panic!("{e}"),
+    pub fn new(opts: &Opts) -> Result<Config> {
+        let defaults = Self::default();
+        let cfg: Config = if opts.in_memory {
+            Confygery::new()
+                .add_str(&opts.config)
+                .add_struct(&defaults)
+                .build::<Config>()?
+        } else {
+            Confygery::new()
+                .add_file(&opts.file_name)
+                .add_struct(&defaults)
+                .build::<Config>()?
+        };
+        Ok(cfg)
     }
-    let mut cfg: Config;
-    if opts.in_memory {
-        cfg = Confygery::new()
-            .add_str(&opts.config)
-            .add_struct(&defaults())
-            .build::<Config>()?;
-    } else {
-        cfg = Confygery::new()
-            .add_file(&opts.file_name)
-            .add_struct(&defaults())
-            .build::<Config>()?;
+
+    pub fn load(opts: &Opts) -> Result<Config> {
+        match Self::init(opts) {
+            Ok(_) => (),
+            Err(e) => panic!("{e}"),
+        }
+
+        let mut cfg = Self::new(opts)?;
+        cfg.logging.level = constant::DEFAULT_LOG_LEVEL.to_string();
+        if !opts.log_level.is_empty() {
+            cfg.logging.level = opts.log_level.clone();
+        }
+        twyg::setup_logger(&cfg.logging.to_twyg())?;
+        cfg.rucksack.cfg_file = opts.file_name.clone();
+        log::debug!("Config setup complete (using {})", cfg.rucksack.cfg_file);
+        cfg.rucksack.name = opts.name.clone();
+        log::debug!("Logger setup complete");
+        Ok(cfg)
     }
-    cfg.logging.level = constant::DEFAULT_LOG_LEVEL.to_string();
-    if !opts.log_level.is_empty() {
-        cfg.logging.level = opts.log_level.clone();
+
+    pub fn to_inputs(&self) -> model::Inputs {
+        model::Inputs {
+            db: self.db.to_db(),
+            generation: self.generation.clone(),
+            logging: self.logging.clone(),
+            records: self.records.clone(),
+            retention: self.retention.clone(),
+            rucksack: self.rucksack.clone(),
+        }
     }
-    twyg::setup_logger(&cfg.logging.to_twyg())?;
-    cfg.rucksack.cfg_file = opts.file_name.clone();
-    log::debug!("Config setup complete (using {})", cfg.rucksack.cfg_file);
-    cfg.rucksack.name = opts.name.clone();
-    log::debug!("Logger setup complete");
-    Ok(cfg)
 }
 
 #[cfg(test)]
@@ -178,7 +216,7 @@ mod tests {
     use crate::input::testing;
     #[test]
     fn in_memory_test() {
-        let r = super::load(&super::Opts {
+        let r = super::Config::load(&super::Opts {
             in_memory: true,
             config: super::DEFAULT.to_string(),
             ..Default::default()
@@ -189,7 +227,7 @@ mod tests {
 
     #[test]
     fn in_memory_purge_test() {
-        let r = super::load(&super::Opts {
+        let r = super::Config::load(&super::Opts {
             in_memory: true,
             config: testing::configs::PURGE_TOML.to_string(),
             ..Default::default()
@@ -200,7 +238,7 @@ mod tests {
 
     #[test]
     fn in_memory_inactive_test() {
-        let r = super::load(&super::Opts {
+        let r = super::Config::load(&super::Opts {
             in_memory: true,
             config: testing::configs::DELETE_INACTIVE_TOML.to_string(),
             ..Default::default()

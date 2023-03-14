@@ -1,9 +1,7 @@
 use actix::{Actor, AsyncContext, Context, Handler, Recipient, System, SystemRunner};
 use anyhow::Result;
-use clap::ArgMatches;
 
 use crate::app::App;
-use crate::input::Config;
 
 use super::protocol::Command;
 
@@ -13,10 +11,9 @@ pub struct Commander {
 }
 
 impl Commander {
-    pub fn start(cfg: Config, matches: &ArgMatches) -> Result<SystemRunner> {
+    pub fn start(app: App) -> Result<SystemRunner> {
         log::info!("Starting rucksack daemon ...");
         let system = System::new();
-        let app = App::new(cfg, matches)?;
         system.block_on(async {
             Commander::create(|ctx| Commander {
                 app,

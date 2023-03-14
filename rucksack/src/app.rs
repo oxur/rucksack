@@ -8,11 +8,12 @@ use rucksack_db::db::DB;
 use rucksack_lib::file;
 
 use crate::command;
+use crate::input::model::Inputs;
 use crate::input::{constant, options, Config};
 
 #[derive(Debug)]
 pub struct App {
-    pub cfg: Config,
+    pub inputs: Inputs,
     pub db: DB,
 }
 
@@ -20,7 +21,10 @@ impl App {
     pub fn new(cfg: Config, matches: &ArgMatches) -> Result<App> {
         log::debug!("Setting up rucksack application ...");
         let db = setup_db(matches)?;
-        Ok(App { cfg, db })
+        Ok(App {
+            inputs: cfg.to_inputs(),
+            db,
+        })
     }
 
     pub fn backup_dir(&self) -> String {
@@ -38,16 +42,16 @@ impl App {
     }
 
     pub fn config_file(&self) -> String {
-        if self.cfg.rucksack.cfg_file != *"" {
-            return self.cfg.rucksack.cfg_file.clone();
+        if self.inputs.rucksack.cfg_file != *"" {
+            return self.inputs.rucksack.cfg_file.clone();
         }
         file::config_file(&self.name())
     }
 
     pub fn config_path(&self) -> path::PathBuf {
-        if self.cfg.rucksack.cfg_dir != *"" {
+        if self.inputs.rucksack.cfg_dir != *"" {
             let mut path = path::PathBuf::new();
-            path.push(self.cfg.rucksack.cfg_dir.clone());
+            path.push(self.inputs.rucksack.cfg_dir.clone());
             return path;
         }
         file::config_dir(&self.name())
@@ -76,7 +80,7 @@ impl App {
     }
 
     pub fn name(&self) -> String {
-        self.cfg.rucksack.name.clone()
+        self.inputs.rucksack.name.clone()
     }
 
     pub fn run(&self, matches: &ArgMatches) -> Result<()> {
@@ -93,10 +97,10 @@ impl App {
 
     pub fn shutdown(&self, _matches: &ArgMatches) -> Result<()> {
         log::info!("Performing shutdown operations ...");
-        if self.cfg.retention.purge_on_shutdown {
+        if self.inputs.retention.purge_on_shutdown {
             todo!();
         }
-        if self.cfg.retention.delete_inactive {
+        if self.inputs.retention.delete_inactive {
             // TODO: iterate through all inactive records and flag them as deleted
             todo!();
         }

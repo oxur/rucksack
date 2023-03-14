@@ -1,13 +1,13 @@
 use anyhow::{anyhow, Result};
 
-use rucksack::input::{config, options};
+use rucksack::input::{config, options, Config};
 use rucksack::service::actor::Commander;
 use rucksack::{command, input};
 
 fn main() -> Result<()> {
     let rucksack = command::setup();
     let matches = rucksack.clone().get_matches();
-    let cfg = config::load(
+    let cfg = Config::load(
         config::Opts::new()
             .file_name(options::config_file(&matches))
             .log_level(options::log_level(&matches))
@@ -28,7 +28,8 @@ fn main() -> Result<()> {
     match matches.subcommand() {
         // Daemon:
         Some(("start", start_matches)) => {
-            let daemon = Commander::start(cfg, start_matches)?;
+            let app = rucksack::App::new(cfg, start_matches)?;
+            let daemon = Commander::start(app)?;
             match daemon.run() {
                 Ok(_) => Ok(()),
                 Err(e) => Err(anyhow!(e)),
