@@ -10,10 +10,32 @@ use super::{constant, model};
 
 const DEFAULT: &str = r#"[rucksack]
 
+[db]
+
+[generation]
+
+[generation.defaults]
+gen_type = "uuid++"
+length = 12
+suffix_length = 4
+word_count = 4
+delimiter = "-"
+max_score = 100
+min_score = 0
+sort_by = "url"
+
 [logging]
 coloured = true
 level = "error"
 report_caller = true
+
+[records]
+
+[records.defaults]
+new_category = "default"
+list_category = "any"
+kind = "password"
+status = "active"
 
 [retention]
 purge_on_shutdown = false
@@ -73,17 +95,37 @@ impl Opts {
     }
 }
 
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+#[allow(unused)]
+pub struct DbConfig {
+    pub path: String,
+    pub data_dir: String,
+    pub backup_dir: String,
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[allow(unused)]
 pub struct Config {
+    pub db: DbConfig,
+    pub generation: model::Generation,
     pub logging: model::Logging,
+    pub records: model::Records,
     pub retention: model::Retention,
     pub rucksack: model::Rucksack,
 }
 
 pub fn defaults() -> Config {
     Config {
+        db: DbConfig {
+            ..Default::default()
+        },
+        generation: model::Generation {
+            ..Default::default()
+        },
         logging: model::Logging::new(),
+        records: model::Records {
+            ..Default::default()
+        },
         retention: model::Retention {
             ..Default::default()
         },

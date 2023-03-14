@@ -1,12 +1,10 @@
 use clap::{value_parser, Arg, ArgAction};
 
-use rucksack_db::records;
-
 pub fn category() -> Arg {
     Arg::new("category")
         .help("The user-supplied category of the given record")
         .long("category")
-        .default_value(records::DEFAULT_CATEGORY)
+        // .default_value(records::DEFAULT_CATEGORY)
         .env("RUXAK_CATEGORY")
         .global(true)
 }
@@ -14,7 +12,7 @@ pub fn category() -> Arg {
 pub fn status() -> Arg {
     Arg::new("status")
         .help("The status of the given record")
-        .default_value("active")
+        // .default_value("active")
         .env("RUXAK_STATUS")
         .value_parser(["active", "inactive", "deleted"])
 }
@@ -50,13 +48,13 @@ pub fn base_type() -> Arg {
 
 pub fn kind() -> Arg {
     base_type()
-        .default_value("password")
+        // .default_value("password")
         .value_parser(types_allowed())
 }
 
 pub fn type_list() -> Arg {
     base_type()
-        .default_value("any")
+        // .default_value("any")
         .value_parser(types_list_allowed())
 }
 

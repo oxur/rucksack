@@ -1,8 +1,6 @@
 use clap::builder::EnumValueParser;
 use clap::{Arg, ArgAction, Command};
 
-use rucksack_db::records;
-
 use crate::input::constant;
 
 use super::args::{db, record, top};
@@ -138,7 +136,7 @@ pub fn run() -> Command {
                     .help("The type of generator to use")
                     .short('t')
                     .long("type")
-                    .default_value("uuid++")
+                    // .default_value("uuid++")
                     .env("RUXAK_TYPE")
                     .value_parser(["lipsum", "random", "uuid", "uuid+", "uuid++", ]),
             )
@@ -147,7 +145,7 @@ pub fn run() -> Command {
                     .help("The character length of secret to generate (ignored for fixed-length generator types)")
                     .short('l')
                     .long("length")
-                    .default_value("12")
+                    // .default_value("12")
                     .env("RUXAK_LENGTH")
                     .value_parser(clap::value_parser!(usize)),
             )
@@ -155,7 +153,7 @@ pub fn run() -> Command {
                 Arg::new("suffix-length")
                     .help("The character length of a random suffix (for generator types that support suffixes)")
                     .long("suffix-length")
-                    .default_value("4")
+                    // .default_value("4")
                     .env("RUXAK_SUFFIX_LENGTH")
                     .value_parser(clap::value_parser!(usize)),
             )
@@ -165,15 +163,15 @@ pub fn run() -> Command {
                     .short('w')
                     .long("word-count")
                     .env("RUXAK_WORD_COUNT")
-                    .value_parser(clap::value_parser!(usize))
-                    .default_value("4"),
+                    // .default_value("4")
+                    .value_parser(clap::value_parser!(usize)),
             )
             .arg(
                 Arg::new("delimiter")
                     .help("The character used to join parts (for generator types that join parts)")
                     .short('d')
-                    .long("delimiter")
-                    .default_value("-"),
+                    .long("delimiter"),
+                    // .default_value("-"),
             )
             .arg(
                 Arg::new("encode")
@@ -251,7 +249,7 @@ pub fn run() -> Command {
                     .help("Limit results to secrets that do not exceed the given maximum score")
                     .long("max-score")
                     .value_parser(clap::value_parser!(f64))
-                    .default_value("100")
+                    // .default_value("100")
                     .env("RUXAK_MAX_SCORE")
                     .global(true)
             )
@@ -259,9 +257,10 @@ pub fn run() -> Command {
                 Arg::new("min-score")
                     .help("Limit results to secrets that are not less than the given minimum score")
                     .long("min-score")
-                    .default_value("0").global(true)
+                    // .default_value("0")
                     .env("RUXAK_MIN_SCORE")
                     .value_parser(clap::value_parser!(f64))
+                    .global(true)
             )
             .arg(
                 Arg::new("reveal")
@@ -277,7 +276,7 @@ pub fn run() -> Command {
                     .short('s')
                     .long("sort-by")
                     .visible_alias("order-by")
-                    .default_value("url")
+                    // .default_value("url")
                     .env("RUXAK_SORT_BY")
                     .value_parser(["score", "url", "name"])
                     .global(true)
@@ -294,7 +293,9 @@ pub fn run() -> Command {
             .arg(db::pwd())
             .arg(db::salt())
             .arg(db::backup_dir())
-            .arg(record::category().default_value(records::ANY_CATEGORY))
+            .arg(record::category()
+                // .default_value(records::ANY_CATEGORY),
+            )
             .arg(record::type_list())
             .arg(record::all_tags())
             .arg(record::any_tags())

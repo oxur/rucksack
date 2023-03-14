@@ -1,5 +1,4 @@
 use anyhow::Result;
-
 use clap::ArgMatches;
 
 use crate::app::App;
