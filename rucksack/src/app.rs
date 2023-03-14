@@ -9,7 +9,7 @@ use rucksack_lib::file;
 
 use crate::command;
 use crate::input::model::Inputs;
-use crate::input::{constant, options, Config};
+use crate::input::{options, Config};
 
 #[derive(Debug)]
 pub struct App {
@@ -20,11 +20,9 @@ pub struct App {
 impl App {
     pub fn new(cfg: Config, matches: &ArgMatches) -> Result<App> {
         log::debug!("Setting up rucksack application ...");
-        let db = setup_db(matches)?;
-        Ok(App {
-            inputs: cfg.to_inputs(),
-            db,
-        })
+        let inputs = cfg.to_inputs(matches);
+        let db = setup_db(inputs.clone())?;
+        Ok(App { inputs, db })
     }
 
     pub fn backup_dir(&self) -> String {
@@ -41,20 +39,10 @@ impl App {
         self.config_path().display().to_string()
     }
 
-    pub fn config_file(&self) -> String {
-        if self.inputs.rucksack.cfg_file != *"" {
-            return self.inputs.rucksack.cfg_file.clone();
-        }
-        file::config_file(&self.name())
-    }
-
     pub fn config_path(&self) -> path::PathBuf {
-        if self.inputs.rucksack.cfg_dir != *"" {
-            let mut path = path::PathBuf::new();
-            path.push(self.inputs.rucksack.cfg_dir.clone());
-            return path;
-        }
-        file::config_dir(&self.name())
+        let mut path = path::PathBuf::new();
+        path.push(self.inputs.config_file());
+        return path.parent().unwrap().to_path_buf();
     }
 
     pub fn data_dir(&self) -> String {
@@ -108,41 +96,23 @@ impl App {
     }
 }
 
-pub fn setup_db(matches: &ArgMatches) -> Result<DB> {
+pub fn setup_db(inputs: Inputs) -> Result<DB> {
     log::debug!("Setting up database ...");
-    let db_file = match options::db(matches) {
-        Some(file_path) => {
-            log::debug!("Got database file from flag: {}", file_path);
-            file_path
-        }
-        None => {
-            let file_name = file::db_file(constant::NAME);
-            log::debug!("No database flag provided; using default ({file_name:})");
-            file_name
-        }
-    };
-    let mut backup_dir = options::backup_dir(matches);
-    if backup_dir.is_empty() {
-        let dir_path = file::backup_dir(constant::NAME);
-        backup_dir = dir_path.display().to_string();
-        log::debug!("No backup dir flag provided; using default");
-    };
-    log::debug!("Got backup dir {backup_dir:}");
-    match options::db_needed(matches) {
+    match options::db_needed(&inputs.matches) {
         Some(false) => {
             log::debug!("Database not needed for this command; skipping load ...");
-            return Ok(DB::new(db_file, backup_dir, None, None));
+            return Ok(DB::new(inputs.db_file(), inputs.backup_dir(), None, None));
         }
         Some(true) => (),
         None => (),
     };
     log::debug!("Database is needed; preparing for read ...");
-    let pwd = options::db_pwd(matches);
+    let pwd = options::db_pwd(&inputs.matches);
     let mut db = DB::new(
-        db_file,
-        backup_dir,
+        inputs.db_file(),
+        inputs.backup_dir(),
         Some(pwd.expose_secret().to_string()),
-        Some(options::salt(matches)),
+        Some(inputs.salt()),
     );
     db.open()?;
     Ok(db)

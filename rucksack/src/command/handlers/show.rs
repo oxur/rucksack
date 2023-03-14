@@ -55,12 +55,12 @@ pub fn backup_dir(_matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 pub fn config_file(_matches: &ArgMatches, app: &App) -> Result<()> {
-    println!("\n{}\n", app.config_file());
+    println!("\n{}\n", app.inputs.config_file());
     Ok(())
 }
 
 pub fn config(_matches: &ArgMatches, app: &App) -> Result<()> {
-    match file::read(app.config_file()) {
+    match file::read(app.inputs.config_file()) {
         Ok(bytes) => {
             println!("\n{}", str::from_utf8(bytes.as_ref()).unwrap());
         }
@@ -87,7 +87,7 @@ pub fn db_version(_matches: &ArgMatches, app: &App) -> Result<()> {
 pub fn categories(_matches: &ArgMatches, app: &App) -> Result<()> {
     let mut results: HashMap<String, bool> = HashMap::new();
     for i in app.db.iter() {
-        let dr = i.value().decrypt(app.db.store_pwd(), app.db.salt())?;
+        let dr = i.value().decrypt(app.db.store_pwd(), app.inputs.salt())?;
         results.insert(dr.metadata().category, true);
     }
     let mut cats: Vec<&String> = results.keys().clone().collect();
@@ -107,7 +107,7 @@ pub fn categories(_matches: &ArgMatches, app: &App) -> Result<()> {
 pub fn tags(_matches: &ArgMatches, app: &App) -> Result<()> {
     let mut results: HashMap<String, bool> = HashMap::new();
     for i in app.db.iter() {
-        let dr = i.value().decrypt(app.db.store_pwd(), app.db.salt())?;
+        let dr = i.value().decrypt(app.db.store_pwd(), app.inputs.salt())?;
         for t in dr.metadata().tags {
             results.insert(t.display_or_value(), true);
         }

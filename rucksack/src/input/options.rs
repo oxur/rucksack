@@ -3,7 +3,6 @@ use std::path::PathBuf;
 use clap::ArgMatches;
 use secrecy::{ExposeSecret, Secret, SecretString};
 
-use rucksack_db as store;
 use rucksack_db::records;
 use rucksack_db::records::{new_tags, Status, Tag};
 
@@ -49,12 +48,8 @@ pub fn backup_path(matches: &ArgMatches) -> PathBuf {
     path
 }
 
-pub fn category(matches: &ArgMatches) -> String {
-    matches
-        .get_one::<String>("category")
-        .unwrap()
-        .trim()
-        .to_string()
+pub fn category(matches: &ArgMatches) -> Option<String> {
+    matches.get_one::<String>("category").cloned()
 }
 
 pub fn completions(matches: &ArgMatches) -> Option<clap_complete::Shell> {
@@ -87,15 +82,6 @@ pub fn db_pwd(matches: &ArgMatches) -> Secret<String> {
         Some(flag_pwd) => SecretString::new(flag_pwd.to_owned()),
         None => prompt::secret("Enter DB password: ").unwrap(),
     }
-}
-
-pub fn key(matches: &ArgMatches) -> String {
-    store::key(
-        &category(matches),
-        record_kind(matches),
-        &user(matches),
-        &url(matches),
-    )
 }
 
 pub fn latest(matches: &ArgMatches) -> bool {
@@ -132,6 +118,7 @@ pub fn public(matches: &ArgMatches) -> Vec<u8> {
         .to_vec()
 }
 
+// TODO: there is no corresponding inputs method for this yet ... maybe not needed?
 pub fn record_kind(matches: &ArgMatches) -> records::Kind {
     let record_type = matches.get_one::<String>("type").map(|s| s.as_str());
     match record_type {
@@ -161,6 +148,7 @@ pub fn record_pwd_revealed(matches: &ArgMatches) -> String {
     record_pwd(matches).expose_secret().to_string()
 }
 
+// TODO: there is no corresponding inputs method for this yet ... maybe not needed?
 pub fn record_state(matches: &ArgMatches) -> Status {
     match matches.get_one::<String>("status").map(|s| s.as_str()) {
         Some("active") => Status::Active,
@@ -183,8 +171,8 @@ pub fn root(matches: &ArgMatches) -> Vec<u8> {
         .to_vec()
 }
 
-pub fn salt(matches: &ArgMatches) -> String {
-    matches.get_one::<String>("salt").cloned().unwrap()
+pub fn salt(matches: &ArgMatches) -> Option<String> {
+    matches.get_one::<String>("salt").cloned()
 }
 
 pub fn service_key(matches: &ArgMatches) -> String {

@@ -132,7 +132,7 @@ use rucksack_db::Status;
 use rucksack_lib::time;
 
 use crate::app::App;
-use crate::input::{options, query};
+use crate::input::{options, query, Flag};
 use crate::output::{result, table, Column, Opts};
 
 use super::backup;
@@ -192,7 +192,7 @@ pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
         ..Default::default()
     };
     let mut results: Vec<result::ResultRow> = Vec::new();
-    let record = query::record(&app.db, matches)?;
+    let record = query::record(app)?;
     let md = record.metadata();
     let mut pwd = record.password();
     if !opts.reveal {
@@ -230,7 +230,7 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
     let reveal = matches.get_one::<bool>("reveal").unwrap();
     let sort_by = matches.get_one::<String>("sort-by").map(|s| s.as_str());
     let kind = options::record_kind(matches);
-    let category = options::category(matches);
+    let category = app.inputs.category(Flag::Many);
     let all_tags = options::all_tags(matches);
     let any_tags = options::any_tags(matches);
     opts.reveal = *reveal;
@@ -255,7 +255,7 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
     let mut results: Vec<result::ResultRow> = Vec::new();
     let mut groups = result::GroupByString::new();
     for i in app.db.iter() {
-        let record = i.value().decrypt(app.db.store_pwd(), app.db.salt())?;
+        let record = i.value().decrypt(app.db.store_pwd(), app.inputs.salt())?;
         let analyzed = analyzer::analyze(record.password());
         let score = scorer::score(&analyzed);
         let mut result = result::new(record.key(), record.name_or_user(), record.metadata().url);

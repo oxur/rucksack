@@ -20,7 +20,6 @@ pub fn pwd() -> Arg {
 pub fn salt() -> Arg {
     Arg::new("salt")
         .help("The salt to use for encrypting the database")
-        // .default_value(default_salt())
         .short('s')
         .long("salt")
         .env("RUXAK_SALT")
@@ -34,15 +33,6 @@ pub fn backup_dir() -> Arg {
         .env("RUXAK_BACKUP_DIR")
         .global(true)
 }
-
-// TODO: let's unify this when we tackle SoT data in this ticket:
-// * https://github.com/oxur/rucksack/issues/92
-// fn default_salt() -> String {
-//     match std::env::var("USER") {
-//         Ok(user) => user,
-//         Err(_) => "rucksack".to_string(),
-//     }
-// }
 
 // TODO: let's look at the other bool flags and make sure we're being consistent
 pub fn not_needed() -> Arg {

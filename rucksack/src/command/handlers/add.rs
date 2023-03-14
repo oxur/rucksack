@@ -33,12 +33,12 @@ use rucksack_db::records;
 use rucksack_db::{default_metadata, DecryptedRecord};
 
 use crate::app::App;
-use crate::input::{options, query};
+use crate::input::{options, query, Flag};
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Running 'add' subcommand ...");
     let kind = options::record_kind(matches);
-    if let Ok(_dr) = query::record(&app.db, matches) {
+    if let Ok(_dr) = query::record(app) {
         return Err(anyhow!(
             "Record already exists -- please use the 'set' command"
         ));
@@ -69,7 +69,7 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
         secrets.secret = options::service_secret(matches);
     }
     let mut metadata = default_metadata();
-    metadata.category = options::category(matches);
+    metadata.category = app.inputs.category(Flag::One);
     if let Some(tags) = options::tags(matches) {
         metadata.tags = tags
     }

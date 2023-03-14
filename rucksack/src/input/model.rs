@@ -13,8 +13,21 @@
 //! The ordering of this list represents the order precedence for these as
 //! well, from highest priority to lowest priority.
 //!
+use std::env;
+
+use clap::ArgMatches;
 use secrecy::{Secret, SecretString};
 use serde::{Deserialize, Serialize};
+
+use rucksack_db::records;
+use rucksack_lib::file;
+
+use super::{constant, options};
+
+pub enum Flag {
+    One,
+    Many,
+}
 
 #[derive(Clone, Debug, Default)]
 pub struct Inputs {
@@ -24,6 +37,109 @@ pub struct Inputs {
     pub records: Records,
     pub retention: Retention,
     pub rucksack: Rucksack,
+    pub matches: ArgMatches,
+}
+
+// The methods of Inputs are focused on one main goal: consolidate ENV vars,
+// CLI opts, configuration, and statically defined defaults, presenting a
+// single API (source of truth) whereby the rest of the app may come to get
+// what it needs.
+impl Inputs {
+    pub fn backup_dir(&self) -> String {
+        let mut dir = options::backup_dir(&self.matches);
+        if !dir.is_empty() {
+            log::debug!("Got backup dir from flag: {}", dir);
+            return dir;
+        }
+        dir = self.db.backup_dir.clone();
+        if !dir.is_empty() {
+            log::debug!(
+                "No database flag provided; using configured file ({:})",
+                dir
+            );
+            return dir;
+        }
+        dir = file::backup_dir(constant::NAME).display().to_string();
+        log::debug!("No configured database file; using default ({:})", dir);
+        dir
+    }
+
+    pub fn category(&self, flag: Flag) -> String {
+        match options::category(&self.matches) {
+            Some(c) => {
+                return c.trim().to_owned();
+            }
+            None => match flag {
+                Flag::One => {
+                    let c = self.records.defaults.new_category.trim().to_owned();
+                    if !c.is_empty() {
+                        return c;
+                    }
+                    records::DEFAULT_CATEGORY.to_string()
+                }
+                Flag::Many => {
+                    let c = self.records.defaults.list_category.trim().to_owned();
+                    if !c.is_empty() {
+                        return c;
+                    }
+                    records::ANY_CATEGORY.to_string()
+                }
+            },
+        }
+    }
+
+    pub fn config_file(&self) -> String {
+        let mut cf = options::config_file(&self.matches);
+        if !cf.is_empty() {
+            return cf;
+        }
+        cf = self.rucksack.cfg_file.clone();
+        if !cf.is_empty() {
+            return cf;
+        }
+        file::config_file(constant::NAME)
+    }
+
+    pub fn db_file(&self) -> String {
+        match options::db(&self.matches) {
+            Some(file_name) => {
+                log::debug!("Got database file from flag: {}", file_name);
+                file_name
+            }
+            None => {
+                let mut db_file = self.db.path.clone();
+                if !db_file.is_empty() {
+                    log::debug!(
+                        "No database flag provided; using configured file ({:})",
+                        db_file
+                    );
+                    return db_file;
+                }
+                db_file = file::db_file(constant::NAME);
+                log::debug!("No configured database file; using default ({:})", db_file);
+                db_file
+            }
+        }
+    }
+
+    pub fn key(&self) -> String {
+        records::key(
+            &self.category(Flag::One),
+            options::record_kind(&self.matches),
+            &options::user(&self.matches),
+            &options::url(&self.matches),
+        )
+    }
+
+    pub fn salt(&self) -> String {
+        match options::salt(&self.matches) {
+            Some(s) => s,
+            None => match env::var(constant::SALT_ENV) {
+                Ok(user) => user,
+                Err(_) => constant::SALT_FALLBACK.to_string(),
+            },
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -133,6 +249,8 @@ pub struct Records {
 pub struct RecordDefaults {
     pub new_category: String,
     pub list_category: String,
+    // TODO: there is currently no unification between these and the related
+    // methods in input::options ...
     pub kind: String,
     pub status: String,
 }
@@ -148,7 +266,6 @@ pub struct Retention {
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[allow(unused)]
 pub struct Rucksack {
-    pub cfg_dir: String,
     pub cfg_file: String,
     pub name: String,
 }

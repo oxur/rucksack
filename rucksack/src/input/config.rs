@@ -1,6 +1,7 @@
 use std::str;
 
 use anyhow::Result;
+use clap::ArgMatches;
 use confyg::Confygery;
 use serde::{Deserialize, Serialize};
 
@@ -199,11 +200,12 @@ impl Config {
         Ok(cfg)
     }
 
-    pub fn to_inputs(&self) -> model::Inputs {
+    pub fn to_inputs(&self, matches: &ArgMatches) -> model::Inputs {
         model::Inputs {
             db: self.db.to_db(),
             generation: self.generation.clone(),
             logging: self.logging.clone(),
+            matches: matches.to_owned(),
             records: self.records.clone(),
             retention: self.retention.clone(),
             rucksack: self.rucksack.clone(),
