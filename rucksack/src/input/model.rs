@@ -16,7 +16,7 @@
 use std::env;
 
 use clap::ArgMatches;
-use secrecy::{Secret, SecretString};
+use secrecy::{ExposeSecret, Secret, SecretString};
 use serde::{Deserialize, Serialize};
 
 use rucksack_db::records;
@@ -120,6 +120,14 @@ impl Inputs {
                 db_file
             }
         }
+    }
+
+    pub fn db_needed(&self) -> bool {
+        options::db_needed(&self.matches).unwrap_or(false)
+    }
+
+    pub fn db_passwd(&self) -> String {
+        options::db_pwd(&self.matches).expose_secret().to_string()
     }
 
     pub fn key(&self) -> String {

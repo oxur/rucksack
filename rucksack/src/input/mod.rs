@@ -14,4 +14,4 @@ pub mod query;
 pub mod testing;
 
 pub use config::Config;
-pub use model::Flag;
+pub use model::{Flag, Inputs};

@@ -2,14 +2,12 @@ use std::path;
 
 use anyhow::Result;
 use clap::ArgMatches;
-use secrecy::ExposeSecret;
 
 use rucksack_db::db::DB;
 use rucksack_lib::file;
 
 use crate::command;
-use crate::input::model::Inputs;
-use crate::input::{options, Config};
+use crate::input::{Config, Inputs};
 
 #[derive(Debug)]
 pub struct App {
@@ -98,20 +96,15 @@ impl App {
 
 pub fn setup_db(inputs: Inputs) -> Result<DB> {
     log::debug!("Setting up database ...");
-    match options::db_needed(&inputs.matches) {
-        Some(false) => {
-            log::debug!("Database not needed for this command; skipping load ...");
-            return Ok(DB::new(inputs.db_file(), inputs.backup_dir(), None, None));
-        }
-        Some(true) => (),
-        None => (),
-    };
+    if !inputs.db_needed() {
+        log::debug!("Database not needed for this command; skipping load ...");
+        return Ok(DB::new(inputs.db_file(), inputs.backup_dir(), None, None));
+    }
     log::debug!("Database is needed; preparing for read ...");
-    let pwd = options::db_pwd(&inputs.matches);
     let mut db = DB::new(
         inputs.db_file(),
         inputs.backup_dir(),
-        Some(pwd.expose_secret().to_string()),
+        Some(inputs.db_passwd()),
         Some(inputs.salt()),
     );
     db.open()?;
