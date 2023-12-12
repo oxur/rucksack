@@ -39,4 +39,4 @@ tempfile = { version = "3", default-features = false }
 
 [dependencies.rucksack-lib]
 path = "../rucksack-lib"
-version = "0.8.2-1"
+version = "=0.8.2-1"
