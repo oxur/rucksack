@@ -1,7 +1,7 @@
 [package]
 name = "rucksack"
 description = "A terminal-based secrets manager, generator, and importer/exporter (Firefox, Chrome) backed with a concurrent hashmap"
-version = "0.8.4"
+version = "0.8.5"
 license = "Apache-2.0"
 authors = ["Duncan McGreggor <oubiwann@gmail.com>"]
 repository = "https://github.com/oxur/rucksack"
@@ -23,16 +23,16 @@ passwords = "3.1"
 prettytable-rs = "0.10.0"
 rpassword = "7.1"
 secrecy = "0.8"
-twyg = "0.1"
-versions = "4.1.0"
+twyg = "0.2.0"
+versions = "6.0.0"
 
 [dependencies.rucksack-db]
 path = "../rucksack-db"
-version = "0.9.0"
+version = "0.9.1"
 
 [dependencies.rucksack-lib]
 path = "../rucksack-lib"
-version = "0.8.2"
+version = "0.8.3"
 
 [dev-dependencies]
 
