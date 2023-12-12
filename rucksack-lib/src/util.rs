@@ -42,7 +42,6 @@ pub fn any(reference: Vec<String>, query: Vec<String>) -> bool {
 pub fn bincode_cfg() -> bincode::config::Configuration<
     bincode::config::LittleEndian,
     bincode::config::Fixint,
-    bincode::config::WriteFixedArrayLength,
     bincode::config::NoLimit,
 > {
     bincode::config::legacy()
@@ -156,7 +155,7 @@ pub fn write_file(data: Vec<u8>, path: String) -> Result<()> {
 #[cfg(test)]
 mod tests {
     fn refset() -> Vec<String> {
-        vec!["a", "b", "c", "d", "e", "f"]
+        ["a", "b", "c", "d", "e", "f"]
             .iter()
             .map(|e| e.to_string())
             .collect()
