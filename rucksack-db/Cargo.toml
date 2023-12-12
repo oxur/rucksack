@@ -1,7 +1,7 @@
 [package]
 name = "rucksack-db"
 description = "The rucksack encrypted database"
-version = "0.9.0-1"
+version = "0.9.0-2"
 license = "Apache-2.0"
 authors = ["Duncan McGreggor <oubiwann@gmail.com>"]
 repository = "https://github.com/oxur/rucksack"
@@ -39,4 +39,4 @@ tempfile = { version = "3", default-features = false }
 
 [dependencies.rucksack-lib]
 path = "../rucksack-lib"
-version = "0.8.3"
+version = "0.8.2-1"
