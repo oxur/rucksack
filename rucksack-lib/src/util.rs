@@ -27,7 +27,6 @@ pub fn any(reference: Vec<String>, query: Vec<String>) -> bool {
 pub fn bincode_cfg() -> bincode::config::Configuration<
     bincode::config::LittleEndian,
     bincode::config::Fixint,
-    bincode::config::WriteFixedArrayLength,
     bincode::config::NoLimit,
 > {
     bincode::config::legacy()
@@ -54,7 +53,7 @@ pub fn random_specials(count: usize) -> Vec<u8> {
 #[cfg(test)]
 mod tests {
     fn refset() -> Vec<String> {
-        vec!["a", "b", "c", "d", "e", "f"]
+        ["a", "b", "c", "d", "e", "f"]
             .iter()
             .map(|e| e.to_string())
             .collect()

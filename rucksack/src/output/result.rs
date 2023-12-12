@@ -99,7 +99,7 @@ impl ResultRow {
                     val = "0".to_string();
                 }
                 match val.parse::<i32>().unwrap() {
-                    x if x == 100 => {
+                    100 => {
                         c = c
                             .with_style(Attr::ForegroundColor(BRIGHT_GREEN))
                             .with_style(Attr::Bold)
