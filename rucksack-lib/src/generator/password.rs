@@ -1,4 +1,4 @@
-use rand::Rng;
+use rand::thread_rng;
 use std::str;
 
 use anyhow::Result;
@@ -38,8 +38,7 @@ pub fn rand(length: &usize) -> String {
 }
 
 pub fn lipsum(word_count: &usize, suffix_length: &usize, delim: &str) -> String {
-    let mut rng = rand::thread_rng();
-    let phrase = lipsum::lipsum_words_from_seed(*word_count, rng.gen_range(0..10000));
+    let phrase = lipsum::lipsum_words_with_rng(thread_rng(), *word_count);
     let mut words: Vec<String> = phrase.split(' ').map(|s| s.to_string()).collect();
     let pg = PasswordGenerator {
         length: *suffix_length,
