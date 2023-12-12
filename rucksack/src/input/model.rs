@@ -19,7 +19,7 @@ use clap::ArgMatches;
 use secrecy::{ExposeSecret, Secret, SecretString};
 use serde::{Deserialize, Serialize};
 
-use rucksack_db::records;
+use rucksack_db::{records, Tag};
 use rucksack_lib::file;
 
 use super::{constant, options};
@@ -45,6 +45,10 @@ pub struct Inputs {
 // single API (source of truth) whereby the rest of the app may come to get
 // what it needs.
 impl Inputs {
+    pub fn account_id(&self) -> String {
+        options::account_id(&self.matches)
+    }
+
     pub fn backup_dir(&self) -> String {
         let mut dir = options::backup_dir(&self.matches);
         if !dir.is_empty() {
@@ -139,6 +143,30 @@ impl Inputs {
         )
     }
 
+    pub fn name(&self) -> String {
+        options::name(&self.matches)
+    }
+
+    pub fn private(&self) -> Vec<u8> {
+        options::private(&self.matches)
+    }
+
+    pub fn public(&self) -> Vec<u8> {
+        options::public(&self.matches)
+    }
+
+    pub fn record_kind(&self) -> records::Kind {
+        options::record_kind(&self.matches)
+    }
+
+    pub fn record_passwd(&self) -> String {
+        options::record_pwd_revealed(&self.matches)
+    }
+
+    pub fn root(&self) -> Vec<u8> {
+        options::root(&self.matches)
+    }
+
     pub fn salt(&self) -> String {
         match options::salt(&self.matches) {
             Some(s) => s,
@@ -147,6 +175,26 @@ impl Inputs {
                 Err(_) => constant::SALT_FALLBACK.to_string(),
             },
         }
+    }
+
+    pub fn service_key(&self) -> String {
+        options::service_key(&self.matches)
+    }
+
+    pub fn service_secret(&self) -> String {
+        options::service_secret(&self.matches)
+    }
+
+    pub fn tags(&self) -> Option<Vec<Tag>> {
+        options::tags(&self.matches)
+    }
+
+    pub fn user(&self) -> String {
+        options::user(&self.matches)
+    }
+
+    pub fn url(&self) -> String {
+        options::url(&self.matches)
     }
 }
 

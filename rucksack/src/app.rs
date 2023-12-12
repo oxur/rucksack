@@ -19,7 +19,7 @@ impl App {
     pub fn new(cfg: Config, matches: &ArgMatches) -> Result<App> {
         log::debug!("Setting up rucksack application ...");
         let inputs = cfg.to_inputs(matches);
-        let db = setup_db(inputs.clone())?;
+        let db = setup_db(&inputs)?;
         Ok(App { inputs, db })
     }
 
@@ -87,14 +87,15 @@ impl App {
             todo!();
         }
         if self.inputs.retention.delete_inactive {
-            // TODO: iterate through all inactive records and flag them as deleted
+            // TODO: iterate through all inactive records and flag them as
+            // deleted
             todo!();
         }
         Ok(())
     }
 }
 
-pub fn setup_db(inputs: Inputs) -> Result<DB> {
+pub fn setup_db(inputs: &Inputs) -> Result<DB> {
     log::debug!("Setting up database ...");
     if !inputs.db_needed() {
         log::debug!("Database not needed for this command; skipping load ...");
