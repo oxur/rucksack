@@ -136,7 +136,7 @@ pub fn run() -> Command {
                     .help("The type of generator to use")
                     .short('t')
                     .long("type")
-                    // .default_value("uuid++")
+                    .default_value("uuid++")
                     .env("RUXAK_TYPE")
                     .value_parser(["lipsum", "random", "uuid", "uuid+", "uuid++", ]),
             )
@@ -145,7 +145,7 @@ pub fn run() -> Command {
                     .help("The character length of secret to generate (ignored for fixed-length generator types)")
                     .short('l')
                     .long("length")
-                    // .default_value("12")
+                    .default_value("12")
                     .env("RUXAK_LENGTH")
                     .value_parser(clap::value_parser!(usize)),
             )
@@ -153,7 +153,7 @@ pub fn run() -> Command {
                 Arg::new("suffix-length")
                     .help("The character length of a random suffix (for generator types that support suffixes)")
                     .long("suffix-length")
-                    // .default_value("4")
+                    .default_value("4")
                     .env("RUXAK_SUFFIX_LENGTH")
                     .value_parser(clap::value_parser!(usize)),
             )
@@ -163,15 +163,15 @@ pub fn run() -> Command {
                     .short('w')
                     .long("word-count")
                     .env("RUXAK_WORD_COUNT")
-                    // .default_value("4")
+                    .default_value("4")
                     .value_parser(clap::value_parser!(usize)),
             )
             .arg(
                 Arg::new("delimiter")
                     .help("The character used to join parts (for generator types that join parts)")
                     .short('d')
-                    .long("delimiter"),
-                    // .default_value("-"),
+                    .long("delimiter")
+                    .default_value("-"),
             )
             .arg(
                 Arg::new("encode")
