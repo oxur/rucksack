@@ -16,10 +16,10 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(cfg: Config, matches: &ArgMatches) -> Result<App> {
+    pub fn new(cfg: Config, cmd: String, matches: &ArgMatches) -> Result<App> {
         log::debug!("Setting up rucksack application ...");
         let inputs = cfg.to_inputs(matches);
-        let db = setup_db(&inputs)?;
+        let db = setup_db(&inputs, cmd)?;
         Ok(App { inputs, db })
     }
 
@@ -95,10 +95,14 @@ impl App {
     }
 }
 
-pub fn setup_db(inputs: &Inputs) -> Result<DB> {
+pub fn setup_db(inputs: &Inputs, cmd: String) -> Result<DB> {
     log::debug!("Setting up database ...");
+    log::trace!("Got inputs: {:?}", inputs);
     if !inputs.db_needed() {
-        log::debug!("Database not needed for this command; skipping load ...");
+        log::debug!(
+            "Database not needed for the '{}' command; skipping load ...",
+            cmd
+        );
         return Ok(DB::new(inputs.db_file(), inputs.backup_dir(), None, None));
     }
     log::debug!("Database is needed; preparing for read ...");

@@ -127,7 +127,7 @@ impl Inputs {
     }
 
     pub fn db_needed(&self) -> bool {
-        options::db_needed(&self.matches).unwrap_or(false)
+        options::db_needed(&self.matches).unwrap_or(true)
     }
 
     pub fn db_passwd(&self) -> String {

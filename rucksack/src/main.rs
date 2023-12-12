@@ -29,7 +29,7 @@ fn main() -> Result<()> {
         // Daemon:
         Some(("start", start_matches)) => {
             // TODO: once app is setup, try to extract log-level from CLI opts and re-set logger
-            let app = rucksack::App::new(cfg, start_matches)?;
+            let app = rucksack::App::new(cfg, "".to_string(), start_matches)?;
             let daemon = Commander::start(app)?;
             match daemon.run() {
                 Ok(_) => Ok(()),
@@ -37,8 +37,8 @@ fn main() -> Result<()> {
             }
         }
         // CLI:
-        Some((_, subcmd_matches)) => {
-            let app = rucksack::App::new(cfg, subcmd_matches)?;
+        Some((cmd, subcmd_matches)) => {
+            let app = rucksack::App::new(cfg, cmd.to_string(), subcmd_matches)?;
             // TODO: once app is setup, try to extract log-level from CLI opts and re-set logger
             app.run(&matches)?;
             app.shutdown(&matches)
