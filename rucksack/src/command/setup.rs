@@ -54,7 +54,7 @@ pub fn run() -> Command {
     )
     .subcommand(
         Command::new("backup")
-            .about("Operations related to the backing up of the secrets DB; used with no subcommand, perform a backup")
+            .about("Operations related to the a single backup of the secrets DB; used with no subcommand, perform a backup")
             .arg(db::path())
             .arg(db::pwd())
             .arg(db::salt())
@@ -73,7 +73,7 @@ pub fn run() -> Command {
     )
     .subcommand(
         Command::new("backups")
-            .about("Operations related to the backing up of the secrets DB; used with no subcommand, perform a backup")
+            .about("Operations related to multiple backups of the secrets DB")
             .arg(db::path())
             .arg(db::pwd())
             .arg(db::salt())
