@@ -35,7 +35,7 @@ Primary project documentation is here:
 
 * [https://docs.rs/rucksack/](https://docs.rs/rucksack/)
 
-A quick peak at the top-level help from the terminal:
+A quick peek at the top-level help from the terminal:
 
 ```text
 rucksack: A terminal-based secrets manager, generator, and importer/exporter (Firefox, Chrome) backed with a concurrent hashmap
