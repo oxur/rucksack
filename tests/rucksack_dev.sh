@@ -13,6 +13,10 @@ echo
 ./bin/rucksack help
 echo
 
+header "Generate encoded password"
+
+./bin/rucksack gen --config-file "$CFG_FILE" --type uuid++ --encode
+
 header "Show config file (default)"
 
 ./bin/rucksack show config-file --log-level error
@@ -40,10 +44,6 @@ header "Show DB file (default)"
 header "Show DB file"
 
 ./bin/rucksack show db-file --config-file "$CFG_FILE" --db "$DB_FILE"
-
-header "Generate encoded password"
-
-./bin/rucksack gen --config-file "$CFG_FILE" --type uuid++ --encode
 
 header "Add a new record (shelly)"
 

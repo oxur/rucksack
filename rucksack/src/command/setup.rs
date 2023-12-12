@@ -1,6 +1,8 @@
 use clap::builder::EnumValueParser;
 use clap::{Arg, ArgAction, Command};
 
+use rucksack_db::records;
+
 use crate::input::constant;
 
 use super::args::{db, record, top};
@@ -249,7 +251,7 @@ pub fn run() -> Command {
                     .help("Limit results to secrets that do not exceed the given maximum score")
                     .long("max-score")
                     .value_parser(clap::value_parser!(f64))
-                    // .default_value("100")
+                    .default_value("100")
                     .env("RUXAK_MAX_SCORE")
                     .global(true)
             )
@@ -257,7 +259,7 @@ pub fn run() -> Command {
                 Arg::new("min-score")
                     .help("Limit results to secrets that are not less than the given minimum score")
                     .long("min-score")
-                    // .default_value("0")
+                    .default_value("0")
                     .env("RUXAK_MIN_SCORE")
                     .value_parser(clap::value_parser!(f64))
                     .global(true)
@@ -276,7 +278,7 @@ pub fn run() -> Command {
                     .short('s')
                     .long("sort-by")
                     .visible_alias("order-by")
-                    // .default_value("url")
+                    .default_value("url")
                     .env("RUXAK_SORT_BY")
                     .value_parser(["score", "url", "name"])
                     .global(true)
@@ -294,7 +296,7 @@ pub fn run() -> Command {
             .arg(db::salt())
             .arg(db::backup_dir())
             .arg(record::category()
-                // .default_value(records::ANY_CATEGORY),
+                .default_value(records::ANY_CATEGORY),
             )
             .arg(record::type_list())
             .arg(record::all_tags())
