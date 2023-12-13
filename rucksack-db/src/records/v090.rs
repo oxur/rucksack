@@ -163,6 +163,14 @@ pub struct DecryptedRecord {
 }
 
 impl DecryptedRecord {
+    pub fn new() -> DecryptedRecord {
+        DecryptedRecord {
+            secrets: default_secrets(),
+            metadata: default_metadata(),
+            history: vec![],
+        }
+    }
+
     pub fn add_tag(&mut self, value: String) {
         self.metadata.add_tag(value)
     }
@@ -256,6 +264,10 @@ impl DecryptedRecord {
         self.metadata.updated = time::now();
         self.secrets.user = new_user.clone();
         self.metadata.name = new_user;
+    }
+
+    pub fn url(&self) -> String {
+        self.metadata.url.clone()
     }
 
     pub fn user(&self) -> String {
