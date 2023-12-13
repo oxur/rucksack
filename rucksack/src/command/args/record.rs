@@ -70,6 +70,7 @@ pub fn user() -> Arg {
         .short('u')
         .long("user")
         .env("RUXAK_USER")
+        .global(true)
 }
 
 pub fn user_old() -> Arg {
@@ -98,6 +99,7 @@ pub fn url() -> Arg {
         .help("the login URL")
         .long("url")
         .env("RUXAK_URL")
+        .global(true)
 }
 
 pub fn url_old() -> Arg {
