@@ -97,7 +97,7 @@ impl App {
 
 pub fn setup_db(inputs: &Inputs, cmd: String) -> Result<DB> {
     log::debug!("Setting up database ...");
-    log::trace!("Got inputs: {:?}", inputs);
+    log::trace!("Got inputs: {:#?}", inputs);
     if !inputs.db_needed() {
         log::debug!(
             "Database not needed for the '{}' command; skipping load ...",
