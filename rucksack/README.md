@@ -30,6 +30,48 @@
 * [ ] [Local network sync](https://github.com/oxur/rucksack/milestone/13)
 * [ ] [1Password, JSON, import/export improvements](https://github.com/oxur/rucksack/milestone/14), etc.
 
+## Quick Examples
+
+Generating a new password:
+
+```shell
+$ ./bin/rucksack gen
+
+New password: AF47D285-a757%4576-ace0-538995D9@9=E
+Password score: 100.00
+```
+
+See `./bin/rucksack help gen` for more options.
+
+Importing logins from a browser:
+
+```shell
+./bin/rucksack import --format firefox --file ~/Downloads/firefox-export.csv
+```
+
+List all passwords with a "strength" score of 20 or lower:
+
+```shell
+$ ./bin/rucksack list --max-score 20
+
++--------------------+----------+----------+--------------+--------------------------------+
+| Name               | Type     | Category | Access Count | URL                            |
++--------------------+----------+----------+--------------+--------------------------------+
+| carol              | Password | default  |            0 | http://example.com             |
+| carol              | Password | default  |            7 | http://example.com             |
+| admin              | Password | default  |            7 | http://localhost:3000          |
+| admin              | Password | default  |            0 | http://localhost:3000          |
+| admin              | Password | default  |            7 | http://localhost:3030          |
+| admin              | Password | default  |            0 | http://localhost:3030          |
+| admin              | Password | default  |            0 | http://localhost:3030          |
+| foo                | Password | default  |            7 | http://localhost:8000          |
+| foo                | Password | default  |            0 | http://localhost:8000          |
+| foo                | Password | default  |            0 | http://localhost:8000          |
+| shelly3            | Password | default  |            0 | https://bleep.bloop            |
+| shelly3            | Password | default  |            7 | https://bleep.bloop            |
++--------------------+----------+----------+--------------+--------------------------------+
+```
+
 ## Documentation
 
 Primary project documentation is here:
