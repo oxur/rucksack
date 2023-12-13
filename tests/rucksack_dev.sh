@@ -449,7 +449,9 @@ header "Show password history"
     --db "$DB_FILE" \
     --db-pass 1234 \
     --user sully \
-    --url "https://boo.fans.co.uk"
+    --url "https://boo.fans.co.uk" \
+    --category default \
+    --type password
 
 header "Show password history (revealed)"
 
@@ -460,6 +462,8 @@ header "Show password history (revealed)"
     --db-pass 1234 \
     --user sully \
     --url "https://boo.fans.co.uk" \
+    --category default \
+    --type password \
     --reveal
 
 
