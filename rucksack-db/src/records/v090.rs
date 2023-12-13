@@ -275,6 +275,12 @@ impl DecryptedRecord {
     }
 }
 
+impl Default for DecryptedRecord {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 pub fn migrate_decrypted_record_from_v080(dr: v080::DecryptedRecord) -> DecryptedRecord {
     DecryptedRecord {
         secrets: migrate_secrets_from_v080(dr.secrets.clone()),
