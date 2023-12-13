@@ -23,15 +23,19 @@
 //! Usage: rucksack [OPTIONS] [COMMAND]
 //!
 //! Commands:
-//!   add     Add a new secret
-//!   export  Export the rucksack db
-//!   gen     Generate a secret
-//!   import  Pull in creds from other sources
-//!   list    List all secrets
-//!   rm      Delete a single record [aliases: delete, remove]
-//!   set     Perform various 'write' operations
-//!   show    Display rucksack-specific information
-//!   help    Print this message or the help of the given subcommand(s)
+//! add      Add a new secret
+//! backup   Operations related to the a single backup of the secrets DB; used with no subcommand, perform a backup
+//! backups  Operations related to multiple backups of the secrets DB
+//! config   Operations related to rucksack configuration
+//! delete   Delete a single record [aliases: rm, remove]
+//! export   Export the rucksack db
+//! gen      Generate a secret
+//! import   Pull in secrets from other sources
+//! list     List all secrets
+//! set      Perform various 'write' operations
+//! show     Display rucksack-specific information
+//! start    Run rucksack as a daemon, enabling local network syncing services
+//! help     Print this message or the help of the given subcommand(s)
 //!
 //! Options:
 //!       --config-file <config-file>  The path to the config file to use or create [default: "<user config dir>/rucksack/config.toml"]
