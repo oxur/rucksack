@@ -6,7 +6,20 @@ use rucksack_db::records::DecryptedRecord;
 use crate::app::App;
 
 pub fn record(app: &App) -> Result<DecryptedRecord> {
+    log::trace!("Getting record key by app inputs: {:#?}", app.inputs);
     record_by_key(app, app.inputs.key())
+}
+
+pub fn record_with_default(app: &App) -> Result<DecryptedRecord> {
+    let key = app.inputs.key();
+    log::debug!("Querying record by key '{key}' ...");
+    match app.db.get(key.clone()) {
+        Some(dr) => Ok(dr),
+        None => {
+            log::debug!("Record not found; creating new one ...");
+            Ok(DecryptedRecord::new())
+        }
+    }
 }
 
 pub fn record_by_key(app: &App, key: String) -> Result<DecryptedRecord> {
