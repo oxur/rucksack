@@ -3,7 +3,7 @@ use clap::ArgMatches;
 
 use crate::app::App;
 
-use super::handlers::{add, backup, config, delete, export, gen, import, list, set, show};
+use super::handlers::{add, backup, config, dedupe, delete, export, gen, import, list, set, show};
 
 pub fn run(app: &App, matches: &ArgMatches) -> Result<()> {
     match matches.subcommand() {
@@ -24,6 +24,8 @@ pub fn run(app: &App, matches: &ArgMatches) -> Result<()> {
             Some((&_, _)) => todo!(),
             None => todo!(),
         },
+        Some(("dedupe", dedupe_matches)) => dedupe::new(dedupe_matches, app),
+        Some(("delete", delete_matches)) => delete::one(delete_matches, app),
         Some(("export", export_matches)) => export::new(export_matches, app),
         Some(("gen", gen_matches)) => gen::new(gen_matches),
         Some(("import", import_matches)) => import::new(import_matches, app),
@@ -35,7 +37,6 @@ pub fn run(app: &App, matches: &ArgMatches) -> Result<()> {
             Some((&_, _)) => todo!(),
             None => list::all(list_matches, app),
         },
-        Some(("delete", delete_matches)) => delete::one(delete_matches, app),
         Some(("set", set_matches)) => match set_matches.subcommand() {
             Some(("password", password_matches)) => set::password(password_matches, app),
             Some(("status", status_matches)) => set::status(status_matches, app),

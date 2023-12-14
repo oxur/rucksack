@@ -5,7 +5,7 @@ use rucksack_db::records;
 
 use crate::input::constant;
 
-use super::args::{db, record, top};
+use super::args::{db, dedupe, record, top};
 pub use crate::command::handlers::completions::completions;
 pub use crate::command::handlers::help::long_help;
 pub use crate::command::handlers::version::version;
@@ -95,6 +95,15 @@ pub fn run() -> Command {
             .subcommand(
                 Command::new("re-init")
                     .about("Re-initialise (overwrite) the rucksack config"))
+    )
+    .subcommand(
+        Command::new("dedupe")
+            .about("Deduplication operations on rucksack records")
+            .arg(db::path())
+            .arg(db::pwd())
+            .arg(db::salt())
+            .arg(db::backup_dir())
+            .arg(dedupe::dd_type())
     )
     .subcommand(
         Command::new("delete")

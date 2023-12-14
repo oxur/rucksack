@@ -2,6 +2,7 @@ pub mod add;
 pub mod backup;
 pub mod completions;
 pub mod config;
+pub mod dedupe;
 pub mod delete;
 pub mod export;
 pub mod gen;
