@@ -8,6 +8,7 @@ pub enum Column {
     Category,
     Count,
     Created,
+    Hash,
     Id,
     Imported,
     Key,

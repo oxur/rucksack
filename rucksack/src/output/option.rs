@@ -1,12 +1,17 @@
+use super::Column;
+
 #[derive(Clone, Debug, Default)]
 pub struct Opts {
     pub backup_files: bool,
+    pub built_hashes: bool,
     pub categories: bool,
     pub decrypted: bool,
     pub group_by_category: bool,
     pub group_by_kind: bool,
     pub group_by_name: bool,
     pub group_by_password: bool,
+    pub group_by_hash: bool,
+    pub hash_fields: Vec<Column>,
     pub kinds: bool,
     pub latest_only: bool,
     pub only_deleted: bool,

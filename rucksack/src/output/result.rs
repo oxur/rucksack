@@ -33,6 +33,11 @@ pub fn category(cat: String) -> ResultRow {
     ResultRow { hashmap }
 }
 
+pub fn hash(hash: String) -> ResultRow {
+    let hashmap: HashMap<Column, String> = HashMap::from([(Column::Hash, hash)]);
+    ResultRow { hashmap }
+}
+
 pub fn kind(kind: String) -> ResultRow {
     let hashmap: HashMap<Column, String> = HashMap::from([(Column::Kind, kind)]);
     ResultRow { hashmap }

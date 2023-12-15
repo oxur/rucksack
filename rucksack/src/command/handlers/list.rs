@@ -126,6 +126,7 @@
 use anyhow::Result;
 use clap::ArgMatches;
 use passwords::{analyzer, scorer};
+use sha2::{Digest, Sha256};
 
 use rucksack_db::records;
 use rucksack_db::Status;
@@ -330,6 +331,19 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         } else if opts.group_by_password {
             let entry = groups.entry(record.password()).or_default();
             entry.push(result.clone());
+        }
+        // Hashes
+        if !opts.hash_fields.is_empty() && !opts.built_hashes {
+            let mut vals: Vec<String> = vec![];
+            for col in opts.hash_fields.iter() {
+                let val = result.get(col).unwrap().to_owned();
+                vals.push(val);
+            }
+            let hash = format!(
+                "{:x}",
+                Sha256::new().chain_update(vals.join(":")).finalize()
+            );
+            result.add(Column::Hash, hash);
         }
         results.push(result);
     }
