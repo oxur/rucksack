@@ -464,7 +464,7 @@ header "Show password history (revealed)"
     --url "https://boo.fans.co.uk" \
     --category default \
     --type password \
-    --reveal
+    --reveal --decrypt
 
 
 header "Export password data"

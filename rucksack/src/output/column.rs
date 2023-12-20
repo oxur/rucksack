@@ -53,7 +53,7 @@ impl Column {
 }
 
 pub trait Columns {
-    fn new(&self, opts: &Opts) -> Vec<Column> {
+    fn gen(&self, opts: &Opts) -> Vec<Column> {
         let mut cols = self.pre(opts);
         cols = self.passwd(opts, cols);
         cols = self.status(opts, cols);

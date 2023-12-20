@@ -23,9 +23,16 @@ pub fn new(id: String, name: String, url: String) -> ResultRow {
 // This function is used for creating results rows that are needed by
 // the `list passwords` command. The columns below are the only columns
 // needed by that command.
-pub fn password(pwd: String, created: String, updated: String, last_accessed: String) -> ResultRow {
+pub fn password(
+    pwd: String,
+    score: String,
+    created: String,
+    updated: String,
+    last_accessed: String,
+) -> ResultRow {
     let hashmap: HashMap<Column, String> = HashMap::from([
         (Column::Password, pwd),
+        (Column::Score, score),
         (Column::Created, created),
         (Column::LastUpdated, updated),
         (Column::LastAccessed, last_accessed),

@@ -218,20 +218,28 @@ pub fn keys(matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
-    let opts = Opts {
-        decrypted: true,
-        reveal: options::reveal(matches),
+    let mut opts = Opts {
         password_history: true,
         ..Default::default()
     };
+    opts.reveal = options::reveal(matches);
+    opts.decrypted = options::decrypt(matches);
     let mut results: Vec<result::ResultRow> = Vec::new();
     let record = query::record(app)?;
+    let analyzed = analyzer::analyze(record.password());
+    let score = scorer::score(&analyzed).trunc() as i64;
     let md = record.metadata();
     let mut pwd = record.password();
     if !opts.reveal {
         pwd = hidden();
     }
-    results.push(result::password(pwd, md.created, md.updated, md.last_used));
+    results.push(result::password(
+        pwd,
+        score.to_string(),
+        md.created,
+        md.updated,
+        md.last_used,
+    ));
     log::debug!("history length: {}", record.history().len());
     // Let's get these in order of most recent to oldest:
     let mut history = record.history();
@@ -243,6 +251,7 @@ pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
         }
         results.push(result::password(
             pwd,
+            score.to_string(),
             old.metadata.created,
             old.metadata.updated,
             old.metadata.last_used,

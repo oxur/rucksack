@@ -43,31 +43,31 @@ impl Table {
 
     fn set_columns(&mut self) {
         if self.opts.only_keys {
-            self.columns = column::ColsOnlyKey {}.new(&self.opts);
+            self.columns = column::ColsOnlyKey {}.gen(&self.opts);
         } else if self.opts.kinds {
-            self.columns = column::ColsOnlyKind {}.new(&self.opts);
+            self.columns = column::ColsOnlyKind {}.gen(&self.opts);
         } else if self.opts.tags {
-            self.columns = column::ColsOnlyTags {}.new(&self.opts);
+            self.columns = column::ColsOnlyTags {}.gen(&self.opts);
         } else if self.opts.categories {
-            self.columns = column::ColsOnlyCat {}.new(&self.opts);
+            self.columns = column::ColsOnlyCat {}.gen(&self.opts);
         } else if self.opts.backup_files {
-            self.columns = column::ColsBackupFiles {}.new(&self.opts);
+            self.columns = column::ColsBackupFiles {}.gen(&self.opts);
         } else if self.opts.group_by_name {
             self.opts.with_passwd = true;
-            self.columns = column::ColsGroupByName {}.new(&self.opts);
+            self.columns = column::ColsGroupByName {}.gen(&self.opts);
         } else if self.opts.group_by_hash {
-            self.columns = column::ColsGroupByHash {}.new(&self.opts);
+            self.columns = column::ColsGroupByHash {}.gen(&self.opts);
         } else if self.opts.group_by_password {
-            self.columns = column::ColsGroupByPasswd {}.new(&self.opts);
+            self.columns = column::ColsGroupByPasswd {}.gen(&self.opts);
         } else if self.opts.group_by_kind {
-            self.columns = column::ColsGroupByKind {}.new(&self.opts);
+            self.columns = column::ColsGroupByKind {}.gen(&self.opts);
         } else if self.opts.group_by_category {
-            self.columns = column::ColsGroupByCat {}.new(&self.opts);
+            self.columns = column::ColsGroupByCat {}.gen(&self.opts);
         } else if self.opts.password_history {
             self.opts.with_passwd = true;
-            self.columns = column::ColsPasswdHist {}.new(&self.opts);
+            self.columns = column::ColsPasswdHist {}.gen(&self.opts);
         } else {
-            self.columns = column::ColsDefault {}.new(&self.opts);
+            self.columns = column::ColsDefault {}.gen(&self.opts);
         }
         self.set_headers();
     }
