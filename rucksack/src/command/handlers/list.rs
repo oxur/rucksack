@@ -157,6 +157,54 @@ pub fn backups(matches: &ArgMatches, app: &App) -> Result<()> {
     backup::list(matches, app)
 }
 
+pub fn duplicates(matches: &ArgMatches, app: &App) -> Result<()> {
+    let mut hash_fields: Vec<Column> = Vec::new();
+    match matches.get_one::<String>("type").map(|s| s.as_str()) {
+        Some("exact") => {
+            hash_fields.append(&mut vec![
+                Column::Name,
+                Column::Url,
+                Column::Kind,
+                Column::Category,
+                Column::Password,
+            ]);
+        }
+        Some("updated") => {
+            hash_fields.append(&mut vec![
+                Column::Name,
+                Column::Url,
+                Column::Kind,
+                Column::Category,
+            ]);
+        }
+        Some(_) => todo!(),
+        None => todo!(),
+    }
+    match process_records(
+        matches,
+        app,
+        Opts {
+            hash_fields: hash_fields.clone(),
+            ..Default::default()
+        },
+    ) {
+        Err(e) => {
+            log::error!("{:}", e);
+            return Err(e);
+        }
+        _ => log::debug!("Successfully ran pre-processing step"),
+    };
+    process_records(
+        matches,
+        app,
+        Opts {
+            group_by_hash: true,
+            hash_fields,
+            ..Default::default()
+        },
+    )
+}
+
 // TODO: once there's config for it, pull from config and pass
 // options here from top-level app.
 // TODO: or not, depending upon the outcome of this ticket:
@@ -332,6 +380,9 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         } else if opts.group_by_password {
             let entry = groups.entry(record.password()).or_default();
             entry.push(result.clone());
+        } else if opts.group_by_hash && opts.built_hashes {
+            let entry = groups.entry(record.password()).or_default();
+            entry.push(result.clone());
         }
         // Hashes
         if !opts.hash_fields.is_empty() && !opts.built_hashes {
@@ -351,7 +402,12 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         }
         results.push(result);
     }
-    opts.built_hashes = built_hashes;
+    if !opts.hash_fields.is_empty() {
+        opts.built_hashes = built_hashes;
+        // Hashes require pre-processing; that's just been done, so we're
+        // going to bail early and let the caller re-run process_records ...
+        return Ok(());
+    }
     sort(&mut results, sort_by);
     let mut group_count: i32 = 0;
     let mut count: usize = results.len();
