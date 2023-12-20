@@ -255,6 +255,7 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
     }
     let mut results: Vec<result::ResultRow> = Vec::new();
     let mut groups = result::GroupByString::new();
+    let mut built_hashes: bool = false;
     for i in app.db.iter() {
         let record = i.value().decrypt(app.db.store_pwd(), app.inputs.salt())?;
         let analyzed = analyzer::analyze(record.password());
@@ -344,9 +345,13 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
                 Sha256::new().chain_update(vals.join(":")).finalize()
             );
             result.add(Column::Hash, hash);
+            // We're checking opts.built_hashes at the top of each loop,
+            // so we don't want to set that until the looping is done:
+            built_hashes = true;
         }
         results.push(result);
     }
+    opts.built_hashes = built_hashes;
     sort(&mut results, sort_by);
     let mut group_count: i32 = 0;
     let mut count: usize = results.len();
