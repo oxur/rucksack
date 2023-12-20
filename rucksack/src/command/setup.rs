@@ -319,7 +319,8 @@ pub fn run() -> Command {
                     .about("List the records that have been flagged for deletion"))
             .subcommand(
                 Command::new("duplicates")
-                    .about("List the records that have duplicate entries"))
+                    .about("List the records that have duplicate entries")
+                    .arg(dedupe::dd_type()))
             .subcommand(
                 Command::new("keys")
                     .about("List only the keys"))

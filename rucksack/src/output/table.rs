@@ -64,6 +64,27 @@ impl Table {
             } else {
                 self.columns = vec![Column::Password, Column::Score, Column::Count, Column::Url];
             }
+        } else if self.opts.group_by_hash {
+            if self.opts.with_status {
+                self.columns = vec![
+                    Column::Name,
+                    Column::Kind,
+                    Column::Category,
+                    Column::Status,
+                    Column::Count,
+                    Column::LastUpdated,
+                    Column::Url,
+                ];
+            } else {
+                self.columns = vec![
+                    Column::Name,
+                    Column::Kind,
+                    Column::Category,
+                    Column::Count,
+                    Column::LastUpdated,
+                    Column::Url,
+                ];
+            }
         } else if self.opts.group_by_password {
             if self.opts.with_status {
                 self.columns = vec![

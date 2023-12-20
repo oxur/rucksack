@@ -36,6 +36,7 @@ impl Column {
         match self {
             Column::Count => "Access Count".to_string(),
             Column::Kind => "Type".to_string(),
+            Column::LastUpdated => "Last Updated".to_string(),
             Column::Score => "Score / Strength".to_string(),
             Column::Url => "URL".to_string(),
             _ => format!("{self}"),

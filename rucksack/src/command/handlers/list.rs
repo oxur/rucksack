@@ -160,7 +160,7 @@ pub fn backups(matches: &ArgMatches, app: &App) -> Result<()> {
 pub fn duplicates(matches: &ArgMatches, app: &App) -> Result<()> {
     let mut hash_fields: Vec<Column> = Vec::new();
     let mut default_hash_fields = exact_hash_fields();
-    match matches.get_one::<String>("type").map(|s| s.as_str()) {
+    match matches.get_one::<String>("dedupe-type").map(|s| s.as_str()) {
         Some("exact") => {
             hash_fields.append(&mut exact_hash_fields());
         }
@@ -407,6 +407,7 @@ fn extract_results(
             let entry = groups.entry(record.password()).or_default();
             entry.push(result.clone());
         } else if opts.group_by_hash {
+            result.add(Column::LastUpdated, record.metadata().last_used);
             let entry = groups
                 .entry(hash_by_columns(record.clone(), opts.hash_fields.clone()))
                 .or_default();
@@ -475,7 +476,7 @@ fn print_hash_group(
         group_count += 1;
         sort(&mut group, sort_by);
         hash_section(&group[0], opts);
-        println!("Records using: {}\nRecords:", group.len());
+        println!("Duplicate record count: {}\nRecords:", group.len());
         let mut t = table::new(group.to_owned(), opts.clone());
         t.display();
         record_count += group.len();
@@ -484,7 +485,7 @@ fn print_hash_group(
 }
 
 fn print_report(group_count: i32, records: usize, total: usize, opts: &Opts) {
-    if opts.group_by_name || opts.group_by_password {
+    if opts.group_by_name || opts.group_by_password || opts.group_by_hash {
         println!("\n{group_count} groups (with {records} records out of {total} total)\n",)
     } else {
         println!("\n{records} records (of {total} total)\n")
@@ -530,11 +531,11 @@ fn hash_section(r: &result::ResultRow, opts: &Opts) {
     match opts.decrypted {
         true => {
             println!("\n\n+{}\n", "=".repeat(40 + 20 + 16 + 5));
-            println!("User: {}", r.get(&Column::Name).unwrap())
+            println!("ID: {}", r.get(&Column::Id).unwrap())
         }
         false => {
             println!("\n\n+{}\n", "=".repeat(40 - 1));
-            println!("User: {}", r.get(&Column::Name).unwrap())
+            println!("ID: {}", r.get(&Column::Id).unwrap())
         }
     }
 }

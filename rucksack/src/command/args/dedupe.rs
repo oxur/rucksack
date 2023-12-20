@@ -1,9 +1,8 @@
 use clap::Arg;
 
 pub fn dd_type() -> Arg {
-    Arg::new("type")
+    Arg::new("dedupe-type")
         .help("The type of deduplication to perform")
-        .short('t')
-        .long("type")
+        .long("dedupe-type")
         .env("RUXAK_DEDUPE_TYPE")
 }
