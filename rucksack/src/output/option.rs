@@ -25,6 +25,7 @@ pub struct Opts {
     pub reveal: bool,
     pub skip_deleted: bool,
     pub tags: bool,
+    pub with_passwd: bool,
     pub with_status: bool,
 }
 

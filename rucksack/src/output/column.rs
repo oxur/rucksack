@@ -3,6 +3,8 @@ use std::fmt;
 use prettytable::color::BLUE;
 use prettytable::{Attr, Cell};
 
+use super::Opts;
+
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum Column {
     Category,
@@ -47,6 +49,78 @@ impl Column {
         Cell::new(self.name().as_str())
             .with_style(Attr::Bold)
             .with_style(Attr::ForegroundColor(BLUE))
+    }
+}
+
+pub trait Columns {
+    fn new(&self, opts: &Opts) -> Vec<Column> {
+        let mut cols = self.pre(opts);
+        cols = self.passwd(opts, cols);
+        cols = self.status(opts, cols);
+        cols = self.post(opts, cols);
+        cols.clone()
+    }
+
+    fn pre(&self, _opts: &Opts) -> Vec<Column> {
+        vec![]
+    }
+
+    fn status(&self, opts: &Opts, mut cols: Vec<Column>) -> Vec<Column> {
+        if opts.with_status {
+            cols.push(Column::Status);
+        }
+        cols
+    }
+
+    fn passwd(&self, opts: &Opts, mut cols: Vec<Column>) -> Vec<Column> {
+        if opts.with_passwd {
+            cols.append(&mut vec![Column::Password, Column::Score])
+        }
+        cols
+    }
+
+    fn post(&self, _opts: &Opts, cols: Vec<Column>) -> Vec<Column> {
+        cols
+    }
+}
+
+pub struct ColsOnlyKey;
+
+impl Columns for ColsOnlyKey {
+    fn pre(&self, _opts: &Opts) -> Vec<Column> {
+        vec![Column::Key]
+    }
+}
+
+pub struct ColsOnlyKind;
+
+impl Columns for ColsOnlyKind {
+    fn pre(&self, _opts: &Opts) -> Vec<Column> {
+        vec![Column::Kind]
+    }
+}
+
+pub struct ColsOnlyTags;
+
+impl Columns for ColsOnlyTags {
+    fn pre(&self, _opts: &Opts) -> Vec<Column> {
+        vec![Column::Tags]
+    }
+}
+
+pub struct ColsOnlyCat;
+
+impl Columns for ColsOnlyCat {
+    fn pre(&self, _opts: &Opts) -> Vec<Column> {
+        vec![Column::Category]
+    }
+}
+
+pub struct ColsBackupFiles;
+
+impl Columns for ColsBackupFiles {
+    fn pre(&self, _opts: &Opts) -> Vec<Column> {
+        vec![Column::Name, Column::Permissions]
     }
 }
 

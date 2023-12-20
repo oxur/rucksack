@@ -1,4 +1,4 @@
-use super::column::Column;
+use super::column::{self, Column, Columns};
 use super::option::Opts;
 use super::result::ResultRow;
 
@@ -43,15 +43,15 @@ impl Table {
 
     fn set_columns(&mut self) {
         if self.opts.only_keys {
-            self.columns = vec![Column::Key]
+            self.columns = column::ColsOnlyKey {}.new(&self.opts);
         } else if self.opts.kinds {
-            self.columns = vec![Column::Kind];
+            self.columns = column::ColsOnlyKind {}.new(&self.opts);
         } else if self.opts.tags {
-            self.columns = vec![Column::Tags];
+            self.columns = column::ColsOnlyTags {}.new(&self.opts);
         } else if self.opts.categories {
-            self.columns = vec![Column::Category];
+            self.columns = column::ColsOnlyCat {}.new(&self.opts);
         } else if self.opts.backup_files {
-            self.columns = vec![Column::Name, Column::Permissions];
+            self.columns = column::ColsBackupFiles {}.new(&self.opts);
         } else if self.opts.group_by_name {
             if self.opts.with_status {
                 self.columns = vec![
