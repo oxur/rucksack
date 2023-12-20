@@ -7,7 +7,6 @@ pub struct Opts {
     pub all_tags: Option<Vec<String>>,
     pub any_tags: Option<Vec<String>>,
     pub backup_files: bool,
-    pub built_hashes: bool,
     pub category: String,
     pub categories: bool,
     pub decrypted: bool,

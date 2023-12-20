@@ -199,16 +199,16 @@ impl DecryptedRecord {
     }
 
     pub fn key(&self) -> String {
-        let mut name = self.metadata.name.clone();
-        if name.is_empty() {
-            name = self.secrets.user.clone();
-        }
         key(
             self.metadata.category.as_str(),
             self.metadata.kind.clone(),
-            name.as_str(),
+            self.name_or_user().as_str(),
             self.metadata.url.as_str(),
         )
+    }
+
+    pub fn key_with_pass(&self) -> String {
+        format!("{}:{}", self.key(), self.password())
     }
 
     pub fn metadata(&self) -> Metadata {

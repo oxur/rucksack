@@ -159,24 +159,13 @@ pub fn backups(matches: &ArgMatches, app: &App) -> Result<()> {
 
 pub fn duplicates(matches: &ArgMatches, app: &App) -> Result<()> {
     let mut hash_fields: Vec<Column> = Vec::new();
-    let mut default_hash_fields = vec![
-        Column::Name,
-        Column::Url,
-        Column::Kind,
-        Column::Category,
-        Column::Password,
-    ];
+    let mut default_hash_fields = exact_hash_fields();
     match matches.get_one::<String>("type").map(|s| s.as_str()) {
         Some("exact") => {
-            hash_fields.append(&mut default_hash_fields);
+            hash_fields.append(&mut exact_hash_fields());
         }
         Some("updated") => {
-            hash_fields.append(&mut vec![
-                Column::Name,
-                Column::Url,
-                Column::Kind,
-                Column::Category,
-            ]);
+            hash_fields.append(&mut updated_hash_fields());
         }
         Some("any") => {
             hash_fields.append(&mut default_hash_fields);
@@ -189,26 +178,11 @@ pub fn duplicates(matches: &ArgMatches, app: &App) -> Result<()> {
             hash_fields.append(&mut default_hash_fields);
         }
     }
-    match process_records(
-        matches,
-        app,
-        Opts {
-            hash_fields: hash_fields.clone(),
-            ..Default::default()
-        },
-    ) {
-        Err(e) => {
-            log::error!("{:}", e);
-            return Err(e);
-        }
-        _ => log::debug!("Successfully ran pre-processing step"),
-    };
     process_records(
         matches,
         app,
         Opts {
             group_by_hash: true,
-            built_hashes: true,
             hash_fields,
             ..Default::default()
         },
@@ -432,24 +406,11 @@ fn extract_results(
         } else if opts.group_by_password {
             let entry = groups.entry(record.password()).or_default();
             entry.push(result.clone());
-        } else if opts.group_by_hash && opts.built_hashes {
+        } else if opts.group_by_hash {
             let entry = groups
-                .entry(result.get(&Column::Hash).unwrap().to_owned())
+                .entry(hash_by_columns(record.clone(), opts.hash_fields.clone()))
                 .or_default();
             entry.push(result.clone());
-        }
-        // Hashes
-        if !opts.hash_fields.is_empty() && !opts.built_hashes {
-            let mut vals: Vec<String> = vec![];
-            for col in opts.hash_fields.iter() {
-                let val = result.get(col).unwrap().to_owned();
-                vals.push(val);
-            }
-            let hash = format!(
-                "{:x}",
-                Sha256::new().chain_update(vals.join(":")).finalize()
-            );
-            result.add(Column::Hash, hash);
         }
         results.push(result);
     }
@@ -603,4 +564,48 @@ fn sort(results: &mut [result::ResultRow], sort_by: Option<&str>) {
         Some(&_) => (),
         None => (),
     };
+}
+
+fn exact_hash_fields() -> Vec<Column> {
+    vec![
+        Column::Name,
+        Column::Url,
+        Column::Kind,
+        Column::Category,
+        Column::Password,
+    ]
+}
+
+// The "updated" hash type is one where we expect all the key fields to be
+// the same but differ only by password (a loser definition of "duplicate").
+fn updated_hash_fields() -> Vec<Column> {
+    vec![Column::Name, Column::Url, Column::Kind, Column::Category]
+}
+
+fn get_by_column(rec: records::DecryptedRecord, col: &Column) -> String {
+    match col {
+        Column::Category => rec.metadata().category,
+        Column::Kind => rec.metadata().kind.to_string(),
+        Column::Name => rec.name_or_user(),
+        Column::Password => rec.password(),
+        Column::Url => rec.url(),
+        _ => unimplemented!(),
+    }
+}
+
+fn get_by_columns(rec: records::DecryptedRecord, cols: Vec<Column>) -> Vec<String> {
+    let mut vals: Vec<String> = vec![];
+    for col in cols.iter() {
+        vals.push(get_by_column(rec.clone(), col));
+    }
+    vals
+}
+
+fn hash_by_columns(rec: records::DecryptedRecord, cols: Vec<Column>) -> String {
+    format!(
+        "{:x}",
+        Sha256::new()
+            .chain_update(get_by_columns(rec, cols).join(":"))
+            .finalize()
+    )
 }
