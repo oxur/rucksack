@@ -53,146 +53,21 @@ impl Table {
         } else if self.opts.backup_files {
             self.columns = column::ColsBackupFiles {}.new(&self.opts);
         } else if self.opts.group_by_name {
-            if self.opts.with_status {
-                self.columns = vec![
-                    Column::Password,
-                    Column::Score,
-                    Column::Status,
-                    Column::Count,
-                    Column::Url,
-                ];
-            } else {
-                self.columns = vec![Column::Password, Column::Score, Column::Count, Column::Url];
-            }
+            self.opts.with_passwd = true;
+            self.columns = column::ColsGroupByName {}.new(&self.opts);
         } else if self.opts.group_by_hash {
-            if self.opts.with_status {
-                self.columns = vec![
-                    Column::Name,
-                    Column::Kind,
-                    Column::Category,
-                    Column::Status,
-                    Column::Count,
-                    Column::LastUpdated,
-                    Column::Url,
-                ];
-            } else {
-                self.columns = vec![
-                    Column::Name,
-                    Column::Kind,
-                    Column::Category,
-                    Column::Count,
-                    Column::LastUpdated,
-                    Column::Url,
-                ];
-            }
+            self.columns = column::ColsGroupByHash {}.new(&self.opts);
         } else if self.opts.group_by_password {
-            if self.opts.with_status {
-                self.columns = vec![
-                    Column::Name,
-                    Column::Kind,
-                    Column::Category,
-                    Column::Status,
-                    Column::Count,
-                    Column::Url,
-                ];
-            } else {
-                self.columns = vec![
-                    Column::Name,
-                    Column::Kind,
-                    Column::Category,
-                    Column::Count,
-                    Column::Url,
-                ];
-            }
+            self.columns = column::ColsGroupByPasswd {}.new(&self.opts);
         } else if self.opts.group_by_kind {
-            if self.opts.with_status {
-                self.columns = vec![
-                    Column::Name,
-                    Column::Category,
-                    Column::Password,
-                    Column::Score,
-                    Column::Status,
-                    Column::Count,
-                    Column::Url,
-                ];
-            } else {
-                self.columns = vec![
-                    Column::Name,
-                    Column::Category,
-                    Column::Password,
-                    Column::Score,
-                    Column::Count,
-                    Column::Url,
-                ];
-            }
+            self.columns = column::ColsGroupByKind {}.new(&self.opts);
         } else if self.opts.group_by_category {
-            if self.opts.with_status {
-                self.columns = vec![
-                    Column::Name,
-                    Column::Kind,
-                    Column::Password,
-                    Column::Score,
-                    Column::Status,
-                    Column::Count,
-                    Column::Url,
-                ];
-            } else {
-                self.columns = vec![
-                    Column::Name,
-                    Column::Kind,
-                    Column::Password,
-                    Column::Score,
-                    Column::Count,
-                    Column::Url,
-                ];
-            }
+            self.columns = column::ColsGroupByCat {}.new(&self.opts);
         } else if self.opts.password_history {
-            self.columns = vec![
-                Column::Password,
-                Column::Created,
-                Column::LastUpdated,
-                Column::LastAccessed,
-            ];
-        } else if self.opts.decrypted {
-            if self.opts.with_status {
-                self.columns = vec![
-                    Column::Name,
-                    Column::Kind,
-                    Column::Category,
-                    Column::Password,
-                    Column::Score,
-                    Column::Status,
-                    Column::Count,
-                    Column::Url,
-                ];
-            } else {
-                self.columns = vec![
-                    Column::Name,
-                    Column::Kind,
-                    Column::Category,
-                    Column::Password,
-                    Column::Score,
-                    Column::Count,
-                    Column::Url,
-                ];
-            }
-        } else if self.opts.with_status {
-            self.columns = vec![
-                Column::Name,
-                Column::Kind,
-                Column::Category,
-                Column::Status,
-                Column::Count,
-                Column::Url,
-            ];
+            self.opts.with_passwd = true;
+            self.columns = column::ColsPasswdHist {}.new(&self.opts);
         } else {
-            self.columns = vec![
-                Column::Name,
-                Column::Kind,
-                Column::Category,
-                Column::Count,
-                Column::Url,
-            ];
+            self.columns = column::ColsDefault {}.new(&self.opts);
         }
         self.set_headers();
     }

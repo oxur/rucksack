@@ -84,6 +84,10 @@ pub fn db_pwd(matches: &ArgMatches) -> Secret<String> {
     }
 }
 
+pub fn decrypt(matches: &ArgMatches) -> bool {
+    *matches.get_one::<bool>("decrypt").unwrap_or(&false)
+}
+
 pub fn latest(matches: &ArgMatches) -> bool {
     *matches.get_one::<bool>("latest").unwrap_or(&false)
 }

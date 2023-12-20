@@ -257,13 +257,15 @@ pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
 
 fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()> {
     let sort_by = matches.get_one::<String>("sort-by").map(|s| s.as_str());
-    let reveal = matches.get_one::<bool>("reveal").unwrap();
     opts.category = app.inputs.category(Flag::Many);
     opts.all_tags = options::all_tags(matches);
     opts.any_tags = options::any_tags(matches);
     opts.kind = options::record_kind(matches);
-    opts.reveal = *reveal;
-    opts.decrypted = *matches.get_one::<bool>("decrypt").unwrap();
+    opts.reveal = options::reveal(matches);
+    opts.decrypted = options::decrypt(matches);
+    if opts.reveal && opts.decrypted {
+        opts.with_passwd = true;
+    }
     match matches.get_one::<String>("group-by").map(|s| s.as_str()) {
         Some("name") => opts.group_by_name = true,
         Some("password") => opts.group_by_password = true,

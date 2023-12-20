@@ -74,7 +74,10 @@ pub trait Columns {
 
     fn passwd(&self, opts: &Opts, mut cols: Vec<Column>) -> Vec<Column> {
         if opts.with_passwd {
-            cols.append(&mut vec![Column::Password, Column::Score])
+            cols.push(Column::Password);
+            if opts.reveal && opts.decrypted {
+                cols.push(Column::Score);
+            }
         }
         cols
     }
@@ -121,6 +124,93 @@ pub struct ColsBackupFiles;
 impl Columns for ColsBackupFiles {
     fn pre(&self, _opts: &Opts) -> Vec<Column> {
         vec![Column::Name, Column::Permissions]
+    }
+}
+
+pub struct ColsGroupByName;
+
+impl Columns for ColsGroupByName {
+    fn post(&self, _opts: &Opts, mut cols: Vec<Column>) -> Vec<Column> {
+        cols.append(&mut vec![Column::Count, Column::Url]);
+        cols
+    }
+}
+
+pub struct ColsGroupByHash;
+
+impl Columns for ColsGroupByHash {
+    fn pre(&self, _opts: &Opts) -> Vec<Column> {
+        vec![Column::Name, Column::Kind, Column::Category]
+    }
+
+    fn post(&self, _opts: &Opts, mut cols: Vec<Column>) -> Vec<Column> {
+        cols.append(&mut vec![Column::Count, Column::LastUpdated, Column::Url]);
+        cols
+    }
+}
+
+pub struct ColsGroupByPasswd;
+
+impl Columns for ColsGroupByPasswd {
+    fn pre(&self, _opts: &Opts) -> Vec<Column> {
+        vec![Column::Name, Column::Kind, Column::Category]
+    }
+
+    fn post(&self, _opts: &Opts, mut cols: Vec<Column>) -> Vec<Column> {
+        cols.append(&mut vec![Column::Count, Column::Url]);
+        cols
+    }
+}
+
+pub struct ColsGroupByKind;
+
+impl Columns for ColsGroupByKind {
+    fn pre(&self, _opts: &Opts) -> Vec<Column> {
+        vec![Column::Name, Column::Category]
+    }
+
+    fn post(&self, _opts: &Opts, mut cols: Vec<Column>) -> Vec<Column> {
+        cols.append(&mut vec![Column::Count, Column::Url]);
+        cols
+    }
+}
+
+pub struct ColsGroupByCat;
+
+impl Columns for ColsGroupByCat {
+    fn pre(&self, _opts: &Opts) -> Vec<Column> {
+        vec![Column::Name, Column::Kind]
+    }
+
+    fn post(&self, _opts: &Opts, mut cols: Vec<Column>) -> Vec<Column> {
+        cols.append(&mut vec![Column::Count, Column::Url]);
+        cols
+    }
+}
+
+pub struct ColsDefault;
+
+impl Columns for ColsDefault {
+    fn pre(&self, _opts: &Opts) -> Vec<Column> {
+        vec![Column::Name, Column::Kind, Column::Category]
+    }
+
+    fn post(&self, _opts: &Opts, mut cols: Vec<Column>) -> Vec<Column> {
+        cols.append(&mut vec![Column::Count, Column::Url]);
+        cols
+    }
+}
+
+pub struct ColsPasswdHist;
+
+impl Columns for ColsPasswdHist {
+    fn post(&self, _opts: &Opts, mut cols: Vec<Column>) -> Vec<Column> {
+        cols.append(&mut vec![
+            Column::Created,
+            Column::LastUpdated,
+            Column::LastAccessed,
+        ]);
+        cols
     }
 }
 
