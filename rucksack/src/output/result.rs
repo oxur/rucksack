@@ -12,12 +12,17 @@ pub struct ResultRow {
     pub hashmap: HashMap<Column, String>,
 }
 
+// This function is used for creating results rows that hold common
+// record data and are needed by several rucksack commands.
 pub fn new(id: String, name: String, url: String) -> ResultRow {
     let hashmap: HashMap<Column, String> =
         HashMap::from([(Column::Id, id), (Column::Name, name), (Column::Url, url)]);
     ResultRow { hashmap }
 }
 
+// This function is used for creating results rows that are needed by
+// the `list passwords` command. The columns below are the only columns
+// needed by that command.
 pub fn password(pwd: String, created: String, updated: String, last_accessed: String) -> ResultRow {
     let hashmap: HashMap<Column, String> = HashMap::from([
         (Column::Password, pwd),
@@ -28,21 +33,25 @@ pub fn password(pwd: String, created: String, updated: String, last_accessed: St
     ResultRow { hashmap }
 }
 
+// This function is used for creating results rows that are needed by
+// the `show categories` command. The columns below are the only columns
+// needed by that command.
 pub fn category(cat: String) -> ResultRow {
     let hashmap: HashMap<Column, String> = HashMap::from([(Column::Category, cat)]);
     ResultRow { hashmap }
 }
 
-pub fn hash(hash: String) -> ResultRow {
-    let hashmap: HashMap<Column, String> = HashMap::from([(Column::Hash, hash)]);
-    ResultRow { hashmap }
-}
-
+// This function is used for creating results rows that are needed by
+// the `show types` command. The columns below are the only columns
+// needed by that command.
 pub fn kind(kind: String) -> ResultRow {
     let hashmap: HashMap<Column, String> = HashMap::from([(Column::Kind, kind)]);
     ResultRow { hashmap }
 }
 
+// This function is used for creating results rows that are needed by
+// the `show tags` command. The columns below are the only columns
+// needed by that command.
 pub fn tag(tag: String) -> ResultRow {
     let hashmap: HashMap<Column, String> = HashMap::from([(Column::Tags, tag)]);
     ResultRow { hashmap }
