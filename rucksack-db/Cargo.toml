@@ -16,7 +16,6 @@ name = "rucksack_db"
 
 [features]
 filesystem = ["dep:dashmap"]
-persy = ["dep:persy"]
 redb = ["dep:redb"]
 
 [dependencies]
@@ -32,7 +31,6 @@ dashmap = { version = "5.4.0", features = ["serde"], optional = true }
 enum-iterator = "1.2.0"
 heck = "0.4.1"
 log = "0.4"
-persy = { version = "1.4", optional = true }
 rand = "0.8"
 redb = { version = "1.4", optional = true }
 secrecy = "0.8"
