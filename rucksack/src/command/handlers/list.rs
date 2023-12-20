@@ -159,15 +159,16 @@ pub fn backups(matches: &ArgMatches, app: &App) -> Result<()> {
 
 pub fn duplicates(matches: &ArgMatches, app: &App) -> Result<()> {
     let mut hash_fields: Vec<Column> = Vec::new();
+    let mut default_hash_fields = vec![
+        Column::Name,
+        Column::Url,
+        Column::Kind,
+        Column::Category,
+        Column::Password,
+    ];
     match matches.get_one::<String>("type").map(|s| s.as_str()) {
         Some("exact") => {
-            hash_fields.append(&mut vec![
-                Column::Name,
-                Column::Url,
-                Column::Kind,
-                Column::Category,
-                Column::Password,
-            ]);
+            hash_fields.append(&mut default_hash_fields);
         }
         Some("updated") => {
             hash_fields.append(&mut vec![
@@ -177,8 +178,16 @@ pub fn duplicates(matches: &ArgMatches, app: &App) -> Result<()> {
                 Column::Category,
             ]);
         }
-        Some(_) => todo!(),
-        None => todo!(),
+        Some("any") => {
+            hash_fields.append(&mut default_hash_fields);
+        }
+        Some(t) => {
+            log::error!("Got unexpected type '{}'; using default ...", t);
+            hash_fields.append(&mut default_hash_fields);
+        }
+        None => {
+            hash_fields.append(&mut default_hash_fields);
+        }
     }
     match process_records(
         matches,
@@ -199,6 +208,7 @@ pub fn duplicates(matches: &ArgMatches, app: &App) -> Result<()> {
         app,
         Opts {
             group_by_hash: true,
+            built_hashes: true,
             hash_fields,
             ..Default::default()
         },
@@ -272,16 +282,12 @@ pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()> {
-    let filter = matches.get_one::<String>("filter");
-    let exclude = matches.get_one::<String>("exclude");
-    let max_score = matches.get_one::<f64>("max-score");
-    let min_score = matches.get_one::<f64>("min-score");
-    let reveal = matches.get_one::<bool>("reveal").unwrap();
     let sort_by = matches.get_one::<String>("sort-by").map(|s| s.as_str());
-    let kind = options::record_kind(matches);
-    let category = app.inputs.category(Flag::Many);
-    let all_tags = options::all_tags(matches);
-    let any_tags = options::any_tags(matches);
+    let reveal = matches.get_one::<bool>("reveal").unwrap();
+    opts.category = app.inputs.category(Flag::Many);
+    opts.all_tags = options::all_tags(matches);
+    opts.any_tags = options::any_tags(matches);
+    opts.kind = options::record_kind(matches);
     opts.reveal = *reveal;
     opts.decrypted = *matches.get_one::<bool>("decrypt").unwrap();
     match matches.get_one::<String>("group-by").map(|s| s.as_str()) {
@@ -303,7 +309,53 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
     }
     let mut results: Vec<result::ResultRow> = Vec::new();
     let mut groups = result::GroupByString::new();
-    let mut built_hashes: bool = false;
+    if results.is_empty() {
+        let rg = extract_results(matches, app, opts.clone())?;
+        results = rg.results;
+        groups = rg.groups;
+    }
+    sort(&mut results, sort_by);
+    let mut group_count: i32 = 0;
+    let mut count: usize = results.len();
+    let total: usize = app.db.hash_map().len();
+    if opts.group_by_name {
+        (group_count, count) = print_user_group(groups, sort_by, &opts);
+    } else if opts.group_by_password {
+        (group_count, count) = print_password_group(groups, sort_by, &opts);
+    } else if opts.group_by_hash {
+        (group_count, count) = print_hash_group(groups, sort_by, &opts);
+    } else {
+        let mut t = table::new(results.to_owned(), opts.clone());
+        t.display();
+    }
+    print_report(group_count, count, total, &opts);
+    // With the dash_map iteration finished, the lock is gone, and we can
+    // now update all the records whose passwords were revealed:
+    for r in results {
+        if opts.reveal {
+            if let Some(mut metadata) = app.db.get_metadata(r.id()) {
+                metadata.last_used = time::now();
+                metadata.access_count += 1;
+                app.db.update_metadata(r.id(), metadata);
+            }
+        }
+    }
+    app.db.close()?;
+    Ok(())
+}
+
+fn extract_results(
+    matches: &ArgMatches,
+    app: &App,
+    opts: Opts,
+) -> Result<result::ResultsAndGroups> {
+    let mut results: Vec<result::ResultRow> = Vec::new();
+    let mut groups = result::GroupByString::new();
+    let filter = matches.get_one::<String>("filter");
+    let exclude = matches.get_one::<String>("exclude");
+    let max_score = matches.get_one::<f64>("max-score");
+    let min_score = matches.get_one::<f64>("min-score");
+
     for i in app.db.iter() {
         let record = i.value().decrypt(app.db.store_pwd(), app.inputs.salt())?;
         let analyzed = analyzer::analyze(record.password());
@@ -319,18 +371,18 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
         if opts.only_deleted && record.metadata().state != Status::Deleted {
             continue;
         }
-        if kind != records::Kind::Any && kind != record.metadata().kind {
+        if opts.kind != records::Kind::Any && opts.kind != record.metadata().kind {
             continue;
         }
-        if category != *records::ANY_CATEGORY && record.metadata().category != category {
+        if opts.category != *records::ANY_CATEGORY && record.metadata().category != opts.category {
             continue;
         };
-        if let Some(ref ts) = all_tags {
+        if let Some(ref ts) = opts.all_tags {
             if !rucksack_lib::util::all(ts.clone(), record.metadata().tag_values()) {
                 continue;
             }
         }
-        if let Some(ref ts) = any_tags {
+        if let Some(ref ts) = opts.any_tags {
             if !rucksack_lib::util::any(ts.clone(), record.metadata().tag_values()) {
                 continue;
             }
@@ -381,7 +433,9 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
             let entry = groups.entry(record.password()).or_default();
             entry.push(result.clone());
         } else if opts.group_by_hash && opts.built_hashes {
-            let entry = groups.entry(record.password()).or_default();
+            let entry = groups
+                .entry(result.get(&Column::Hash).unwrap().to_owned())
+                .or_default();
             entry.push(result.clone());
         }
         // Hashes
@@ -396,44 +450,10 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
                 Sha256::new().chain_update(vals.join(":")).finalize()
             );
             result.add(Column::Hash, hash);
-            // We're checking opts.built_hashes at the top of each loop,
-            // so we don't want to set that until the looping is done:
-            built_hashes = true;
         }
         results.push(result);
     }
-    if !opts.hash_fields.is_empty() {
-        opts.built_hashes = built_hashes;
-        // Hashes require pre-processing; that's just been done, so we're
-        // going to bail early and let the caller re-run process_records ...
-        return Ok(());
-    }
-    sort(&mut results, sort_by);
-    let mut group_count: i32 = 0;
-    let mut count: usize = results.len();
-    let total: usize = app.db.hash_map().len();
-    if opts.group_by_name {
-        (group_count, count) = print_user_group(groups, sort_by, &opts);
-    } else if opts.group_by_password {
-        (group_count, count) = print_password_group(groups, sort_by, &opts);
-    } else {
-        let mut t = table::new(results.to_owned(), opts.clone());
-        t.display();
-    }
-    print_report(group_count, count, total, &opts);
-    // With the dash_map iteration finished, the lock is gone, and we can
-    // now update all the records whose passwords were revealed:
-    for r in results {
-        if opts.reveal {
-            if let Some(mut metadata) = app.db.get_metadata(r.id()) {
-                metadata.last_used = time::now();
-                metadata.access_count += 1;
-                app.db.update_metadata(r.id(), metadata);
-            }
-        }
-    }
-    app.db.close()?;
-    Ok(())
+    Ok(result::ResultsAndGroups { results, groups })
 }
 
 fn print_password_group(
@@ -480,6 +500,28 @@ fn print_user_group(
     (group_count, record_count)
 }
 
+fn print_hash_group(
+    groups: result::GroupByString,
+    sort_by: Option<&str>,
+    opts: &Opts,
+) -> (i32, usize) {
+    let mut group_count = 0;
+    let mut record_count = 0;
+    for (_, mut group) in groups {
+        if group.len() == 1 {
+            continue;
+        }
+        group_count += 1;
+        sort(&mut group, sort_by);
+        hash_section(&group[0], opts);
+        println!("Records using: {}\nRecords:", group.len());
+        let mut t = table::new(group.to_owned(), opts.clone());
+        t.display();
+        record_count += group.len();
+    }
+    (group_count, record_count)
+}
+
 fn print_report(group_count: i32, records: usize, total: usize, opts: &Opts) {
     if opts.group_by_name || opts.group_by_password {
         println!("\n{group_count} groups (with {records} records out of {total} total)\n",)
@@ -511,6 +553,19 @@ fn password_section(r: &result::ResultRow, opts: &Opts) {
 }
 
 fn user_section(r: &result::ResultRow, opts: &Opts) {
+    match opts.decrypted {
+        true => {
+            println!("\n\n+{}\n", "=".repeat(40 + 20 + 16 + 5));
+            println!("User: {}", r.get(&Column::Name).unwrap())
+        }
+        false => {
+            println!("\n\n+{}\n", "=".repeat(40 - 1));
+            println!("User: {}", r.get(&Column::Name).unwrap())
+        }
+    }
+}
+
+fn hash_section(r: &result::ResultRow, opts: &Opts) {
     match opts.decrypted {
         true => {
             println!("\n\n+{}\n", "=".repeat(40 + 20 + 16 + 5));

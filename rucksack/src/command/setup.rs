@@ -211,7 +211,7 @@ pub fn run() -> Command {
     )
     .subcommand(
         Command::new("list")
-            .about("List all secrets")
+            .about("List secrets records")
             .arg(
                 Arg::new("backups")
                     .help("List all the backup files")
@@ -317,6 +317,9 @@ pub fn run() -> Command {
             .subcommand(
                 Command::new("deleted")
                     .about("List the records that have been flagged for deletion"))
+            .subcommand(
+                Command::new("duplicates")
+                    .about("List the records that have duplicate entries"))
             .subcommand(
                 Command::new("keys")
                     .about("List only the keys"))

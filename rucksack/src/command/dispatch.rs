@@ -32,6 +32,7 @@ pub fn run(app: &App, matches: &ArgMatches) -> Result<()> {
         Some(("list", list_matches)) => match list_matches.subcommand() {
             Some(("backups", backups_matches)) => list::backups(backups_matches, app),
             Some(("deleted", deleted_matches)) => list::deleted(deleted_matches, app),
+            Some(("duplicates", dupe_matches)) => list::duplicates(dupe_matches, app),
             Some(("keys", key_matches)) => list::keys(key_matches, app),
             Some(("passwords", passwords_matches)) => list::passwords(passwords_matches, app),
             Some((&_, _)) => todo!(),

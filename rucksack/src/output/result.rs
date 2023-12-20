@@ -135,3 +135,9 @@ impl ResultRow {
 }
 
 pub type GroupByString = HashMap<String, Vec<ResultRow>>;
+
+#[derive(Clone, Debug, Default)]
+pub struct ResultsAndGroups {
+    pub results: Vec<ResultRow>,
+    pub groups: GroupByString,
+}
