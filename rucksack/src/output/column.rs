@@ -12,6 +12,7 @@ pub enum Column {
     Created,
     DupeInfo,
     Hash,
+    HistoryCount,
     Id,
     Imported,
     Key,
@@ -39,6 +40,7 @@ impl Column {
         match self {
             Column::Count => "Access Count".to_string(),
             Column::DupeInfo => "Duplicate Info".to_string(),
+            Column::HistoryCount => "History Count".to_string(),
             Column::Kind => "Type".to_string(),
             Column::LastUpdated => "Last Updated".to_string(),
             Column::Score => "Score / Strength".to_string(),
@@ -138,20 +140,20 @@ impl Columns for ColsGroupByName {
     }
 }
 
+#[derive(Eq, PartialEq, PartialOrd)]
 pub struct ColsGroupByHash;
 
 impl Columns for ColsGroupByHash {
     fn pre(&self, _opts: &Opts) -> Vec<Column> {
-        vec![
-            Column::Name,
-            Column::Kind,
-            Column::Category,
-            Column::DupeInfo,
-        ]
+        vec![Column::Kind, Column::Category, Column::DupeInfo]
     }
 
     fn post(&self, _opts: &Opts, mut cols: Vec<Column>) -> Vec<Column> {
-        cols.append(&mut vec![Column::Count, Column::LastUpdated, Column::Url]);
+        cols.append(&mut vec![
+            Column::Count,
+            Column::LastUpdated,
+            Column::HistoryCount,
+        ]);
         cols
     }
 }

@@ -401,6 +401,7 @@ fn extract_results(
         result.add(Column::Category, md.category.clone());
         result.add(Column::Count, md.access_count.to_string());
         result.add(Column::Status, md.status().to_string());
+        result.add(Column::HistoryCount, format!("{:}", record.history().len()));
         match opts.decrypted {
             true => {
                 let pwd = if opts.reveal {
