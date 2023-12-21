@@ -21,15 +21,19 @@
 //! ```shell
 //! rucksack deduple --type updated
 //! ```
+use std::fmt;
+
 // use anyhow::{anyhow, Result};
 use anyhow::Result;
 use clap::ArgMatches;
 
 // use rucksack_db as store;
 use rucksack_db::db::DB;
-// use rucksack_db::records;
+use rucksack_db::records::DecryptedRecord;
 
 use crate::app::App;
+use crate::output::{result, Column};
+
 // use crate::input::{query, Flag};
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
@@ -43,6 +47,45 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
     };
     app.db.close()?;
     Ok(())
+}
+
+pub fn post_process(in_groups: result::GroupByString) -> result::GroupByString {
+    let mut out_groups = result::GroupByString::new();
+    for (key, group) in in_groups.into_iter() {
+        let entry = out_groups.entry(key).or_default();
+        for r in group.iter() {
+            let mut updated = r.clone();
+            updated.add(Column::DupeInfo, DupeInfo::Duplicate.name());
+            entry.push(updated);
+        }
+    }
+    out_groups
+}
+
+pub fn dupe_info(_record_a: DecryptedRecord, _record_b: DecryptedRecord) -> DupeInfo {
+    DupeInfo::Primary
+}
+
+#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum DupeInfo {
+    Primary,
+    InHistory,
+    Duplicate,
+}
+
+impl DupeInfo {
+    pub fn name(&self) -> String {
+        match self {
+            DupeInfo::InHistory => "in history".to_string(),
+            _ => format!("{self}").to_lowercase(),
+        }
+    }
+}
+
+impl fmt::Display for DupeInfo {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::Debug::fmt(self, f)
+    }
 }
 
 fn dedupe_exact(_matches: &ArgMatches, _db: &DB) -> Result<(), anyhow::Error> {

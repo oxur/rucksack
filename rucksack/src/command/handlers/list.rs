@@ -136,7 +136,7 @@ use crate::app::App;
 use crate::input::{options, query, Flag};
 use crate::output::{result, table, Column, Opts};
 
-use super::backup;
+use super::{backup, dedupe};
 
 // TODO: once there's config for it, pull from config and pass
 // options here from top-level app.
@@ -155,6 +155,21 @@ pub fn all(matches: &ArgMatches, app: &App) -> Result<()> {
 
 pub fn backups(matches: &ArgMatches, app: &App) -> Result<()> {
     backup::list(matches, app)
+}
+
+// TODO: once there's config for it, pull from config and pass
+// options here from top-level app.
+// TODO: or not, depending upon the outcome of this ticket:
+// * https://github.com/oxur/rucksack/issues/92
+pub fn deleted(matches: &ArgMatches, app: &App) -> Result<()> {
+    process_records(
+        matches,
+        app,
+        Opts {
+            only_deleted: true,
+            ..Default::default()
+        },
+    )
 }
 
 pub fn duplicates(matches: &ArgMatches, app: &App) -> Result<()> {
@@ -184,21 +199,6 @@ pub fn duplicates(matches: &ArgMatches, app: &App) -> Result<()> {
         Opts {
             group_by_hash: true,
             hash_fields,
-            ..Default::default()
-        },
-    )
-}
-
-// TODO: once there's config for it, pull from config and pass
-// options here from top-level app.
-// TODO: or not, depending upon the outcome of this ticket:
-// * https://github.com/oxur/rucksack/issues/92
-pub fn deleted(matches: &ArgMatches, app: &App) -> Result<()> {
-    process_records(
-        matches,
-        app,
-        Opts {
-            only_deleted: true,
             ..Default::default()
         },
     )
@@ -308,6 +308,8 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
     } else if opts.group_by_password {
         (group_count, count) = print_password_group(groups, sort_by, &opts);
     } else if opts.group_by_hash {
+        // Post-process groups
+        groups = dedupe::post_process(groups);
         (group_count, count) = print_hash_group(groups, sort_by, &opts);
     } else {
         let mut t = table::new(results.to_owned(), opts.clone());
