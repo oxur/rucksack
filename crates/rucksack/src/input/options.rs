@@ -18,13 +18,17 @@ pub fn account_id(matches: &ArgMatches) -> String {
 
 pub fn all_tags(matches: &ArgMatches) -> Option<Vec<String>> {
     matches
-        .get_many("all-tags")
+        .try_get_many("all-tags")
+        .ok()
+        .flatten()
         .map(|x| x.cloned().collect::<Vec<String>>())
 }
 
 pub fn any_tags(matches: &ArgMatches) -> Option<Vec<String>> {
     matches
-        .get_many("any-tags")
+        .try_get_many("any-tags")
+        .ok()
+        .flatten()
         .map(|x| x.cloned().collect::<Vec<String>>())
 }
 
@@ -85,11 +89,21 @@ pub fn db_pwd(matches: &ArgMatches) -> Secret<String> {
 }
 
 pub fn decrypt(matches: &ArgMatches) -> bool {
-    *matches.get_one::<bool>("decrypt").unwrap_or(&false)
+    matches
+        .try_get_one::<bool>("decrypt")
+        .ok()
+        .flatten()
+        .copied()
+        .unwrap_or(false)
 }
 
 pub fn latest(matches: &ArgMatches) -> bool {
-    *matches.get_one::<bool>("latest").unwrap_or(&false)
+    matches
+        .try_get_one::<bool>("latest")
+        .ok()
+        .flatten()
+        .copied()
+        .unwrap_or(false)
 }
 
 pub fn log_level(matches: &ArgMatches) -> String {
@@ -164,7 +178,12 @@ pub fn record_state(matches: &ArgMatches) -> Status {
 }
 
 pub fn reveal(matches: &ArgMatches) -> bool {
-    *matches.get_one::<bool>("reveal").unwrap_or(&false)
+    matches
+        .try_get_one::<bool>("reveal")
+        .ok()
+        .flatten()
+        .copied()
+        .unwrap_or(false)
 }
 
 pub fn root(matches: &ArgMatches) -> Vec<u8> {
@@ -180,15 +199,21 @@ pub fn salt(matches: &ArgMatches) -> Option<String> {
 }
 
 pub fn service_key(matches: &ArgMatches) -> String {
-    matches.get_one::<String>("key").unwrap().trim().to_string()
+    matches
+        .try_get_one::<String>("key")
+        .ok()
+        .flatten()
+        .map(|s| s.trim().to_string())
+        .unwrap_or_default()
 }
 
 pub fn service_secret(matches: &ArgMatches) -> String {
     matches
-        .get_one::<String>("secret")
-        .unwrap()
-        .trim()
-        .to_string()
+        .try_get_one::<String>("secret")
+        .ok()
+        .flatten()
+        .map(|s| s.trim().to_string())
+        .unwrap_or_default()
 }
 
 pub fn tags(matches: &ArgMatches) -> Option<Vec<Tag>> {
@@ -197,47 +222,57 @@ pub fn tags(matches: &ArgMatches) -> Option<Vec<Tag>> {
 }
 
 pub fn url(matches: &ArgMatches) -> String {
-    matches.get_one::<String>("url").unwrap().trim().to_string()
+    matches
+        .try_get_one::<String>("url")
+        .ok()
+        .flatten()
+        .map(|s| s.trim().to_string())
+        .unwrap_or_default()
 }
 
 pub fn url_old(matches: &ArgMatches) -> String {
     matches
-        .get_one::<String>("old-url")
-        .unwrap()
-        .trim()
-        .to_string()
+        .try_get_one::<String>("old-url")
+        .ok()
+        .flatten()
+        .map(|s| s.trim().to_string())
+        .unwrap_or_default()
 }
 
 pub fn url_new(matches: &ArgMatches) -> String {
     matches
-        .get_one::<String>("new-url")
-        .unwrap()
-        .trim()
-        .to_string()
+        .try_get_one::<String>("new-url")
+        .ok()
+        .flatten()
+        .map(|s| s.trim().to_string())
+        .unwrap_or_default()
 }
 
 pub fn user(matches: &ArgMatches) -> String {
     matches
-        .get_one::<String>("user")
-        .unwrap()
-        .trim()
-        .to_string()
+        .try_get_one::<String>("user")
+        .ok()
+        .flatten()
+        .map(|s| s.trim().to_string())
+        .unwrap_or_default()
 }
 
 pub fn user_new(matches: &ArgMatches) -> String {
     matches
-        .get_one::<String>("new-user")
-        .unwrap()
-        .trim()
-        .to_string()
+        .try_get_one::<String>("new-user")
+        .ok()
+        .flatten()
+        .map(|s| s.trim().to_string())
+        .unwrap_or_default()
 }
 
 pub fn user_old(matches: &ArgMatches) -> String {
     matches
-        .get_one::<String>("old-user")
-        .unwrap()
-        .trim()
-        .to_string()
+        .try_get_one::<String>("old-user")
+        .ok()
+        .flatten()
+        .map(|s| s.trim().to_string())
+        .unwrap_or_default()
 }
 
 pub fn version(matches: &ArgMatches) -> bool {
