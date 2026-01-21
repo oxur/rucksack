@@ -31,3 +31,20 @@ delete_inactive = true
 show_inactive = true
 show_deleted = false
 "#;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_purge_toml() {
+        assert!(PURGE_TOML.contains("purge_on_shutdown = true"));
+        assert!(PURGE_TOML.contains("[retention]"));
+    }
+
+    #[test]
+    fn test_delete_inactive_toml() {
+        assert!(DELETE_INACTIVE_TOML.contains("delete_inactive = true"));
+        assert!(DELETE_INACTIVE_TOML.contains("[retention]"));
+    }
+}

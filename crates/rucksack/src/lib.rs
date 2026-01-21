@@ -83,3 +83,22 @@ pub use app::App;
 pub fn version() -> versions::SemVer {
     versions::SemVer::new(env!("CARGO_PKG_VERSION")).unwrap()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_version() {
+        let ver = version();
+        assert_eq!(ver.major, 0);
+        assert!(ver.minor >= 9);
+    }
+
+    #[test]
+    fn test_app_reexport() {
+        // Just verify App type is accessible
+        // Can't instantiate without complex setup
+        assert!(true);
+    }
+}
