@@ -692,7 +692,7 @@ mod tests {
         // Reopen and close again (no changes)
         let mut db = DB::new(db_file, backups, pwd, salt);
         assert!(db.open().is_ok());
-        let initial_hash = db.store_hash;
+        let _initial_hash = db.store_hash;
         assert!(db.close().is_ok());
         // If hash didn't change, close returns early without writing
 
