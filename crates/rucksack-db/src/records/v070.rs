@@ -715,4 +715,194 @@ mod tests {
         assert_eq!(version.major, 0);
         assert_eq!(version.minor, 7);
     }
+
+    #[test]
+    fn test_kind_name() {
+        assert_eq!(Kind::Password.name(), "Password");
+        assert_eq!(Kind::Account.name(), "Account");
+        assert_eq!(Kind::AsymmetricCrypto.name(), "AsymmetricCrypto");
+    }
+
+    #[test]
+    fn test_migrate_kind_from_v060() {
+        assert_eq!(migrate_kind_from_v060(v060::Kind::Password), Kind::Password);
+        assert_eq!(migrate_kind_from_v060(v060::Kind::Account), Kind::default());
+        assert_eq!(migrate_kind_from_v060(v060::Kind::Credential), Kind::default());
+    }
+
+    #[test]
+    fn test_status_as_str() {
+        assert_eq!(Status::Active.as_str(), "active");
+        assert_eq!(Status::Inactive.as_str(), "inactive");
+        assert_eq!(Status::Deleted.as_str(), "deleted");
+        assert_eq!(Status::Any.as_str(), "any");
+    }
+
+    #[test]
+    fn test_migrate_hashmap_from_v060() {
+        let hm_v060: v060::HashMap = dashmap::DashMap::new();
+        let pwd = testing::data::store_pwd();
+        let salt = time::now();
+
+        let record_v060 = testing::data::plaintext_record_v060();
+        let encrypted_v060 = record_v060.encrypt(pwd, salt);
+        hm_v060.insert("test_key".to_string(), encrypted_v060);
+
+        let hm_v070 = migrate_hashmap_from_v060(hm_v060);
+        assert_eq!(hm_v070.len(), 1);
+        assert!(hm_v070.contains_key("test_key"));
+    }
+
+    #[test]
+    fn test_decode_hashmap_from_v060() {
+        let pwd = testing::data::store_pwd();
+        let salt = time::now();
+        let hm_v060: v060::HashMap = dashmap::DashMap::new();
+
+        let record = testing::data::plaintext_record_v060();
+        let encrypted = record.encrypt(pwd, salt);
+        hm_v060.insert("v060_key".to_string(), encrypted);
+
+        let mut data: Vec<(String, v060::EncryptedRecord)> = Vec::new();
+        for i in hm_v060.iter() {
+            data.push((i.key().clone(), i.value().clone()));
+        }
+        data.sort_by_key(|k| k.0.clone());
+        let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
+
+        let version = shared::version("0.6.0");
+        let decoded_hm = decode_hashmap(bytes, version).unwrap();
+        assert_eq!(decoded_hm.len(), 1);
+        assert!(decoded_hm.contains_key("v060_key"));
+    }
+
+    #[test]
+    fn test_decode_hashmap_error() {
+        let invalid_bytes = vec![1, 2, 3, 4, 5];
+        let version = shared::version(VERSION);
+        let result = decode_hashmap(invalid_bytes, version);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_migrate_secrets_from_v060() {
+        let v060_creds = v060::Creds {
+            user: "testuser".to_string(),
+            password: "testpass".to_string(),
+        };
+        let secrets = migrate_secrets_from_v060(v060_creds.clone());
+        assert_eq!(secrets.user, v060_creds.user);
+        assert_eq!(secrets.password, v060_creds.password);
+        assert_eq!(secrets.account_id, "");
+    }
+
+    #[test]
+    fn test_migrate_metadata_from_v060() {
+        let now = time::now();
+        let md_v060 = v060::Metadata {
+            kind: v060::Kind::Password,
+            url: "example.com".to_string(),
+            created: now.clone(),
+            imported: time::epoch_zero(),
+            updated: now.clone(),
+            password_changed: time::epoch_zero(),
+            last_used: time::epoch_zero(),
+            access_count: 5,
+        };
+        let md = migrate_metadata_from_v060(md_v060.clone(), "TestName".to_string());
+        assert_eq!(md.name, "TestName");
+        assert_eq!(md.url, md_v060.url);
+        assert_eq!(md.access_count, md_v060.access_count);
+        assert_eq!(md.kind, Kind::Password);
+    }
+
+    #[test]
+    fn test_migrate_decrypted_record_from_v060() {
+        let record_v060 = testing::data::plaintext_record_v060();
+        let record_v070 = migrate_decrypted_record_from_v060(record_v060.clone());
+        assert_eq!(record_v070.secrets.user, record_v060.creds.user);
+        assert_eq!(record_v070.secrets.password, record_v060.creds.password);
+    }
+
+    #[test]
+    fn test_migrate_encrypted_record_from_v060() {
+        let pwd = testing::data::store_pwd();
+        let salt = time::now();
+        let record_v060 = testing::data::plaintext_record_v060();
+        let encrypted_v060 = record_v060.encrypt(pwd, salt);
+
+        let encrypted_v070 = migrate_encrypted_record_from_v060(encrypted_v060.clone());
+        assert_eq!(encrypted_v070.key(), encrypted_v060.key());
+        assert_eq!(encrypted_v070.value(), encrypted_v060.value());
+    }
+
+    #[test]
+    fn test_secrets_display_with_account_id() {
+        let secrets = Secrets {
+            account_id: "acc123".to_string(),
+            user: "user@example.com".to_string(),
+            password: "pass".to_string(),
+            ..Default::default()
+        };
+        let display = format!("{}", secrets);
+        assert!(display.contains("account_id"));
+        assert!(display.contains("user@example.com"));
+        assert!(display.contains("*****"));
+    }
+
+    #[test]
+    fn test_secrets_display_with_key() {
+        let secrets = Secrets {
+            key: "api_key".to_string(),
+            secret: "api_secret".to_string(),
+            ..Default::default()
+        };
+        let display = format!("{}", secrets);
+        assert!(display.contains("key"));
+        assert!(display.contains("api_key"));
+        assert!(display.contains("*****"));
+    }
+
+    #[test]
+    fn test_secrets_display_with_certs() {
+        let secrets = Secrets {
+            public_cert: vec![1, 2, 3],
+            private_cert: vec![4, 5, 6],
+            ..Default::default()
+        };
+        let display = format!("{}", secrets);
+        assert!(display.contains("cert"));
+        assert!(display.contains("*****"));
+    }
+
+    #[test]
+    fn test_secrets_display_with_keys() {
+        let secrets = Secrets {
+            public_key: vec![1, 2, 3],
+            private_key: vec![4, 5, 6],
+            ..Default::default()
+        };
+        let display = format!("{}", secrets);
+        assert!(display.contains("key"));
+        assert!(display.contains("*****"));
+    }
+
+    #[test]
+    fn test_secrets_zeroize() {
+        use secrecy::Zeroize;
+        let mut secrets = Secrets {
+            user: "user".to_string(),
+            password: "password".to_string(),
+            private_key: vec![1, 2, 3],
+            private_cert: vec![4, 5, 6],
+            key: "key".to_string(),
+            secret: "secret".to_string(),
+            ..Default::default()
+        };
+        secrets.zeroize();
+        // After zeroize, sensitive fields should be cleared
+        assert_eq!(secrets.password, "");
+        assert_eq!(secrets.key, "");
+        assert_eq!(secrets.secret, "");
+    }
 }
