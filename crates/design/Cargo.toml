@@ -1,0 +1,14 @@
+[package]
+name = "rucksack-design"
+description = "Design documentation for the rucksack project"
+version = "0.9.0-dev"
+license = "Apache-2.0"
+authors = ["Duncan McGreggor <oubiwann@gmail.com>"]
+repository = "https://github.com/oxur/rucksack"
+documentation = "https://docs.rs/rucksack-design/"
+keywords = ["password-manager", "terminal", "documentation"]
+exclude = ["/.github", ".gitignore"]
+edition = "2021"
+
+[lib]
+name = "rucksack_design"
