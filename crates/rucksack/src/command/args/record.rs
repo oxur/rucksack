@@ -70,20 +70,17 @@ pub fn user() -> Arg {
         .short('u')
         .long("user")
         .env("RUXAK_USER")
-        .global(true)
 }
 
 pub fn user_old() -> Arg {
     Arg::new("old-user")
         .help("The old user login name")
-        .short('u')
         .long("old-user")
 }
 
 pub fn user_new() -> Arg {
     Arg::new("new-user")
         .help("The new user login name to use")
-        .short('u')
         .long("new-user")
 }
 

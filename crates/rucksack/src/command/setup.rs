@@ -17,6 +17,10 @@ pub fn run() -> Command {
     .arg_required_else_help(true)
     .arg(top::config())
     .arg(top::log_level())
+    .arg(db::path())
+    .arg(db::pwd())
+    .arg(db::salt())
+    .arg(db::backup_dir())
     .arg(
         Arg::new("completions")
             .help("Emit shell tab completions")

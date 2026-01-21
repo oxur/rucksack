@@ -20,7 +20,6 @@ pub fn pwd() -> Arg {
 pub fn salt() -> Arg {
     Arg::new("salt")
         .help("The salt to use for encrypting the database")
-        .short('s')
         .long("salt")
         .env("RUXAK_SALT")
         .global(true)
