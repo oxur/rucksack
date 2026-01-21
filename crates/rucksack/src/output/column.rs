@@ -225,7 +225,7 @@ impl Columns for ColsPasswdHist {
 
 #[cfg(test)]
 mod tests {
-    use super::Column;
+    use super::*;
 
     #[test]
     fn column_display() {
@@ -243,5 +243,154 @@ mod tests {
         assert_eq!(Column::Name.name(), "Name");
         assert_eq!(Column::Score.name(), "Score / Strength");
         assert_eq!(Column::Url.name(), "URL");
+    }
+
+    #[test]
+    fn test_column_header() {
+        let header = Column::Name.header();
+        // Just verify it creates a cell without panicking
+        assert!(true);
+    }
+
+    #[test]
+    fn test_cols_only_key() {
+        let opts = Opts::default();
+        let cols = ColsOnlyKey {}.gen(&opts);
+        assert!(cols.contains(&Column::Key));
+    }
+
+    #[test]
+    fn test_cols_only_kind() {
+        let opts = Opts::default();
+        let cols = ColsOnlyKind {}.gen(&opts);
+        assert!(cols.contains(&Column::Kind));
+    }
+
+    #[test]
+    fn test_cols_only_tags() {
+        let opts = Opts::default();
+        let cols = ColsOnlyTags {}.gen(&opts);
+        assert!(cols.contains(&Column::Tags));
+    }
+
+    #[test]
+    fn test_cols_only_cat() {
+        let opts = Opts::default();
+        let cols = ColsOnlyCat {}.gen(&opts);
+        assert!(cols.contains(&Column::Category));
+    }
+
+    #[test]
+    fn test_cols_backup_files() {
+        let opts = Opts::default();
+        let cols = ColsBackupFiles {}.gen(&opts);
+        assert!(cols.contains(&Column::Name));
+        assert!(cols.contains(&Column::Permissions));
+    }
+
+    #[test]
+    fn test_cols_group_by_name() {
+        let opts = Opts::default();
+        let cols = ColsGroupByName {}.gen(&opts);
+        assert!(cols.contains(&Column::Count));
+        assert!(cols.contains(&Column::Url));
+    }
+
+    #[test]
+    fn test_cols_group_by_hash() {
+        let opts = Opts::default();
+        let cols = ColsGroupByHash {}.gen(&opts);
+        assert!(cols.contains(&Column::Kind));
+        assert!(cols.contains(&Column::Category));
+        assert!(cols.contains(&Column::DupeInfo));
+        assert!(cols.contains(&Column::Count));
+    }
+
+    #[test]
+    fn test_cols_group_by_passwd() {
+        let opts = Opts::default();
+        let cols = ColsGroupByPasswd {}.gen(&opts);
+        assert!(cols.contains(&Column::Name));
+        assert!(cols.contains(&Column::Kind));
+        assert!(cols.contains(&Column::Category));
+    }
+
+    #[test]
+    fn test_cols_group_by_kind() {
+        let opts = Opts::default();
+        let cols = ColsGroupByKind {}.gen(&opts);
+        assert!(cols.contains(&Column::Name));
+        assert!(cols.contains(&Column::Category));
+    }
+
+    #[test]
+    fn test_cols_group_by_cat() {
+        let opts = Opts::default();
+        let cols = ColsGroupByCat {}.gen(&opts);
+        assert!(cols.contains(&Column::Name));
+        assert!(cols.contains(&Column::Kind));
+    }
+
+    #[test]
+    fn test_cols_default() {
+        let opts = Opts::default();
+        let cols = ColsDefault {}.gen(&opts);
+        assert!(cols.contains(&Column::Name));
+        assert!(cols.contains(&Column::Kind));
+        assert!(cols.contains(&Column::Category));
+    }
+
+    #[test]
+    fn test_cols_passwd_hist() {
+        let opts = Opts::default();
+        let cols = ColsPasswdHist {}.gen(&opts);
+        assert!(cols.contains(&Column::Created));
+        assert!(cols.contains(&Column::LastUpdated));
+        assert!(cols.contains(&Column::LastAccessed));
+    }
+
+    #[test]
+    fn test_with_status_option() {
+        let mut opts = Opts::default();
+        opts.with_status = true;
+        let cols = ColsDefault {}.gen(&opts);
+        assert!(cols.contains(&Column::Status));
+    }
+
+    #[test]
+    fn test_with_passwd_option() {
+        let mut opts = Opts::default();
+        opts.with_passwd = true;
+        let cols = ColsDefault {}.gen(&opts);
+        assert!(cols.contains(&Column::Password));
+    }
+
+    #[test]
+    fn test_with_passwd_and_reveal_decrypted() {
+        let mut opts = Opts::default();
+        opts.with_passwd = true;
+        opts.reveal = true;
+        opts.decrypted = true;
+        let cols = ColsDefault {}.gen(&opts);
+        assert!(cols.contains(&Column::Password));
+        assert!(cols.contains(&Column::Score));
+    }
+
+    #[test]
+    fn test_column_eq() {
+        assert_eq!(Column::Name, Column::Name);
+        assert_ne!(Column::Name, Column::Url);
+    }
+
+    #[test]
+    fn test_column_ord() {
+        assert!(Column::Category < Column::Count);
+    }
+
+    #[test]
+    fn test_column_clone() {
+        let col1 = Column::Name;
+        let col2 = col1.clone();
+        assert_eq!(col1, col2);
     }
 }
