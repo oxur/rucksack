@@ -4,6 +4,10 @@ make build
 
 . ./tests/common.sh || . ./common.sh
 
+# Create directories for test database files
+mkdir -p "$(dirname "$DB_FILE")"
+mkdir -p "$BACKUP_DIR"
+
 header "Read an old database (v0.5.0)"
 
 cp ./tests/testing-data/secrets-v0.5.0.db "$DB_FILE"
