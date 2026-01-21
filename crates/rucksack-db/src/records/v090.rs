@@ -354,40 +354,15 @@ impl EncryptedRecord {
 
 /// Migrate an encrypted record from v0.8.0 to v0.9.0
 ///
-/// This function needs access to the password and salt to properly encrypt
-/// the new empty history field. Without these, we cannot create a valid
-/// v0.9.0 EncryptedRecord.
-pub fn migrate_encrypted_record_from_v080_with_pwd(
-    er: v080::EncryptedRecord,
-    store_pwd: String,
-    salt: String,
-) -> Result<EncryptedRecord> {
-    // Encrypt an empty history vec
-    let empty_history: Vec<History> = vec![];
-    let encoded_history = bincode::encode_to_vec(&empty_history, util::bincode_cfg()).unwrap();
-    let encrypted_history = encrypt(encoded_history, store_pwd, salt)?;
-
-    Ok(EncryptedRecord {
-        key: er.key(),
-        value: er.value(),
-        metadata: er.metadata(),
-        history: encrypted_history,
-    })
-}
-
-/// Legacy migration function - DO NOT USE
-///
-/// This function creates an EncryptedRecord with an unencrypted empty history,
-/// which will fail when decrypt() is called. Use migrate_encrypted_record_from_v080_with_pwd instead.
-#[deprecated(note = "Use migrate_encrypted_record_from_v080_with_pwd instead")]
+/// Creates a v0.9.0 EncryptedRecord with an empty (unencrypted) history field.
+/// This is safe because the decrypt() method checks for empty history and
+/// treats it as an empty vec without attempting decryption.
 pub fn migrate_encrypted_record_from_v080(er: v080::EncryptedRecord) -> EncryptedRecord {
-    // This creates a broken record that cannot be decrypted!
-    // DO NOT USE - kept only for backwards compatibility
     EncryptedRecord {
         key: er.key(),
         value: er.value(),
         metadata: er.metadata(),
-        history: vec![],
+        history: vec![], // Empty history - decrypt() handles this specially
     }
 }
 
