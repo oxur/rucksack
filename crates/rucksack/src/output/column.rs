@@ -247,7 +247,7 @@ mod tests {
 
     #[test]
     fn test_column_header() {
-        let header = Column::Name.header();
+        let _header = Column::Name.header();
         // Just verify it creates a cell without panicking
         assert!(true);
     }

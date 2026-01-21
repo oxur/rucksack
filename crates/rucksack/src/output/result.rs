@@ -228,7 +228,7 @@ mod tests {
     #[test]
     fn test_result_row_cell() {
         let row = new("id".to_string(), "name".to_string(), "http://example.com".to_string());
-        let cell = row.cell(&Column::Url);
+        let _cell = row.cell(&Column::Url);
         // Just verify it returns a cell without panicking
         assert!(true);
     }
@@ -238,7 +238,7 @@ mod tests {
         let mut row = new("id".to_string(), "name".to_string(), "url".to_string());
         let long_value = "a".repeat(60);
         row.add(Column::Category, long_value);
-        let cell = row.cell(&Column::Category);
+        let _cell = row.cell(&Column::Category);
         // Cell should truncate to 50 chars (47 + "...")
         assert!(true);
     }
@@ -266,7 +266,7 @@ mod tests {
     #[test]
     fn test_result_row_cell_missing_column() {
         let row = new("id".to_string(), "name".to_string(), "url".to_string());
-        let cell = row.cell(&Column::Category);
+        let _cell = row.cell(&Column::Category);
         // Should return empty cell without panicking
         assert!(true);
     }
