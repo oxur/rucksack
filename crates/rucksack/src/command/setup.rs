@@ -471,8 +471,14 @@ mod tests {
         let subcommands = vec!["add", "list", "gen", "show", "set", "delete"];
 
         for subcmd in subcommands {
-            let result = cmd.clone().try_get_matches_from(vec!["rucksack", subcmd, "--help"]);
-            assert!(result.is_err(), "Expected error for help, got Ok for {}", subcmd);
+            let result = cmd
+                .clone()
+                .try_get_matches_from(vec!["rucksack", subcmd, "--help"]);
+            assert!(
+                result.is_err(),
+                "Expected error for help, got Ok for {}",
+                subcmd
+            );
             // Help causes a "display help" error, which is expected
         }
     }
