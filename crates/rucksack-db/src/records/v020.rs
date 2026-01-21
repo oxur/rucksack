@@ -91,15 +91,15 @@ impl std::fmt::Debug for Creds {
 }
 
 impl DecryptedRecord {
-    pub fn encrypt(&self, store_pwd: String) -> EncryptedRecord {
+    pub fn encrypt(&self, store_pwd: String) -> Result<EncryptedRecord> {
         let encoded = bincode::encode_to_vec(&self.value, util::bincode_cfg()).unwrap();
-        let encrypted = encrypt(encoded, store_pwd, self.metadata.updated.clone());
+        let encrypted = encrypt(encoded, store_pwd, self.metadata.updated.clone())?;
 
-        EncryptedRecord {
+        Ok(EncryptedRecord {
             key: self.key.clone(),
             value: encrypted,
             metadata: self.metadata.clone(),
-        }
+        })
     }
 }
 
@@ -147,7 +147,7 @@ mod tests {
             format!("{:?}", dpr.value),
             "Creds{user: alice@site.com, password: *****}"
         );
-        let epr = dpr.encrypt(store_pwd.clone());
+        let epr = dpr.encrypt(store_pwd.clone()).unwrap();
         assert_eq!(54, epr.value.len());
         let re_dpr = epr.decrypt(store_pwd);
         assert_eq!(re_dpr.value.password, "4 s3kr1t");

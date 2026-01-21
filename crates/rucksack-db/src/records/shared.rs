@@ -5,8 +5,10 @@ pub fn key(user: &str, url: &str) -> String {
     format!("{user}:{url}")
 }
 
-pub fn version(v: &str) -> versions::SemVer {
-    trim_version(versions::SemVer::new(v).unwrap())
+pub fn version(v: &str) -> Result<versions::SemVer, String> {
+    versions::SemVer::new(v)
+        .map(trim_version)
+        .ok_or_else(|| format!("invalid version string '{}'", v))
 }
 
 pub fn trim_version(sv: versions::SemVer) -> versions::SemVer {
@@ -59,7 +61,7 @@ mod tests {
 
     #[test]
     fn test_version_basic() {
-        let v = version("1.2.3");
+        let v = version("1.2.3").unwrap();
         assert_eq!(v.major, 1);
         assert_eq!(v.minor, 2);
         assert_eq!(v.patch, 3);
@@ -69,7 +71,7 @@ mod tests {
 
     #[test]
     fn test_version_with_prerelease() {
-        let v = version("2.0.0-beta.1");
+        let v = version("2.0.0-beta.1").unwrap();
         assert_eq!(v.major, 2);
         assert_eq!(v.minor, 0);
         assert_eq!(v.patch, 0);
@@ -79,7 +81,7 @@ mod tests {
 
     #[test]
     fn test_version_with_metadata() {
-        let v = version("1.0.0+20130313144700");
+        let v = version("1.0.0+20130313144700").unwrap();
         assert_eq!(v.major, 1);
         assert_eq!(v.minor, 0);
         assert_eq!(v.patch, 0);
@@ -89,7 +91,7 @@ mod tests {
 
     #[test]
     fn test_version_zero() {
-        let v = version("0.0.0");
+        let v = version("0.0.0").unwrap();
         assert_eq!(v.major, 0);
         assert_eq!(v.minor, 0);
         assert_eq!(v.patch, 0);
@@ -97,7 +99,7 @@ mod tests {
 
     #[test]
     fn test_version_large_numbers() {
-        let v = version("999.888.777");
+        let v = version("999.888.777").unwrap();
         assert_eq!(v.major, 999);
         assert_eq!(v.minor, 888);
         assert_eq!(v.patch, 777);

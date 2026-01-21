@@ -80,19 +80,43 @@ mod tests {
 
     #[test]
     fn test_v4_with_uppers_has_uppercase() {
-        let uuid = v4_with_uppers();
-        let parts: Vec<&str> = uuid.split('-').collect();
-        assert_eq!(parts.len(), 5);
+        // Generate multiple UUIDs to ensure at least one has letters to test
+        let mut found_uppercase = false;
+        for _ in 0..10 {
+            let uuid = v4_with_uppers();
+            let parts: Vec<&str> = uuid.split('-').collect();
+            assert_eq!(parts.len(), 5);
 
-        // First part should have uppercase
-        let first_part = parts[0];
-        let has_upper_first = first_part.chars().any(|c| c.is_uppercase());
-        assert!(has_upper_first, "First part should contain uppercase");
+            // First part should have uppercase if it contains letters
+            let first_part = parts[0];
+            let has_letters_first = first_part.chars().any(|c| c.is_alphabetic());
+            if has_letters_first {
+                let has_upper_first = first_part.chars().any(|c| c.is_uppercase());
+                assert!(
+                    has_upper_first,
+                    "First part should contain uppercase when it has letters"
+                );
+                found_uppercase = true;
+            }
 
-        // Last part should have uppercase
-        let last_part = parts[4];
-        let has_upper_last = last_part.chars().any(|c| c.is_uppercase());
-        assert!(has_upper_last, "Last part should contain uppercase");
+            // Last part should have uppercase if it contains letters
+            let last_part = parts[4];
+            let has_letters_last = last_part.chars().any(|c| c.is_alphabetic());
+            if has_letters_last {
+                let has_upper_last = last_part.chars().any(|c| c.is_uppercase());
+                assert!(
+                    has_upper_last,
+                    "Last part should contain uppercase when it has letters"
+                );
+                found_uppercase = true;
+            }
+        }
+
+        // Verify we tested at least one UUID with letters (statistically almost certain)
+        assert!(
+            found_uppercase,
+            "Should have found at least one UUID with letters in 10 attempts"
+        );
     }
 
     #[test]
@@ -114,7 +138,10 @@ mod tests {
         let uuid = v4_with_specials(1);
         let special_chars = "!@#%&*?=+:";
         let has_special = uuid.chars().any(|c| special_chars.contains(c));
-        assert!(has_special, "UUID should contain at least one special character");
+        assert!(
+            has_special,
+            "UUID should contain at least one special character"
+        );
     }
 
     #[test]
@@ -129,7 +156,10 @@ mod tests {
     fn test_v4_with_specials_length() {
         let uuid = v4_with_specials(3);
         // split("") adds extra empty strings, so length can be slightly more
-        assert!(uuid.len() >= 36 && uuid.len() <= 38, "UUID should be approximately 36 characters");
+        assert!(
+            uuid.len() >= 36 && uuid.len() <= 38,
+            "UUID should be approximately 36 characters"
+        );
     }
 
     #[test]
@@ -178,7 +208,11 @@ mod tests {
         // Middle parts (1, 2, 3) should remain lowercase
         for part in &parts[1..=3] {
             let letters: String = part.chars().filter(|c| c.is_alphabetic()).collect();
-            assert_eq!(letters, letters.to_lowercase(), "Middle parts should stay lowercase");
+            assert_eq!(
+                letters,
+                letters.to_lowercase(),
+                "Middle parts should stay lowercase"
+            );
         }
     }
 
@@ -186,6 +220,9 @@ mod tests {
     fn test_v4_with_specials_maintains_length() {
         let uuid = v4_with_specials(5);
         // split("") can add extra chars, so length might be 36-38
-        assert!(uuid.len() >= 36 && uuid.len() <= 38, "Should maintain approximately UUID length");
+        assert!(
+            uuid.len() >= 36 && uuid.len() <= 38,
+            "Should maintain approximately UUID length"
+        );
     }
 }

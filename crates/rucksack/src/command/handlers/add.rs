@@ -81,7 +81,7 @@ pub fn new(_matches: &ArgMatches, app: &App) -> Result<()> {
         metadata,
         history: vec![],
     };
-    app.db.insert(dr);
+    app.db.insert(dr)?;
     app.db.close()?;
     Ok(())
 }

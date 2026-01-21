@@ -164,7 +164,11 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let row = new("id1".to_string(), "test".to_string(), "http://example.com".to_string());
+        let row = new(
+            "id1".to_string(),
+            "test".to_string(),
+            "http://example.com".to_string(),
+        );
         assert_eq!(row.hashmap.get(&Column::Id).unwrap(), "id1");
         assert_eq!(row.hashmap.get(&Column::Name).unwrap(), "test");
         assert_eq!(row.hashmap.get(&Column::Url).unwrap(), "http://example.com");
@@ -183,7 +187,10 @@ mod tests {
         assert_eq!(row.hashmap.get(&Column::Score).unwrap(), "95");
         assert_eq!(row.hashmap.get(&Column::Created).unwrap(), "2024-01-01");
         assert_eq!(row.hashmap.get(&Column::LastUpdated).unwrap(), "2024-01-02");
-        assert_eq!(row.hashmap.get(&Column::LastAccessed).unwrap(), "2024-01-03");
+        assert_eq!(
+            row.hashmap.get(&Column::LastAccessed).unwrap(),
+            "2024-01-03"
+        );
     }
 
     #[test]
@@ -227,7 +234,11 @@ mod tests {
 
     #[test]
     fn test_result_row_cell() {
-        let row = new("id".to_string(), "name".to_string(), "http://example.com".to_string());
+        let row = new(
+            "id".to_string(),
+            "name".to_string(),
+            "http://example.com".to_string(),
+        );
         let _cell = row.cell(&Column::Url);
         // Just verify it returns a cell without panicking
         assert!(true);
@@ -273,22 +284,46 @@ mod tests {
 
     #[test]
     fn test_result_row_eq() {
-        let row1 = new("id1".to_string(), "name1".to_string(), "http://same.com".to_string());
-        let row2 = new("id2".to_string(), "name2".to_string(), "http://same.com".to_string());
+        let row1 = new(
+            "id1".to_string(),
+            "name1".to_string(),
+            "http://same.com".to_string(),
+        );
+        let row2 = new(
+            "id2".to_string(),
+            "name2".to_string(),
+            "http://same.com".to_string(),
+        );
         assert_eq!(row1, row2); // Equal based on URL
     }
 
     #[test]
     fn test_result_row_ne() {
-        let row1 = new("id".to_string(), "name".to_string(), "http://a.com".to_string());
-        let row2 = new("id".to_string(), "name".to_string(), "http://b.com".to_string());
+        let row1 = new(
+            "id".to_string(),
+            "name".to_string(),
+            "http://a.com".to_string(),
+        );
+        let row2 = new(
+            "id".to_string(),
+            "name".to_string(),
+            "http://b.com".to_string(),
+        );
         assert_ne!(row1, row2);
     }
 
     #[test]
     fn test_result_row_ord() {
-        let row1 = new("id".to_string(), "name".to_string(), "http://a.com".to_string());
-        let row2 = new("id".to_string(), "name".to_string(), "http://b.com".to_string());
+        let row1 = new(
+            "id".to_string(),
+            "name".to_string(),
+            "http://a.com".to_string(),
+        );
+        let row2 = new(
+            "id".to_string(),
+            "name".to_string(),
+            "http://b.com".to_string(),
+        );
         assert!(row1 < row2);
     }
 
@@ -315,7 +350,8 @@ mod tests {
     #[test]
     fn test_results_and_groups_clone() {
         let mut rag1 = ResultsAndGroups::default();
-        rag1.results.push(new("id".to_string(), "name".to_string(), "url".to_string()));
+        rag1.results
+            .push(new("id".to_string(), "name".to_string(), "url".to_string()));
         let rag2 = rag1.clone();
         assert_eq!(rag1.results.len(), rag2.results.len());
     }

@@ -40,7 +40,7 @@
 use std::collections::HashMap;
 use std::str;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::ArgMatches;
 
 use rucksack_db::records;
@@ -60,12 +60,9 @@ pub fn config_file(_matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 pub fn config(_matches: &ArgMatches, app: &App) -> Result<()> {
-    match file::read(app.inputs.config_file()) {
-        Ok(bytes) => {
-            println!("\n{}", str::from_utf8(bytes.as_ref()).unwrap());
-        }
-        Err(e) => panic!("{}", e),
-    }
+    let bytes = file::read(app.inputs.config_file())
+        .with_context(|| format!("failed to read config file '{}'", app.inputs.config_file()))?;
+    println!("\n{}", str::from_utf8(bytes.as_ref()).unwrap());
     Ok(())
 }
 

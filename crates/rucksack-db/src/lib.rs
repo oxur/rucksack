@@ -13,7 +13,8 @@ pub use records::{
 // This is the library version and shouldn't be used for schema versions. Instead,
 // use crate::db::version (which points to crate::records::version).
 pub fn version() -> versions::SemVer {
-    versions::SemVer::new(env!("CARGO_PKG_VERSION")).unwrap()
+    versions::SemVer::new(env!("CARGO_PKG_VERSION"))
+        .expect("CARGO_PKG_VERSION must be valid semver format")
 }
 
 #[cfg(test)]

@@ -110,7 +110,7 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
     log::trace!("Created hashmap.");
     let sorted_vec: Vec<(String, EncryptedRecord)>;
     log::trace!("Created vec for sorted data.");
-    if version < shared::version(VERSION) {
+    if version < shared::version(VERSION).unwrap() {
         // version.
         log::info!("Attempting to decode hashmap from previous version (0.6.0)");
         let hm = v060::decode_hashmap(bytes, version)?;
@@ -395,15 +395,15 @@ impl DecryptedRecord {
         self.secrets.user.clone()
     }
 
-    pub fn encrypt(&self, store_pwd: String, salt: String) -> EncryptedRecord {
+    pub fn encrypt(&self, store_pwd: String, salt: String) -> Result<EncryptedRecord> {
         let encoded = bincode::encode_to_vec(&self.secrets, util::bincode_cfg()).unwrap();
-        let encrypted = encrypt(encoded, store_pwd, salt);
+        let encrypted = encrypt(encoded, store_pwd, salt)?;
 
-        EncryptedRecord {
+        Ok(EncryptedRecord {
             key: self.key(),
             value: encrypted,
             metadata: self.metadata(),
-        }
+        })
     }
 }
 
@@ -496,7 +496,7 @@ mod tests {
             format!("{:?}", dpr.secrets),
             "Creds{user: alice@site.com, password: *****}"
         );
-        let epr = dpr.encrypt(pwd.clone(), salt.clone());
+        let epr = dpr.encrypt(pwd.clone(), salt.clone()).unwrap();
         assert_eq!(118, epr.value.len());
         let re_dpr = epr.decrypt(pwd, salt).unwrap();
         assert_eq!(re_dpr.secrets.password, "4 s3kr1t");
@@ -612,7 +612,7 @@ mod tests {
         let salt = time::now();
         let record = testing::data::plaintext_record_v070();
 
-        let encrypted = record.encrypt(pwd.clone(), salt.clone());
+        let encrypted = record.encrypt(pwd.clone(), salt.clone()).unwrap();
         assert!(!encrypted.value.is_empty());
 
         let decrypted = encrypted.decrypt(pwd, salt).unwrap();
@@ -627,7 +627,7 @@ mod tests {
         let hm: HashMap = dashmap::DashMap::new();
 
         let record = testing::data::plaintext_record_v070();
-        let encrypted = record.encrypt(pwd, salt);
+        let encrypted = record.encrypt(pwd, salt).unwrap();
         hm.insert("test_key".to_string(), encrypted);
 
         // Serialize
@@ -639,7 +639,7 @@ mod tests {
         let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
 
         // Decode
-        let version = shared::version(VERSION);
+        let version = shared::version(VERSION).unwrap();
         let decoded = decode_hashmap(bytes, version).unwrap();
         assert_eq!(decoded.len(), 1);
     }
@@ -649,7 +649,7 @@ mod tests {
         let data: Vec<(String, EncryptedRecord)> = Vec::new();
         let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
 
-        let version = shared::version(VERSION);
+        let version = shared::version(VERSION).unwrap();
         let decoded = decode_hashmap(bytes, version).unwrap();
         assert_eq!(decoded.len(), 0);
     }
@@ -688,7 +688,7 @@ mod tests {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
         let record = testing::data::plaintext_record_v070();
-        let encrypted = record.encrypt(pwd, salt);
+        let encrypted = record.encrypt(pwd, salt).unwrap();
 
         assert!(!encrypted.key().is_empty());
         assert!(!encrypted.value().is_empty());
@@ -711,7 +711,7 @@ mod tests {
     #[test]
     fn test_version_constant() {
         assert_eq!(VERSION, "0.7.0");
-        let version = shared::version(VERSION);
+        let version = shared::version(VERSION).unwrap();
         assert_eq!(version.major, 0);
         assert_eq!(version.minor, 7);
     }
@@ -727,7 +727,10 @@ mod tests {
     fn test_migrate_kind_from_v060() {
         assert_eq!(migrate_kind_from_v060(v060::Kind::Password), Kind::Password);
         assert_eq!(migrate_kind_from_v060(v060::Kind::Account), Kind::default());
-        assert_eq!(migrate_kind_from_v060(v060::Kind::Credential), Kind::default());
+        assert_eq!(
+            migrate_kind_from_v060(v060::Kind::Credential),
+            Kind::default()
+        );
     }
 
     #[test]
@@ -745,7 +748,7 @@ mod tests {
         let salt = time::now();
 
         let record_v060 = testing::data::plaintext_record_v060();
-        let encrypted_v060 = record_v060.encrypt(pwd, salt);
+        let encrypted_v060 = record_v060.encrypt(pwd, salt).unwrap();
         hm_v060.insert("test_key".to_string(), encrypted_v060);
 
         let hm_v070 = migrate_hashmap_from_v060(hm_v060);
@@ -760,7 +763,7 @@ mod tests {
         let hm_v060: v060::HashMap = dashmap::DashMap::new();
 
         let record = testing::data::plaintext_record_v060();
-        let encrypted = record.encrypt(pwd, salt);
+        let encrypted = record.encrypt(pwd, salt).unwrap();
         hm_v060.insert("v060_key".to_string(), encrypted);
 
         let mut data: Vec<(String, v060::EncryptedRecord)> = Vec::new();
@@ -770,7 +773,7 @@ mod tests {
         data.sort_by_key(|k| k.0.clone());
         let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
 
-        let version = shared::version("0.6.0");
+        let version = shared::version("0.6.0").unwrap();
         let decoded_hm = decode_hashmap(bytes, version).unwrap();
         assert_eq!(decoded_hm.len(), 1);
         assert!(decoded_hm.contains_key("v060_key"));
@@ -779,7 +782,7 @@ mod tests {
     #[test]
     fn test_decode_hashmap_error() {
         let invalid_bytes = vec![1, 2, 3, 4, 5];
-        let version = shared::version(VERSION);
+        let version = shared::version(VERSION).unwrap();
         let result = decode_hashmap(invalid_bytes, version);
         assert!(result.is_err());
     }
@@ -829,7 +832,7 @@ mod tests {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
         let record_v060 = testing::data::plaintext_record_v060();
-        let encrypted_v060 = record_v060.encrypt(pwd, salt);
+        let encrypted_v060 = record_v060.encrypt(pwd, salt).unwrap();
 
         let encrypted_v070 = migrate_encrypted_record_from_v060(encrypted_v060.clone());
         assert_eq!(encrypted_v070.key(), encrypted_v060.key());

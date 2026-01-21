@@ -90,7 +90,11 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let results = vec![result::new("id".to_string(), "name".to_string(), "url".to_string())];
+        let results = vec![result::new(
+            "id".to_string(),
+            "name".to_string(),
+            "url".to_string(),
+        )];
         let opts = Opts::default();
         let table = new(results.clone(), opts);
         assert_eq!(table.results.len(), 1);
@@ -113,7 +117,11 @@ mod tests {
 
     #[test]
     fn test_table_clone() {
-        let results = vec![result::new("id".to_string(), "name".to_string(), "url".to_string())];
+        let results = vec![result::new(
+            "id".to_string(),
+            "name".to_string(),
+            "url".to_string(),
+        )];
         let opts = Opts::default();
         let table1 = new(results, opts);
         let table2 = table1.clone();
@@ -122,7 +130,11 @@ mod tests {
 
     #[test]
     fn test_results_method() {
-        let results = vec![result::new("id".to_string(), "name".to_string(), "url".to_string())];
+        let results = vec![result::new(
+            "id".to_string(),
+            "name".to_string(),
+            "url".to_string(),
+        )];
         let opts = Opts::default();
         let mut table = new(results, opts);
         table.results();

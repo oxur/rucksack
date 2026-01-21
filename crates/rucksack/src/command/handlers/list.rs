@@ -323,7 +323,7 @@ fn process_records(matches: &ArgMatches, app: &App, mut opts: Opts) -> Result<()
             if let Some(mut metadata) = app.db.get_metadata(r.id()) {
                 metadata.last_used = time::now();
                 metadata.access_count += 1;
-                app.db.update_metadata(r.id(), metadata);
+                app.db.update_metadata(r.id(), metadata)?;
             }
         }
     }

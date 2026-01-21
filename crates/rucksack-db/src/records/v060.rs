@@ -36,7 +36,7 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
     log::trace!("Created hashmap.");
     let sorted_vec: Vec<(String, EncryptedRecord)>;
     log::trace!("Created vec for sorted data.");
-    if version < shared::version(VERSION) {
+    if version < shared::version(VERSION).unwrap() {
         log::info!("Attempting to decode hashmap from previous version (0.5.0)");
         let hm = v050::decode_hashmap(bytes, version)?;
         return Ok(migrate_hashmap_from_v050(hm));
@@ -93,15 +93,15 @@ impl DecryptedRecord {
         self.creds.user.clone()
     }
 
-    pub fn encrypt(&self, store_pwd: String, salt: String) -> EncryptedRecord {
+    pub fn encrypt(&self, store_pwd: String, salt: String) -> Result<EncryptedRecord> {
         let encoded = bincode::encode_to_vec(&self.creds, util::bincode_cfg()).unwrap();
-        let encrypted = encrypt(encoded, store_pwd, salt);
+        let encrypted = encrypt(encoded, store_pwd, salt)?;
 
-        EncryptedRecord {
+        Ok(EncryptedRecord {
             key: self.key(),
             value: encrypted,
             metadata: self.metadata(),
-        }
+        })
     }
 }
 
@@ -189,7 +189,7 @@ mod tests {
             format!("{:?}", dpr.creds),
             "Creds{user: alice@site.com, password: *****}"
         );
-        let epr = dpr.encrypt(pwd.clone(), salt.clone());
+        let epr = dpr.encrypt(pwd.clone(), salt.clone()).unwrap();
         assert_eq!(54, epr.value.len());
         let re_dpr = epr.decrypt(pwd, salt).unwrap();
         assert_eq!(re_dpr.creds.password, "4 s3kr1t");

@@ -54,7 +54,7 @@ fn from_chrome_csv(matches: &ArgMatches, db: &DB, csv_path: String) -> Result<()
             continue;
         }
         dr.set_name(dr.name_or_user());
-        db.insert(dr);
+        db.insert(dr)?;
         count += 1;
         print!(".");
     }
@@ -74,7 +74,7 @@ fn from_firefox_csv(matches: &ArgMatches, db: &DB, csv_path: String) -> Result<(
             continue;
         }
         dr.set_name(dr.name_or_user());
-        db.insert(dr);
+        db.insert(dr)?;
         count += 1;
         print!(".");
     }

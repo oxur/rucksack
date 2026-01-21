@@ -19,7 +19,7 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
     log::trace!("Created hashmap.");
     let sorted_vec: Vec<(String, EncryptedRecord)>;
     log::trace!("Created vec for sorted data.");
-    if version < shared::version(VERSION) {
+    if version < shared::version(VERSION).unwrap() {
         let msg = format!("automatic migration not supported for versions prior to: {VERSION}");
         log::error!("{}", msg);
         return Err(anyhow!(msg));
@@ -78,7 +78,7 @@ mod tests {
         let hm: HashMap = dashmap::DashMap::new();
         let record = test_decrypted_record();
         let salt = time::now();
-        let encrypted = record.encrypt("password".to_string(), salt);
+        let encrypted = record.encrypt("password".to_string(), salt).unwrap();
         hm.insert("test_key".to_string(), encrypted);
 
         let mut data: Vec<(String, EncryptedRecord)> = Vec::new();
@@ -120,6 +120,9 @@ mod tests {
         let old_version = versions::SemVer::new("0.4.0").unwrap();
         let result = decode_hashmap(bytes, old_version);
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("migration not supported"));
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("migration not supported"));
     }
 }

@@ -85,15 +85,15 @@ impl DecryptedRecord {
         self.metadata.clone()
     }
 
-    pub fn encrypt(&self, store_pwd: String) -> EncryptedRecord {
+    pub fn encrypt(&self, store_pwd: String) -> Result<EncryptedRecord> {
         let encoded = bincode::encode_to_vec(&self.creds, util::bincode_cfg()).unwrap();
-        let encrypted = encrypt(encoded, store_pwd, self.metadata().updated);
+        let encrypted = encrypt(encoded, store_pwd, self.metadata().updated)?;
 
-        EncryptedRecord {
+        Ok(EncryptedRecord {
             key: self.key(),
             value: encrypted,
             metadata: self.metadata(),
-        }
+        })
     }
 }
 
@@ -183,7 +183,7 @@ mod tests {
         let record = test_decrypted_record();
         let pwd = "store_password".to_string();
 
-        let encrypted = record.encrypt(pwd.clone());
+        let encrypted = record.encrypt(pwd.clone()).unwrap();
         assert!(!encrypted.value.is_empty());
         assert_eq!(encrypted.key(), record.key());
 
@@ -195,14 +195,14 @@ mod tests {
     #[test]
     fn test_encrypted_record_key() {
         let record = test_decrypted_record();
-        let encrypted = record.encrypt("password".to_string());
+        let encrypted = record.encrypt("password".to_string()).unwrap();
         assert_eq!(encrypted.key(), record.key());
     }
 
     #[test]
     fn test_encrypted_record_metadata() {
         let record = test_decrypted_record();
-        let encrypted = record.encrypt("password".to_string());
+        let encrypted = record.encrypt("password".to_string()).unwrap();
         let metadata = encrypted.metadata();
         assert_eq!(metadata.url, record.metadata.url);
     }
@@ -211,7 +211,7 @@ mod tests {
     fn test_decode_hashmap() {
         let hm: HashMap = dashmap::DashMap::new();
         let record = test_decrypted_record();
-        let encrypted = record.encrypt("password".to_string());
+        let encrypted = record.encrypt("password".to_string()).unwrap();
         hm.insert("test_key".to_string(), encrypted);
 
         let mut data: Vec<(String, EncryptedRecord)> = Vec::new();

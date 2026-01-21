@@ -99,7 +99,7 @@ impl DB {
                 Err(_) => {
                     log::info!("Given database appears to be non-versioned; be sure to upgrade to the latest micro release of our old version before continuing ...");
                     log::trace!("Bytes: {:?}", enc_db.decrypted());
-                    VersionedDB::from_bytes(enc_db.decrypted())
+                    VersionedDB::from_bytes(enc_db.decrypted())?
                 }
             };
             log::debug!("Getting database hash ...");
@@ -142,7 +142,7 @@ impl DB {
             }
         }?;
         // Create versioned data
-        let vsn_db = VersionedDB::from_bytes(srl);
+        let vsn_db = VersionedDB::from_bytes(srl)?;
         let encoded = match vsn_db.serialise() {
             Ok(x) => Ok(x),
             Err(e) => {
@@ -210,15 +210,15 @@ impl DB {
         self.hash_map.clone()
     }
 
-    pub fn insert(&self, record: DecryptedRecord) -> Option<EncryptedRecord> {
+    pub fn insert(&self, record: DecryptedRecord) -> Result<Option<EncryptedRecord>> {
         let key = record.key();
         log::debug!("Inserting record with key {} ...", key);
         if let Some(r) = self.get(record.key()) {
             log::trace!("Record exists; skipping insert");
-            return Some(r.encrypt(self.store_pwd(), self.salt()));
+            return Ok(Some(r.encrypt(self.store_pwd(), self.salt())?));
         };
-        self.hash_map
-            .insert(key, record.encrypt(self.store_pwd(), self.salt()))
+        let encrypted = record.encrypt(self.store_pwd(), self.salt())?;
+        Ok(self.hash_map.insert(key, encrypted))
     }
 
     pub fn iter(&self) -> dashmap::iter::Iter<'_, String, EncryptedRecord> {
@@ -264,29 +264,31 @@ impl DB {
     // might involved a field used to create the key (and since that
     // new key hasn't been saved yet, there's no record for it --
     // just one for the old key).
-    pub fn update(&self, key: String, updated: DecryptedRecord) {
+    pub fn update(&self, key: String, updated: DecryptedRecord) -> Result<()> {
         log::debug!("Updating record with key {key} ...");
         match self.delete(key) {
             Some(true) => {
-                self.insert(updated);
+                self.insert(updated)?;
+                Ok(())
             }
-            Some(false) => log::error!("Could not update record:"),
+            Some(false) => {
+                log::error!("Could not update record:");
+                Err(anyhow!("failed to delete record for update"))
+            }
             None => unreachable!(),
         }
     }
 
-    pub fn update_metadata(&self, key: String, metadata: Metadata) {
+    pub fn update_metadata(&self, key: String, metadata: Metadata) -> Result<()> {
         log::debug!("Updating metadata on record with key {key} ...");
+        let key_for_error = key.clone();
         match self.hash_map.try_entry(key) {
             Some(entry) => {
                 entry.and_modify(|r| r.metadata = metadata);
-                log::trace!("updated!")
+                log::trace!("updated!");
+                Ok(())
             }
-            None => {
-                let msg = "Couldn't get lock for update";
-                log::error!("{}", msg);
-                panic!("{}", msg)
-            }
+            None => Err(anyhow!("record '{}' not found or locked", key_for_error)),
         }
     }
 
@@ -326,7 +328,7 @@ mod tests {
         assert!(tmp_db.open().is_ok());
         assert!(tmp_db.version() > versions::SemVer::new("0.8.0").unwrap());
         let dpr = testing::data::plaintext_record_v090();
-        tmp_db.insert(dpr.clone());
+        tmp_db.insert(dpr.clone()).unwrap();
         let re_dpr = tmp_db.get(dpr.key()).unwrap();
         assert_eq!(re_dpr.secrets.user, "alice@site.com");
         assert_eq!(re_dpr.secrets.password, "6 s3kr1t");
@@ -414,7 +416,7 @@ mod tests {
 
         let record = testing::data::plaintext_record_v090();
         let key = record.key();
-        db.insert(record.clone());
+        db.insert(record.clone()).unwrap();
 
         let retrieved = db.get(key).unwrap();
         assert_eq!(retrieved.secrets.user, record.secrets.user);
@@ -437,10 +439,10 @@ mod tests {
         assert!(db.open().is_ok());
 
         let record = testing::data::plaintext_record_v090();
-        let result1 = db.insert(record.clone());
+        let result1 = db.insert(record.clone()).unwrap();
         assert!(result1.is_none(), "First insert should return None");
 
-        let result2 = db.insert(record.clone());
+        let result2 = db.insert(record.clone()).unwrap();
         assert!(result2.is_some(), "Duplicate insert should return existing");
 
         assert!(db.close().is_ok());
@@ -480,7 +482,7 @@ mod tests {
 
         let record = testing::data::plaintext_record_v090();
         let key = record.key();
-        db.insert(record);
+        db.insert(record).unwrap();
 
         let result = db.delete(key.clone());
         assert_eq!(result, Some(true));
@@ -525,11 +527,11 @@ mod tests {
 
         let mut record = testing::data::plaintext_record_v090();
         let key = record.key();
-        db.insert(record.clone());
+        db.insert(record.clone()).unwrap();
 
         // Update the record
         record.secrets.password = "new_password".to_string();
-        db.update(key.clone(), record);
+        db.update(key.clone(), record).unwrap();
 
         let retrieved = db.get(key).unwrap();
         assert_eq!(retrieved.secrets.password, "new_password");
@@ -552,7 +554,7 @@ mod tests {
 
         let record = testing::data::plaintext_record_v090();
         let key = record.key();
-        db.insert(record.clone());
+        db.insert(record.clone()).unwrap();
 
         let metadata = db.get_metadata(key).unwrap();
         assert_eq!(metadata.name, record.metadata.name);
@@ -594,12 +596,13 @@ mod tests {
 
         let record = testing::data::plaintext_record_v090();
         let key = record.key();
-        db.insert(record.clone());
+        db.insert(record.clone()).unwrap();
 
         // Update metadata
         let mut new_metadata = record.metadata.clone();
         new_metadata.name = "Updated Name".to_string();
-        db.update_metadata(key.clone(), new_metadata.clone());
+        db.update_metadata(key.clone(), new_metadata.clone())
+            .unwrap();
 
         let retrieved_metadata = db.get_metadata(key).unwrap();
         assert_eq!(retrieved_metadata.name, "Updated Name");
@@ -621,7 +624,7 @@ mod tests {
         assert!(db.open().is_ok());
 
         let record = testing::data::plaintext_record_v090();
-        db.insert(record.clone());
+        db.insert(record.clone()).unwrap();
 
         let decrypted = db.collect_decrypted().unwrap();
         assert_eq!(decrypted.len(), 1);
@@ -644,7 +647,7 @@ mod tests {
         assert!(db.open().is_ok());
 
         let record = testing::data::plaintext_record_v090();
-        db.insert(record);
+        db.insert(record).unwrap();
 
         let count = db.iter().count();
         assert_eq!(count, 1);
@@ -666,7 +669,7 @@ mod tests {
         assert!(db.open().is_ok());
 
         let record = testing::data::plaintext_record_v090();
-        db.insert(record);
+        db.insert(record).unwrap();
 
         let hash_map = db.hash_map();
         assert_eq!(hash_map.len(), 1);

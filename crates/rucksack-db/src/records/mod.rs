@@ -16,5 +16,5 @@ pub use v090::{
 };
 
 pub fn version() -> versions::SemVer {
-    versions::SemVer::new(VERSION).unwrap()
+    versions::SemVer::new(VERSION).expect("VERSION constant must be valid semver format")
 }

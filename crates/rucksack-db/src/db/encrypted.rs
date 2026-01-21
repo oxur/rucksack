@@ -61,7 +61,7 @@ impl EncryptedDB {
         } else if let Some(d) = decrypted {
             log::debug!("Got decrypted bytes; encrypting ...");
             edb.decrypted = Secret::new(d);
-            edb.encrypt();
+            edb.encrypt()?;
         }
         Ok(edb)
     }
@@ -91,10 +91,11 @@ impl EncryptedDB {
         self.decrypted.expose_secret().to_vec()
     }
 
-    pub fn encrypt(&mut self) {
+    pub fn encrypt(&mut self) -> Result<()> {
         log::trace!("Byte len before: {}", self.bytes.len());
-        self.bytes = crypto::encrypt(self.decrypted(), self.pwd(), self.salt());
+        self.bytes = crypto::encrypt(self.decrypted(), self.pwd(), self.salt())?;
         log::trace!("Byte len after: {}", self.bytes.len());
+        Ok(())
     }
 
     pub fn path(&self) -> String {
@@ -153,7 +154,10 @@ mod tests {
         assert_eq!(edb.decrypted(), data);
         assert_eq!(edb.pwd(), pwd);
         assert_eq!(edb.salt(), salt);
-        assert!(!edb.bytes().is_empty(), "Encrypted bytes should not be empty");
+        assert!(
+            !edb.bytes().is_empty(),
+            "Encrypted bytes should not be empty"
+        );
         assert_ne!(edb.bytes(), data, "Encrypted should differ from decrypted");
     }
 
@@ -181,7 +185,7 @@ mod tests {
         let (_dir, path) = setup_test_dir();
 
         // First encrypt some data
-        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone());
+        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone()).unwrap();
 
         // Create from encrypted
         let edb = EncryptedDB::from_encrypted(
@@ -222,16 +226,11 @@ mod tests {
         let (_dir, path) = setup_test_dir();
 
         // Write encrypted data to file
-        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone());
+        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone()).unwrap();
         fs::write(&path, encrypted).unwrap();
 
         // Load from file
-        let edb = EncryptedDB::from_file(
-            path.to_str().unwrap().to_string(),
-            pwd,
-            salt,
-        )
-        .unwrap();
+        let edb = EncryptedDB::from_file(path.to_str().unwrap().to_string(), pwd, salt).unwrap();
 
         assert_eq!(edb.decrypted(), data);
     }
@@ -240,11 +239,8 @@ mod tests {
     fn test_from_file_not_exists() {
         let path = "/nonexistent/path/to/file.bin";
 
-        let result = EncryptedDB::from_file(
-            path.to_string(),
-            "pwd".to_string(),
-            "salt".to_string(),
-        );
+        let result =
+            EncryptedDB::from_file(path.to_string(), "pwd".to_string(), "salt".to_string());
 
         assert!(result.is_err(), "Should fail when file doesn't exist");
     }
@@ -272,7 +268,7 @@ mod tests {
         let data = b"Original".to_vec();
         let pwd = "pwd".to_string();
         let salt = "salt".to_string();
-        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone());
+        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone()).unwrap();
         let (_dir, path) = setup_test_dir();
 
         let edb = EncryptedDB::new(
@@ -296,18 +292,12 @@ mod tests {
         let (_dir, path) = setup_test_dir();
 
         // Prepare file
-        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone());
+        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone()).unwrap();
         fs::write(&path, encrypted).unwrap();
 
         // Create from file
-        let edb = EncryptedDB::new(
-            None,
-            None,
-            path.to_str().unwrap().to_string(),
-            pwd,
-            salt,
-        )
-        .unwrap();
+        let edb =
+            EncryptedDB::new(None, None, path.to_str().unwrap().to_string(), pwd, salt).unwrap();
 
         assert_eq!(edb.decrypted(), data);
     }
@@ -421,7 +411,7 @@ mod tests {
         assert_eq!(edb.decrypted(), original);
 
         // Re-encrypt
-        edb.encrypt();
+        edb.encrypt().unwrap();
         assert_ne!(edb.bytes(), original);
     }
 
@@ -434,13 +424,9 @@ mod tests {
         let path_str = path.to_str().unwrap().to_string();
 
         // Create and write
-        let edb = EncryptedDB::from_decrypted(
-            data.clone(),
-            path_str.clone(),
-            pwd.clone(),
-            salt.clone(),
-        )
-        .unwrap();
+        let edb =
+            EncryptedDB::from_decrypted(data.clone(), path_str.clone(), pwd.clone(), salt.clone())
+                .unwrap();
 
         edb.write().unwrap();
 
@@ -478,7 +464,7 @@ mod tests {
         let path_str = path.to_str().unwrap().to_string();
 
         // Write encrypted data to file
-        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone());
+        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone()).unwrap();
         fs::write(&path, encrypted.clone()).unwrap();
 
         // Create empty EncryptedDB and read
@@ -528,12 +514,12 @@ mod tests {
         .unwrap();
 
         // Cycle 1
-        edb.encrypt();
+        edb.encrypt().unwrap();
         edb.decrypt().unwrap();
         assert_eq!(edb.decrypted(), original);
 
         // Cycle 2
-        edb.encrypt();
+        edb.encrypt().unwrap();
         edb.decrypt().unwrap();
         assert_eq!(edb.decrypted(), original);
     }
@@ -552,6 +538,9 @@ mod tests {
         .unwrap();
 
         assert_eq!(edb.decrypted(), large_data);
-        assert!(edb.bytes().len() > large_data.len(), "Encrypted should be larger");
+        assert!(
+            edb.bytes().len() > large_data.len(),
+            "Encrypted should be larger"
+        );
     }
 }

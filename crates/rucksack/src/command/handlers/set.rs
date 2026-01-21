@@ -67,7 +67,7 @@ pub fn record_type(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting record type ...");
     let mut record = query::record(app)?;
     record.set_kind(options::record_kind(matches));
-    app.db.insert(record);
+    app.db.insert(record)?;
     app.db.close()?;
     Ok(())
 }
@@ -77,7 +77,7 @@ pub fn password(matches: &ArgMatches, app: &App) -> Result<()> {
     let mut record = query::record(app)?;
     let key = record.key();
     record.set_password(options::record_pwd_revealed(matches));
-    app.db.update(key, record);
+    app.db.update(key, record)?;
     app.db.close()?;
     Ok(())
 }
@@ -86,7 +86,7 @@ pub fn status(matches: &ArgMatches, app: &App) -> Result<()> {
     log::debug!("Setting record status ...");
     let mut record = query::record(app)?;
     record.set_status(options::record_state(matches));
-    app.db.insert(record);
+    app.db.insert(record)?;
     app.db.close()?;
     Ok(())
 }
@@ -102,7 +102,7 @@ pub fn url(matches: &ArgMatches, app: &App) -> Result<()> {
     let mut record = query::record_by_key(app, key.clone())?;
     log::debug!("Got record: {record:?}");
     record.set_url(new_url);
-    app.db.update(key, record);
+    app.db.update(key, record)?;
     app.db.close()?;
     Ok(())
 }
@@ -123,7 +123,7 @@ pub fn user(matches: &ArgMatches, app: &App) -> Result<()> {
         Some(_) => (),
         None => log::error!("{msg}"),
     }
-    app.db.insert(record);
+    app.db.insert(record)?;
     app.db.close()?;
     Ok(())
 }
