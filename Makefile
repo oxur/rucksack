@@ -164,6 +164,12 @@ test:
 	@cargo test --all-features
 	@echo "$(GREEN)✓ All tests passed$(RESET)"
 
+.PHONY: test-cli
+test-cli:
+	@echo "$(BLUE)Testing CLI argument validation...$(RESET)"
+	@cargo test -p rucksack test_cli_validates --lib
+	@echo "$(GREEN)✓ CLI validation passed$(RESET)"
+
 integration:
 	@./tests/rucksack.sh
 	@./tests/rucksack_dev.sh
@@ -205,9 +211,9 @@ coverage-html:
 
 # Combined check targets
 .PHONY: check
-check: build lint test
+check: build lint test test-cli
 	@echo ""
-	@echo "$(GREEN)✓ All checks passed (build + lint + test)$(RESET)"
+	@echo "$(GREEN)✓ All checks passed (build + lint + test + cli-validation)$(RESET)"
 	@echo ""
 
 .PHONY: deps

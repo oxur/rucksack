@@ -184,7 +184,6 @@ pub fn run() -> Command {
             .arg(
                 Arg::new("delimiter")
                     .help("The character used to join parts (for generator types that join parts)")
-                    .short('d')
                     .long("delimiter")
                     .default_value("-"),
             )
@@ -441,4 +440,40 @@ pub fn run() -> Command {
             .arg(db::salt())
             .arg(db::backup_dir())
     )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_cli_validates() {
+        // This test runs clap's internal validation checks
+        // It will catch issues like:
+        // - Duplicate short flags
+        // - Global + Required conflicts
+        // - Invalid argument configurations
+        // - Missing argument IDs
+        let cmd = run();
+        cmd.debug_assert();
+    }
+
+    #[test]
+    fn test_cli_help_works() {
+        // Ensure help can be generated without panicking
+        let cmd = run();
+        let _ = cmd.clone().try_get_matches_from(vec!["rucksack", "--help"]);
+    }
+
+    #[test]
+    fn test_subcommands_have_help() {
+        let cmd = run();
+        let subcommands = vec!["add", "list", "gen", "show", "set", "delete"];
+
+        for subcmd in subcommands {
+            let result = cmd.clone().try_get_matches_from(vec!["rucksack", subcmd, "--help"]);
+            assert!(result.is_err(), "Expected error for help, got Ok for {}", subcmd);
+            // Help causes a "display help" error, which is expected
+        }
+    }
 }

@@ -96,7 +96,6 @@ pub fn url() -> Arg {
         .help("the login URL")
         .long("url")
         .env("RUXAK_URL")
-        .global(true)
 }
 
 pub fn url_old() -> Arg {
