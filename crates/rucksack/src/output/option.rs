@@ -34,3 +34,35 @@ pub fn defaults() -> Opts {
         ..Default::default()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_defaults() {
+        let opts = defaults();
+        assert!(!opts.backup_files);
+        assert!(!opts.categories);
+        assert!(!opts.decrypted);
+        assert_eq!(opts.category, "");
+    }
+
+    #[test]
+    fn test_opts_default() {
+        let opts = Opts::default();
+        assert!(!opts.backup_files);
+        assert!(!opts.reveal);
+        assert!(!opts.skip_deleted);
+        assert!(opts.all_tags.is_none());
+        assert!(opts.any_tags.is_none());
+    }
+
+    #[test]
+    fn test_opts_clone() {
+        let opts1 = Opts::default();
+        let opts2 = opts1.clone();
+        assert_eq!(opts1.backup_files, opts2.backup_files);
+        assert_eq!(opts1.categories, opts2.categories);
+    }
+}
