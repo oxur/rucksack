@@ -12,13 +12,14 @@ RESET := \033[0m
 PROJECT_NAME := Rucksack
 MODE := debug
 TARGET := ./target/$(MODE)
+BIN_DIR := ./bin
 GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 BUILD_TIME := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
 RUST_VERSION := $(shell rustc --version 2>/dev/null || echo "unknown")
 
 # List of binaries to build and install
-BINARIES := fliterec
+BINARIES := rucksack fliterec
 
 # External tools configuration
 AI_RUST := ./assets/ai/ai-rust
