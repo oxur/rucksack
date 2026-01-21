@@ -17,7 +17,7 @@ name = "rucksack_lib"
 anyhow = "1.0"
 base64 = "0.21"
 bincode = "2.0.0-rc.3"
-chrono = { version = "0.4", default-features = false, features = ["serde"] }
+chrono = { version = "0.4", default-features = false, features = ["serde", "clock"] }
 dirs = "5.0.1"
 lipsum = "0.9.0"
 log = "0.4"
