@@ -84,7 +84,12 @@ pub fn db_version(_matches: &ArgMatches, app: &App) -> Result<()> {
 pub fn categories(_matches: &ArgMatches, app: &App) -> Result<()> {
     let mut results: HashMap<String, bool> = HashMap::new();
     for i in app.db.iter() {
-        let dr = i.value().decrypt(app.db.store_pwd(), app.inputs.salt())?;
+        let dr = records::decrypt_versioned(
+            i.value(),
+            app.db.store_pwd(),
+            app.inputs.salt(),
+            app.db.version(),
+        )?;
         results.insert(dr.metadata().category, true);
     }
     let mut cats: Vec<&String> = results.keys().clone().collect();
@@ -104,7 +109,12 @@ pub fn categories(_matches: &ArgMatches, app: &App) -> Result<()> {
 pub fn tags(_matches: &ArgMatches, app: &App) -> Result<()> {
     let mut results: HashMap<String, bool> = HashMap::new();
     for i in app.db.iter() {
-        let dr = i.value().decrypt(app.db.store_pwd(), app.inputs.salt())?;
+        let dr = records::decrypt_versioned(
+            i.value(),
+            app.db.store_pwd(),
+            app.inputs.salt(),
+            app.db.version(),
+        )?;
         for t in dr.metadata().tags {
             results.insert(t.display_or_value(), true);
         }

@@ -168,7 +168,12 @@ impl DB {
     pub fn collect_decrypted(&self) -> Result<Vec<DecryptedRecord>, Error> {
         let mut decrypted: Vec<DecryptedRecord> = Vec::new();
         for i in self.iter() {
-            let record = i.value().decrypt(self.store_pwd(), self.salt())?;
+            let record = records::decrypt_versioned(
+                i.value(),
+                self.store_pwd(),
+                self.salt(),
+                self.version.clone(),
+            )?;
             decrypted.push(record);
         }
         Ok(decrypted)
@@ -190,9 +195,15 @@ impl DB {
 
     pub fn get(&self, key: String) -> Option<DecryptedRecord> {
         log::trace!("Getting record with key {} ...", key);
-        self.hash_map
-            .get(&key)
-            .map(|encrypted| encrypted.decrypt(self.store_pwd(), self.salt()).unwrap())
+        self.hash_map.get(&key).and_then(|encrypted| {
+            records::decrypt_versioned(
+                encrypted.value(),
+                self.store_pwd(),
+                self.salt(),
+                self.version.clone(),
+            )
+            .ok()
+        })
     }
 
     pub fn get_metadata(&self, key: String) -> Option<Metadata> {

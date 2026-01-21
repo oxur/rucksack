@@ -344,7 +344,12 @@ fn extract_results(
     let min_score = matches.get_one::<f64>("min-score");
 
     for i in app.db.iter() {
-        let record = i.value().decrypt(app.db.store_pwd(), app.inputs.salt())?;
+        let record = records::decrypt_versioned(
+            i.value(),
+            app.db.store_pwd(),
+            app.inputs.salt(),
+            app.db.version(),
+        )?;
         let analyzed = analyzer::analyze(record.password());
         let score = scorer::score(&analyzed);
         let mut result = result::new(record.key(), record.name_or_user(), record.metadata().url);
