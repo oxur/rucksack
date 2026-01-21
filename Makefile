@@ -178,6 +178,8 @@ lint:
 	@cargo fmt -- --check
 	@echo "$(GREEN)✓ Format check passed$(RESET)"
 
+cicd-lint: lint
+
 .PHONY: format
 format:
 	@echo "$(BLUE)Formatting code...$(RESET)"
