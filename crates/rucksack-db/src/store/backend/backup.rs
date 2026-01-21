@@ -8,10 +8,16 @@ pub fn copy(src_file: String, dest_dir: String, version: String) -> Result<Strin
     let file_path = file::abs_path(src_file.clone())?;
     let mut bu_path = file::abs_path(dest_dir)?;
     file::create_dirs(bu_path.clone())?;
-    bu_path.push(backup_name(
-        file_path.file_name().unwrap().to_str().unwrap().to_string(),
-        version,
-    ));
+
+    // Get the file name, handling edge cases gracefully
+    let file_name = file_path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or_else(|| anyhow!("invalid file path: {}", file_path.display()))?
+        .to_string();
+
+    bu_path.push(backup_name(file_name, version));
+
     match fs::copy(src_file.clone(), bu_path.clone()) {
         Ok(_) => Ok(bu_path.display().to_string()),
         Err(e) => {

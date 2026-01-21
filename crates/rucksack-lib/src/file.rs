@@ -27,14 +27,14 @@ pub fn abs_path(path_name: String) -> io::Result<path::PathBuf> {
 }
 
 pub fn backup_dir(project: &str) -> path::PathBuf {
-    let mut path = dirs::data_dir().unwrap();
+    let mut path = dirs::data_dir().unwrap_or_else(|| path::PathBuf::from("."));
     path.push(project);
     path.push(BACKUP_DIR);
     path
 }
 
 pub fn config_dir(project: &str) -> path::PathBuf {
-    let mut path = dirs::config_dir().unwrap();
+    let mut path = dirs::config_dir().unwrap_or_else(|| path::PathBuf::from("."));
     path.push(project);
     path
 }
@@ -43,14 +43,19 @@ pub fn config_file(project: &str) -> String {
     let mut path = config_dir(project);
     path.push("config");
     path.set_extension("toml");
-    path.to_str().unwrap().to_string()
+    path.to_str()
+        .expect("config file path contains invalid UTF-8")
+        .to_string()
 }
 
 pub fn create_parents(path: String) -> Result<path::PathBuf> {
     // Make sure the path is created
     log::debug!("Attempting to create parent directory of {path} ...");
-    let ap = abs_path(path)?;
-    let parent: path::PathBuf = path::PathBuf::from(ap.parent().unwrap());
+    let ap = abs_path(path.clone())?;
+    let parent = ap
+        .parent()
+        .ok_or_else(|| anyhow!("path has no parent directory: {}", path))?
+        .to_path_buf();
     log::debug!("Attempting to create directory {:}", parent.display());
     create_dirs(parent)?;
     Ok(ap)
@@ -69,7 +74,7 @@ pub fn create_dirs(path: path::PathBuf) -> Result<path::PathBuf> {
 }
 
 pub fn data_dir(project: &str) -> path::PathBuf {
-    let mut path = dirs::data_dir().unwrap();
+    let mut path = dirs::data_dir().unwrap_or_else(|| path::PathBuf::from("."));
     path.push(project);
     path.push(DATA_DIR);
     path
@@ -79,7 +84,9 @@ pub fn db_file(project: &str) -> String {
     let mut path = data_dir(project);
     path.push(DEFAULT_DB_NAME);
     path.set_extension(DB_EXTENSION);
-    path.to_str().unwrap().to_string()
+    path.to_str()
+        .expect("database file path contains invalid UTF-8")
+        .to_string()
 }
 
 pub fn delete(file_path: path::PathBuf) -> Result<()> {
@@ -112,8 +119,13 @@ pub fn files(dir: String) -> Result<Listing> {
         let dir = entry?;
         let metadata = dir.metadata()?;
         let created: DateTime<Local> = metadata.created()?.into();
+        let file_name = dir
+            .file_name()
+            .to_str()
+            .ok_or_else(|| anyhow!("file name contains invalid UTF-8"))?
+            .to_owned();
         f.push((
-            dir.file_name().to_str().unwrap().to_owned(),
+            file_name,
             time::format_datetime(created),
             unix_mode::to_string(metadata.permissions().mode()),
         ));
