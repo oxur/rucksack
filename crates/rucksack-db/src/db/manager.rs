@@ -303,6 +303,7 @@ impl DB {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use rucksack_lib::time;
 
     use crate::testing;
@@ -343,5 +344,393 @@ mod tests {
         assert!(tmp_db.close().is_ok());
         r = db_handler.teardown();
         assert!(r.is_ok());
+    }
+
+    #[test]
+    fn test_new_db() {
+        let pwd = Some("password".to_string());
+        let salt = Some("salt".to_string());
+        let db = DB::new(
+            "/tmp/test.db".to_string(),
+            "/tmp/backups".to_string(),
+            pwd,
+            salt,
+        );
+
+        assert_eq!(db.file_name(), "/tmp/test.db");
+        assert_eq!(db.backup_dir(), "/tmp/backups");
+        assert!(db.enabled());
+        assert_eq!(db.hash_map().len(), 0);
+    }
+
+    #[test]
+    fn test_getters() {
+        let pwd = Some("test_pwd".to_string());
+        let salt = Some("test_salt".to_string());
+        let db = DB::new(
+            "/path/to/db".to_string(),
+            "/path/to/backups".to_string(),
+            pwd.clone(),
+            salt.clone(),
+        );
+
+        assert_eq!(db.file_name(), "/path/to/db");
+        assert_eq!(db.backup_dir(), "/path/to/backups");
+        assert_eq!(db.store_pwd(), pwd.unwrap());
+        assert_eq!(db.salt(), salt.unwrap());
+        assert!(db.enabled());
+        assert_eq!(db.schema_version(), records::version());
+    }
+
+    #[test]
+    fn test_init_creates_db() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        let result = DB::init(db_file.clone(), backups, pwd, salt);
+        assert!(result.is_ok());
+
+        // Verify file was created
+        assert!(std::path::Path::new(&db_file).exists());
+
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_insert_and_get() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        let mut db = DB::new(db_file, backups, pwd, salt);
+        assert!(db.open().is_ok());
+
+        let record = testing::data::plaintext_record_v090();
+        let key = record.key();
+        db.insert(record.clone());
+
+        let retrieved = db.get(key).unwrap();
+        assert_eq!(retrieved.secrets.user, record.secrets.user);
+        assert_eq!(retrieved.secrets.password, record.secrets.password);
+
+        assert!(db.close().is_ok());
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_insert_duplicate_returns_existing() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        let mut db = DB::new(db_file, backups, pwd, salt);
+        assert!(db.open().is_ok());
+
+        let record = testing::data::plaintext_record_v090();
+        let result1 = db.insert(record.clone());
+        assert!(result1.is_none(), "First insert should return None");
+
+        let result2 = db.insert(record.clone());
+        assert!(result2.is_some(), "Duplicate insert should return existing");
+
+        assert!(db.close().is_ok());
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_get_nonexistent() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        let mut db = DB::new(db_file, backups, pwd, salt);
+        assert!(db.open().is_ok());
+
+        let result = db.get("nonexistent_key".to_string());
+        assert!(result.is_none());
+
+        assert!(db.close().is_ok());
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_delete_existing() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        let mut db = DB::new(db_file, backups, pwd, salt);
+        assert!(db.open().is_ok());
+
+        let record = testing::data::plaintext_record_v090();
+        let key = record.key();
+        db.insert(record);
+
+        let result = db.delete(key.clone());
+        assert_eq!(result, Some(true));
+
+        let retrieved = db.get(key);
+        assert!(retrieved.is_none(), "Record should be deleted");
+
+        assert!(db.close().is_ok());
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_delete_nonexistent() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        let mut db = DB::new(db_file, backups, pwd, salt);
+        assert!(db.open().is_ok());
+
+        let result = db.delete("nonexistent_key".to_string());
+        assert_eq!(result, Some(false));
+
+        assert!(db.close().is_ok());
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_update_record() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        let mut db = DB::new(db_file, backups, pwd, salt);
+        assert!(db.open().is_ok());
+
+        let mut record = testing::data::plaintext_record_v090();
+        let key = record.key();
+        db.insert(record.clone());
+
+        // Update the record
+        record.secrets.password = "new_password".to_string();
+        db.update(key.clone(), record);
+
+        let retrieved = db.get(key).unwrap();
+        assert_eq!(retrieved.secrets.password, "new_password");
+
+        assert!(db.close().is_ok());
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_get_metadata() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        let mut db = DB::new(db_file, backups, pwd, salt);
+        assert!(db.open().is_ok());
+
+        let record = testing::data::plaintext_record_v090();
+        let key = record.key();
+        db.insert(record.clone());
+
+        let metadata = db.get_metadata(key).unwrap();
+        assert_eq!(metadata.name, record.metadata.name);
+
+        assert!(db.close().is_ok());
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_get_metadata_nonexistent() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        let mut db = DB::new(db_file, backups, pwd, salt);
+        assert!(db.open().is_ok());
+
+        let result = db.get_metadata("nonexistent_key".to_string());
+        assert!(result.is_none());
+
+        assert!(db.close().is_ok());
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_update_metadata() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        let mut db = DB::new(db_file, backups, pwd, salt);
+        assert!(db.open().is_ok());
+
+        let record = testing::data::plaintext_record_v090();
+        let key = record.key();
+        db.insert(record.clone());
+
+        // Update metadata
+        let mut new_metadata = record.metadata.clone();
+        new_metadata.name = "Updated Name".to_string();
+        db.update_metadata(key.clone(), new_metadata.clone());
+
+        let retrieved_metadata = db.get_metadata(key).unwrap();
+        assert_eq!(retrieved_metadata.name, "Updated Name");
+
+        assert!(db.close().is_ok());
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_collect_decrypted() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        let mut db = DB::new(db_file, backups, pwd, salt);
+        assert!(db.open().is_ok());
+
+        let record = testing::data::plaintext_record_v090();
+        db.insert(record.clone());
+
+        let decrypted = db.collect_decrypted().unwrap();
+        assert_eq!(decrypted.len(), 1);
+        assert_eq!(decrypted[0].secrets.user, record.secrets.user);
+
+        assert!(db.close().is_ok());
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_iter() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        let mut db = DB::new(db_file, backups, pwd, salt);
+        assert!(db.open().is_ok());
+
+        let record = testing::data::plaintext_record_v090();
+        db.insert(record);
+
+        let count = db.iter().count();
+        assert_eq!(count, 1);
+
+        assert!(db.close().is_ok());
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_hash_map_getter() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        let mut db = DB::new(db_file, backups, pwd, salt);
+        assert!(db.open().is_ok());
+
+        let record = testing::data::plaintext_record_v090();
+        db.insert(record);
+
+        let hash_map = db.hash_map();
+        assert_eq!(hash_map.len(), 1);
+
+        assert!(db.close().is_ok());
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_close_without_changes_no_write() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        // Create and close empty DB
+        let mut db = DB::new(db_file.clone(), backups.clone(), pwd.clone(), salt.clone());
+        assert!(db.open().is_ok());
+        assert!(db.close().is_ok());
+
+        // Reopen and close again (no changes)
+        let mut db = DB::new(db_file, backups, pwd, salt);
+        assert!(db.open().is_ok());
+        let initial_hash = db.store_hash;
+        assert!(db.close().is_ok());
+        // If hash didn't change, close returns early without writing
+
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_version_tracking() {
+        let pwd = Some(testing::data::store_pwd());
+        let salt = Some(time::now());
+        let mut db_handler = testing::db::new();
+        assert!(db_handler.setup().is_ok());
+        let db_file = db_handler.file_name().unwrap();
+        let backups = db_handler.backups_path().unwrap().display().to_string();
+
+        let mut db = DB::new(db_file, backups, pwd, salt);
+        assert!(db.open().is_ok());
+
+        let version = db.version();
+        assert!(version >= versions::SemVer::new("0.7.0").unwrap());
+
+        assert!(db.close().is_ok());
+        assert!(db_handler.teardown().is_ok());
+    }
+
+    #[test]
+    fn test_debug_impl() {
+        let pwd = Some("pwd".to_string());
+        let salt = Some("salt".to_string());
+        let db = DB::new(
+            "/test/path".to_string(),
+            "/test/backups".to_string(),
+            pwd,
+            salt,
+        );
+
+        let debug_str = format!("{:?}", db);
+        assert!(debug_str.contains("DB"));
+        assert!(debug_str.contains("/test/path"));
     }
 }

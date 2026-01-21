@@ -1173,6 +1173,7 @@ dependencies = [
  "rand",
  "serde",
  "shellexpand",
+ "tempfile",
  "unix_mode",
  "uuid",
  "versions",
