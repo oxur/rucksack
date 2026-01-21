@@ -25,7 +25,8 @@
 * [x] Split repo into rucksack-lib, rucksack-db, and rucksack crates (0.8.0)
 * [x] Colourised and fully tabular output (0.8.0)
 * [x] Password history (0.8.0)
-* [ ] Database backups, restores, and support for multiple backends (0.9.0)
+* [ ] Refactor for safety, style, idiom, anti-patterns (0.9.0)
+* [ ] Database backups, restores, and support for multiple backends (0.10.0)
 * [ ] [Alternate storage backend implementations](https://github.com/oxur/rucksack/milestone/12)
 * [ ] [Local network sync](https://github.com/oxur/rucksack/milestone/13)
 * [ ] [1Password, JSON, import/export improvements](https://github.com/oxur/rucksack/milestone/14), etc.
@@ -126,8 +127,8 @@ Apache License, Version 2.0
 
 [//]: ---Named-Links---
 
-[logo]: https://raw.githubusercontent.com/oxur/rucksack/main/rucksack/resources/images/logo-v1-x250.png
-[logo-large]: https://raw.githubusercontent.com/oxur/rucksack/main/rucksack/resources/images/logo-v1-x1000.png
+[logo]: https://raw.githubusercontent.com/oxur/rucksack/main/assets/images/logo-v1-x250.png
+[logo-large]: https://raw.githubusercontent.com/oxur/rucksack/main/assets/images/logo-v1-x1000.png
 [build]: https://github.com/oxur/rucksack/actions/workflows/cicd.yml
 [build-badge]: https://github.com/oxur/rucksack/actions/workflows/cicd.yml/badge.svg
 [crate]: https://crates.io/crates/rucksack

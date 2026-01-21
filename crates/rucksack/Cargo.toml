@@ -8,7 +8,7 @@ repository = "https://github.com/oxur/rucksack"
 documentation = "https://docs.rs/rucksack/"
 categories = ["command-line-interface"]
 keywords = ["password-manager", "terminal"]
-exclude = ["/.github", "/resources", ".gitignore"]
+exclude = ["/.github", ".gitignore"]
 edition = "2021"
 
 [lib]
