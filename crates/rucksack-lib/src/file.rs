@@ -137,6 +137,7 @@ pub fn write(data: Vec<u8>, path: String) -> Result<()> {
     let mut file = match std::fs::OpenOptions::new()
         .write(true)
         .create(true)
+        .truncate(true)
         .open(ap)
     {
         Ok(x) => Ok(x),

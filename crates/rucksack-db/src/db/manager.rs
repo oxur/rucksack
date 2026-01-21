@@ -221,7 +221,7 @@ impl DB {
             .insert(key, record.encrypt(self.store_pwd(), self.salt()))
     }
 
-    pub fn iter(&self) -> dashmap::iter::Iter<String, EncryptedRecord> {
+    pub fn iter(&self) -> dashmap::iter::Iter<'_, String, EncryptedRecord> {
         self.hash_map.iter()
     }
 

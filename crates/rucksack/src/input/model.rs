@@ -70,9 +70,7 @@ impl Inputs {
 
     pub fn category(&self, flag: Flag) -> String {
         match options::category(&self.matches) {
-            Some(c) => {
-                return c.trim().to_owned();
-            }
+            Some(c) => c.trim().to_owned(),
             None => match flag {
                 Flag::One => {
                     let c = self.records.defaults.new_category.trim().to_owned();

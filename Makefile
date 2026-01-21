@@ -18,7 +18,7 @@ BUILD_TIME := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
 RUST_VERSION := $(shell rustc --version 2>/dev/null || echo "unknown")
 
 # List of binaries to build and install
-BINARIES := fliterec odm
+BINARIES := fliterec
 
 # External tools configuration
 AI_RUST := ./assets/ai/ai-rust
@@ -126,22 +126,9 @@ build: clean $(BIN_DIR)
 	else \
 		cargo build; \
 	fi
-		@echo "$(CYAN)• Building external tools (odm)...$(RESET)"
-	@if [ "$(MODE)" = "release" ]; then \
-		cargo build --release --manifest-path $(ODM_PATH)/Cargo.toml; \
-	else \
-		cargo build --manifest-path $(ODM_PATH)/Cargo.toml; \
-	fi
 	@echo "$(CYAN)• Copying binaries to $(BIN_DIR)/$(RESET)"
 	@for bin in $(BINARIES); do \
-		if [ "$$bin" = "odm" ]; then \
-			if [ -f $(ODM_TARGET)/$$bin ]; then \
-				cp $(ODM_TARGET)/$$bin $(BIN_DIR)/$$bin; \
-				echo "  $(GREEN)✓$(RESET) $$bin (from oxur workspace)"; \
-			else \
-				echo "  $(YELLOW)⚠$(RESET) $$bin not found in $(ODM_TARGET), skipping"; \
-			fi; \
-		elif [ -f $(TARGET)/$$bin ]; then \
+		if [ -f $(TARGET)/$$bin ]; then \
 			cp $(TARGET)/$$bin $(BIN_DIR)/$$bin; \
 			echo "  $(GREEN)✓$(RESET) $$bin"; \
 		else \

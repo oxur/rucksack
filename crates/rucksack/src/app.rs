@@ -40,7 +40,7 @@ impl App {
     pub fn config_path(&self) -> path::PathBuf {
         let mut path = path::PathBuf::new();
         path.push(self.inputs.config_file());
-        return path.parent().unwrap().to_path_buf();
+        path.parent().unwrap().to_path_buf()
     }
 
     pub fn data_dir(&self) -> String {
