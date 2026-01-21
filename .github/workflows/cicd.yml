@@ -69,9 +69,9 @@ jobs:
 
     - name: Check for outdated dependencies
       run: |
-        echo "Checking for outdated dependencies..."
-        cargo outdated --root-deps-only --exit-code 1 || {
-          echo "❌ Root dependencies are outdated! Run 'make deps' locally and commit the updated Cargo.lock"
+        echo "Checking for outdated compatible dependencies..."
+        cargo outdated --root-deps-only --compatible --exit-code 1 || {
+          echo "❌ Compatible dependency updates are available! Run 'make deps' locally and commit the updated Cargo.lock"
           exit 1
         }
 
