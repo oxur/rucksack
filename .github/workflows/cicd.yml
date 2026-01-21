@@ -9,8 +9,13 @@ on:
 
 jobs:
   build:
-
+    name: Build and Test (${{ matrix.mode }})
     runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [debug, release]
 
     steps:
     - uses: actions/checkout@v4
@@ -48,9 +53,9 @@ jobs:
       uses: actions/cache@v4
       with:
         path: target
-        key: cargo-target-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+        key: cargo-target-${{ matrix.mode }}-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: |
-          cargo-target-${{ runner.os }}-
+          cargo-target-${{ matrix.mode }}-${{ runner.os }}-
 
     - name: Cache cargo tools
       uses: actions/cache@v4
@@ -62,30 +67,53 @@ jobs:
 
     # Check for outdated dependencies - FAILS build if updates are available
     # (Makefile handles cargo-binstall and cargo-outdated installation)
+    # Only run dependency check once (in debug mode)
     - name: Check dependencies
+      if: matrix.mode == 'debug'
       run: make check-deps
 
-    - name: Build
-      run: make build
+    - name: Build (${{ matrix.mode }})
+      run: make build MODE=${{ matrix.mode }}
+
+    # Only run lint, check, and docs once (in debug mode to save time)
     - name: Lint
+      if: matrix.mode == 'debug'
       run: make cicd-lint
+
     - name: Run checks
+      if: matrix.mode == 'debug'
       run: make check
+
     - name: Build docs
+      if: matrix.mode == 'debug'
       run: make docs
-    - name: Run rucksack (locally)
+
+    # Run tests in both modes
+    - name: Run unit tests (${{ matrix.mode }})
+      run: cargo test --all-features ${{ matrix.mode == 'release' && '--release' || '' }}
+
+    - name: Test old database formats (${{ matrix.mode }})
+      run: bash tests/old_db_formats.sh
+
+    - name: Run rucksack CLI tests (locally, ${{ matrix.mode }})
       run: ./tests/rucksack_dev.sh
+
+    # Only install from crates.io and run tests once (in release mode)
     - name: Install rucksack (crates.io)
+      if: matrix.mode == 'release'
       run: cargo install rucksack
-    - name: Run rucksack
+
+    - name: Run rucksack (crates.io)
+      if: matrix.mode == 'release'
       run: ./tests/rucksack.sh
+
     - name: Notify CI/CD Slack Channel
       uses: innocarpe/actions-slack@v1
       with:
         status: ${{ job.status }}
-        success_text: '✅ Build for ${{ github.repository }} succeeded! 😄🌈🐴🚢🐿 (commit id: ${{ github.sha }})'
-        failure_text: '❌ Build for ${{ github.repository }} failed! 🤬💣🔥🚒 (commit id: ${{ github.sha }})'
-        cancelled_text: '🚧 Build for ${{ github.repository }} was cancelled ... 😯🦡 (commit id: ${{ github.sha }})'
+        success_text: '✅ Build (${{ matrix.mode }}) for ${{ github.repository }} succeeded! 😄🌈🐴🚢🐿 (commit id: ${{ github.sha }})'
+        failure_text: '❌ Build (${{ matrix.mode }}) for ${{ github.repository }} failed! 🤬💣🔥🚒 (commit id: ${{ github.sha }})'
+        cancelled_text: '🚧 Build (${{ matrix.mode }}) for ${{ github.repository }} was cancelled ... 😯🦡 (commit id: ${{ github.sha }})'
       env:
         GITHUB_TOKEN: ${{ secrets.CICD_BOT_TOKEN }}
         SLACK_WEBHOOK_URL: ${{ secrets.CICD_BOT_WEBHOOK }}
