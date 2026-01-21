@@ -54,6 +54,10 @@ help:
 	@echo "  $(YELLOW)make coverage$(RESET)         - Generate test coverage report"
 	@echo "  $(YELLOW)make check$(RESET)            - Build + lint + test"
 	@echo "  $(YELLOW)make check-all$(RESET)        - Build + lint + coverage"
+	@echo "  $(YELLOW)make check-deps$(RESET)       - Check for outdated dependencies"
+	@echo ""
+	@echo "$(GREEN)Dependencies:$(RESET)"
+	@echo "  $(YELLOW)make deps$(RESET)             - Update dependencies to latest compatible versions"
 	@echo ""
 	@echo "$(GREEN)Cleaning:$(RESET)"
 	@echo "  $(YELLOW)make clean$(RESET)            - Clean target directory"
@@ -209,23 +213,55 @@ coverage-html:
 	@echo "$(CYAN)→ Report: target/llvm-cov/html/index.html$(RESET)"
 	@echo "$(YELLOW)→ Open in browser: open target/llvm-cov/html/index.html$(RESET)"
 
+# Common checks
+.PHONY: common-checks
+common-checks: check-deps lint build test-cli
+
 # Combined check targets
 .PHONY: check
-check: build lint test test-cli
+check: common-checks test
 	@echo ""
 	@echo "$(GREEN)✓ All checks passed (build + lint + test + cli-validation)$(RESET)"
 	@echo ""
 
+# Ensure cargo-binstall is available for fast tool installation
+.PHONY: ensure-binstall
+ensure-binstall:
+	@command -v cargo-binstall >/dev/null 2>&1 || { \
+		echo "$(YELLOW)→ Installing cargo-binstall...$(RESET)"; \
+		curl -L --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/cargo-bins/cargo-binstall/main/install-from-binstall-release.sh | bash; \
+	}
+
+.PHONY: check-deps
+check-deps: ensure-binstall
+	@echo "$(BLUE)Checking for outdated dependencies...$(RESET)"
+	@command -v cargo-outdated >/dev/null 2>&1 || { \
+		echo "$(YELLOW)→ Installing cargo-outdated...$(RESET)"; \
+		cargo binstall -y cargo-outdated; \
+	}
+	@OUTPUT=$$(cargo outdated --root-deps-only); \
+	echo "$$OUTPUT"; \
+	echo ""; \
+	if echo "$$OUTPUT" | grep -E "^[a-z0-9_-]+\s+" | awk '{print $$3}' | grep -v "^---$$" | grep -v "^Compat$$" | grep -q .; then \
+		echo "$(RED)✗ Compatible dependency updates available$(RESET)"; \
+		echo "$(YELLOW)→ Run 'make deps' to update and commit the updated Cargo.lock$(RESET)"; \
+		exit 1; \
+	else \
+		echo "$(GREEN)✓ All dependencies up to date$(RESET)"; \
+	fi
+
 .PHONY: deps
-deps:
+deps: ensure-binstall
 	@echo "$(BLUE)Updating dependencies ...$(RESET)"
-	@echo "$(CYAN)• Running tests with coverage (includes integration tests in ./tests)...$(RESET)"
-	@cargo install cargo-edit && cargo upgrade
-	@echo "$(GREEN)✓ Coverage report generated$(RESET)"
-	@echo "$(YELLOW)→ For detailed HTML report, run: make coverage-html$(RESET)"
+	@command -v cargo-upgrade >/dev/null 2>&1 || { \
+		echo "$(YELLOW)→ Installing cargo-edit...$(RESET)"; \
+		cargo binstall -y cargo-edit; \
+	}
+	@cargo upgrade
+	@echo "$(GREEN)✓ Cargo deps upgraded$(RESET)"
 
 .PHONY: check-all
-check-all: build lint coverage
+check-all: common-checks coverage
 	@echo ""
 	@echo "$(GREEN)✓ Full validation complete (build + lint + coverage)$(RESET)"
 	@echo ""

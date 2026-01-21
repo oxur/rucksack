@@ -56,33 +56,14 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/.cargo/bin
-        key: cargo-tools-${{ runner.os }}-outdated
+        key: cargo-tools-${{ runner.os }}-binstall-outdated
         restore-keys: |
           cargo-tools-${{ runner.os }}-
 
     # Check for outdated dependencies - FAILS build if updates are available
-    - name: Install cargo-outdated
-      run: |
-        if ! command -v cargo-outdated &> /dev/null; then
-          cargo install cargo-outdated --locked
-        fi
-
-    - name: Check for outdated dependencies
-      run: |
-        echo "Checking for outdated compatible dependencies..."
-        OUTPUT=$(cargo outdated --root-deps-only)
-        echo "$OUTPUT"
-
-        # Check if any dependencies have compatible updates (Compat column != "---")
-        # Skip header lines and crate section headers
-        if echo "$OUTPUT" | grep -E "^[a-z0-9_-]+\s+" | awk '{print $3}' | grep -v "^---$" | grep -v "^Compat$" | grep -q .; then
-          echo ""
-          echo "❌ Compatible dependency updates are available! Run 'make deps' locally and commit the updated Cargo.lock"
-          exit 1
-        else
-          echo ""
-          echo "✅ All dependencies are up to date (only incompatible major version updates available)"
-        fi
+    # (Makefile handles cargo-binstall and cargo-outdated installation)
+    - name: Check dependencies
+      run: make check-deps
 
     - name: Build
       run: make build
