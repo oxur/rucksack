@@ -230,7 +230,10 @@ impl DB {
     }
 
     pub fn salt(&self) -> String {
-        self.salt.clone().unwrap()
+        self.salt.clone().expect(
+            "BUG: salt should be Some when database operations are performed. \
+            This indicates the database was not properly initialized with a salt."
+        )
     }
 
     fn serialise(&self) -> Result<Vec<u8>> {
@@ -256,7 +259,10 @@ impl DB {
     }
 
     pub fn store_pwd(&self) -> String {
-        self.store_pwd.clone().unwrap()
+        self.store_pwd.clone().expect(
+            "BUG: store_pwd should be Some when database operations are performed. \
+            This indicates the database was not properly initialized with a password."
+        )
     }
 
     // Note that the key has to be passed here, even though the
