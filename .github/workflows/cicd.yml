@@ -14,8 +14,67 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Get Updates
-      run: make deps
+
+    # Install Rust with caching
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    # Cache Cargo dependencies and build artifacts for faster builds
+    - name: Cache Cargo registry
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/registry/index
+        key: cargo-registry-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          cargo-registry-${{ runner.os }}-
+
+    - name: Cache Cargo dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/registry/cache
+        key: cargo-deps-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          cargo-deps-${{ runner.os }}-
+
+    - name: Cache Cargo git dependencies
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/git
+        key: cargo-git-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          cargo-git-${{ runner.os }}-
+
+    - name: Cache build artifacts
+      uses: actions/cache@v4
+      with:
+        path: target
+        key: cargo-target-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          cargo-target-${{ runner.os }}-
+
+    - name: Cache cargo tools
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/bin
+        key: cargo-tools-${{ runner.os }}-outdated
+        restore-keys: |
+          cargo-tools-${{ runner.os }}-
+
+    # Check for outdated dependencies - FAILS build if updates are available
+    - name: Install cargo-outdated
+      run: |
+        if ! command -v cargo-outdated &> /dev/null; then
+          cargo install cargo-outdated --locked
+        fi
+
+    - name: Check for outdated dependencies
+      run: |
+        echo "Checking for outdated dependencies..."
+        cargo outdated --root-deps-only --exit-code 1 || {
+          echo "❌ Root dependencies are outdated! Run 'make deps' locally and commit the updated Cargo.lock"
+          exit 1
+        }
+
     - name: Build
       run: make build
     - name: Lint
