@@ -404,4 +404,50 @@ mod tests {
         assert_eq!(version.minor, 8);
         assert_eq!(version.patch, 0);
     }
+
+    #[test]
+    fn test_migrate_hashmap_from_v070() {
+        let hm_v070: v070::HashMap = dashmap::DashMap::new();
+        let pwd = testing::data::store_pwd();
+        let salt = time::now();
+
+        let record_v070 = testing::data::plaintext_record_v070();
+        let encrypted_v070 = record_v070.encrypt(pwd, salt);
+        hm_v070.insert("test_key".to_string(), encrypted_v070);
+
+        let hm_v080 = migrate_hashmap_from_v070(hm_v070);
+        assert_eq!(hm_v080.len(), 1);
+        assert!(hm_v080.contains_key("test_key"));
+    }
+
+    #[test]
+    fn test_decode_hashmap_from_v070() {
+        let pwd = testing::data::store_pwd();
+        let salt = time::now();
+        let hm_v070: v070::HashMap = dashmap::DashMap::new();
+
+        let record = testing::data::plaintext_record_v070();
+        let encrypted = record.encrypt(pwd, salt);
+        hm_v070.insert("v070_key".to_string(), encrypted);
+
+        let mut data: Vec<(String, v070::EncryptedRecord)> = Vec::new();
+        for i in hm_v070.iter() {
+            data.push((i.key().clone(), i.value().clone()));
+        }
+        data.sort_by_key(|k| k.0.clone());
+        let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
+
+        let version = shared::version("0.7.0");
+        let decoded_hm = decode_hashmap(bytes, version).unwrap();
+        assert_eq!(decoded_hm.len(), 1);
+        assert!(decoded_hm.contains_key("v070_key"));
+    }
+
+    #[test]
+    fn test_decode_hashmap_error() {
+        let invalid_bytes = vec![1, 2, 3, 4, 5];
+        let version = shared::version(VERSION);
+        let result = decode_hashmap(invalid_bytes, version);
+        assert!(result.is_err());
+    }
 }
