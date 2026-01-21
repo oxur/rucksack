@@ -21,6 +21,7 @@ pub fn run() -> Command {
     .arg(db::pwd())
     .arg(db::salt())
     .arg(db::backup_dir())
+    .arg(db::not_needed())
     .arg(
         Arg::new("completions")
             .help("Emit shell tab completions")
