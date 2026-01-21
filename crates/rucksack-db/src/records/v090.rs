@@ -331,10 +331,18 @@ impl EncryptedRecord {
             bincode::decode_from_slice(&decrypted_secrets[..], util::bincode_cfg())
                 .map_err(|e| anyhow!("failed to decode secrets: {}", e))?;
 
-        let decrypted_history = decrypt(self.history.clone(), store_pwd, salt)?;
-        let (decoded_history, _len) =
-            bincode::decode_from_slice(&decrypted_history[..], util::bincode_cfg())
-                .map_err(|e| anyhow!("failed to decode history: {}", e))?;
+        // Handle migrated records that have empty (unencrypted) history
+        let decoded_history = if self.history.is_empty() {
+            // Empty history from migration - just use empty vec
+            vec![]
+        } else {
+            // Decrypt and decode the history
+            let decrypted_history = decrypt(self.history.clone(), store_pwd, salt)?;
+            let (decoded, _len) =
+                bincode::decode_from_slice(&decrypted_history[..], util::bincode_cfg())
+                    .map_err(|e| anyhow!("failed to decode history: {}", e))?;
+            decoded
+        };
 
         Ok(DecryptedRecord {
             secrets: decoded_secrets,
@@ -344,7 +352,37 @@ impl EncryptedRecord {
     }
 }
 
+/// Migrate an encrypted record from v0.8.0 to v0.9.0
+///
+/// This function needs access to the password and salt to properly encrypt
+/// the new empty history field. Without these, we cannot create a valid
+/// v0.9.0 EncryptedRecord.
+pub fn migrate_encrypted_record_from_v080_with_pwd(
+    er: v080::EncryptedRecord,
+    store_pwd: String,
+    salt: String,
+) -> Result<EncryptedRecord> {
+    // Encrypt an empty history vec
+    let empty_history: Vec<History> = vec![];
+    let encoded_history = bincode::encode_to_vec(&empty_history, util::bincode_cfg()).unwrap();
+    let encrypted_history = encrypt(encoded_history, store_pwd, salt)?;
+
+    Ok(EncryptedRecord {
+        key: er.key(),
+        value: er.value(),
+        metadata: er.metadata(),
+        history: encrypted_history,
+    })
+}
+
+/// Legacy migration function - DO NOT USE
+///
+/// This function creates an EncryptedRecord with an unencrypted empty history,
+/// which will fail when decrypt() is called. Use migrate_encrypted_record_from_v080_with_pwd instead.
+#[deprecated(note = "Use migrate_encrypted_record_from_v080_with_pwd instead")]
 pub fn migrate_encrypted_record_from_v080(er: v080::EncryptedRecord) -> EncryptedRecord {
+    // This creates a broken record that cannot be decrypted!
+    // DO NOT USE - kept only for backwards compatibility
     EncryptedRecord {
         key: er.key(),
         value: er.value(),
