@@ -265,7 +265,7 @@ mod tests {
     fn test_user() {
         let arg = user();
         assert_eq!(arg.get_id(), "user");
-        assert!(arg.is_global_set());
+        // Note: user() is not global to avoid clap's "Global arguments cannot be required" error
     }
 
     #[test]
@@ -290,7 +290,7 @@ mod tests {
     fn test_url() {
         let arg = url();
         assert_eq!(arg.get_id(), "url");
-        assert!(arg.is_global_set());
+        // Note: url() is not global to avoid clap's "Global arguments cannot be required" error
     }
 
     #[test]
