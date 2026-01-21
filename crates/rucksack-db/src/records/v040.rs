@@ -106,6 +106,7 @@ impl EncryptedRecord {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use rucksack_lib::time;
 
     use crate::testing;
@@ -127,5 +128,107 @@ mod tests {
         assert_eq!(54, epr.value.len());
         let re_dpr = epr.decrypt(pwd, salt).unwrap();
         assert_eq!(re_dpr.creds.password, "4 s3kr1t");
+    }
+
+    #[test]
+    fn test_version_constant() {
+        assert_eq!(VERSION, "0.4.0");
+    }
+
+    #[test]
+    fn test_decrypted_record_key() {
+        let record = testing::data::plaintext_record_v040();
+        let key = record.key();
+        assert!(key.contains("alice@site.com"));
+        assert!(key.contains("site.com"));
+    }
+
+    #[test]
+    fn test_decrypted_record_metadata() {
+        let record = testing::data::plaintext_record_v040();
+        let metadata = record.metadata();
+        assert_eq!(metadata.kind, Kind::Password);
+    }
+
+    #[test]
+    fn test_decrypted_record_user() {
+        let record = testing::data::plaintext_record_v040();
+        assert_eq!(record.user(), "alice@site.com");
+    }
+
+    #[test]
+    fn test_decrypted_record_password() {
+        let record = testing::data::plaintext_record_v040();
+        assert_eq!(record.password(), "4 s3kr1t");
+    }
+
+    #[test]
+    fn test_encrypted_record_key() {
+        let pwd = testing::data::store_pwd();
+        let salt = time::now();
+        let record = testing::data::plaintext_record_v040();
+        let encrypted = record.encrypt(pwd, salt);
+        let key = encrypted.key();
+        assert!(key.contains("alice@site.com"));
+    }
+
+    #[test]
+    fn test_encrypted_record_metadata() {
+        let pwd = testing::data::store_pwd();
+        let salt = time::now();
+        let record = testing::data::plaintext_record_v040();
+        let encrypted = record.encrypt(pwd, salt);
+        let metadata = encrypted.metadata();
+        assert_eq!(metadata.kind, Kind::Password);
+    }
+
+    #[test]
+    fn test_encrypted_record_value() {
+        let pwd = testing::data::store_pwd();
+        let salt = time::now();
+        let record = testing::data::plaintext_record_v040();
+        let encrypted = record.encrypt(pwd, salt);
+        let value = encrypted.value();
+        assert!(!value.is_empty());
+    }
+
+    #[test]
+    fn test_decode_hashmap() {
+        let hm: HashMap = dashmap::DashMap::new();
+        let record = testing::data::plaintext_record_v040();
+        let pwd = testing::data::store_pwd();
+        let salt = time::now();
+        let encrypted = record.encrypt(pwd, salt);
+        hm.insert("test_key".to_string(), encrypted);
+
+        let mut data: Vec<(String, EncryptedRecord)> = Vec::new();
+        for i in hm.iter() {
+            data.push((i.key().clone(), i.value().clone()));
+        }
+        data.sort_by_key(|k| k.0.clone());
+        let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
+
+        let version = versions::SemVer::new(VERSION).unwrap();
+        let decoded_hm = decode_hashmap(bytes, version).unwrap();
+        assert_eq!(decoded_hm.len(), 1);
+        assert!(decoded_hm.contains_key("test_key"));
+    }
+
+    #[test]
+    fn test_decode_hashmap_empty() {
+        let data: Vec<(String, EncryptedRecord)> = Vec::new();
+        let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
+
+        let version = versions::SemVer::new(VERSION).unwrap();
+        let decoded_hm = decode_hashmap(bytes, version).unwrap();
+        assert_eq!(decoded_hm.len(), 0);
+    }
+
+    #[test]
+    fn test_decode_hashmap_error() {
+        let invalid_bytes = vec![1, 2, 3, 4, 5];
+        let version = versions::SemVer::new(VERSION).unwrap();
+        let result = decode_hashmap(invalid_bytes, version);
+        assert!(result.is_err());
     }
 }
