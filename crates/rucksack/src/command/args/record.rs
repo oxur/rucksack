@@ -186,7 +186,9 @@ pub fn any_tags() -> Arg {
         .action(ArgAction::Append)
 }
 
+#[cfg(test)]
 mod tests {
+    use super::*;
 
     #[test]
     fn types_allowed() {
@@ -223,5 +225,141 @@ mod tests {
                 "any"
             ]
         );
+    }
+
+    #[test]
+    fn test_category() {
+        let arg = category();
+        assert_eq!(arg.get_id(), "category");
+        assert!(arg.is_global_set());
+    }
+
+    #[test]
+    fn test_status() {
+        let arg = status();
+        assert_eq!(arg.get_id(), "status");
+    }
+
+    #[test]
+    fn test_base_type() {
+        let arg = base_type();
+        assert_eq!(arg.get_id(), "type");
+        assert!(arg.is_global_set());
+    }
+
+    #[test]
+    fn test_kind() {
+        let arg = kind();
+        assert_eq!(arg.get_id(), "type");
+    }
+
+    #[test]
+    fn test_type_list() {
+        let arg = type_list();
+        assert_eq!(arg.get_id(), "type");
+    }
+
+    #[test]
+    fn test_name() {
+        let arg = name();
+        assert_eq!(arg.get_id(), "name");
+    }
+
+    #[test]
+    fn test_user() {
+        let arg = user();
+        assert_eq!(arg.get_id(), "user");
+        assert!(arg.is_global_set());
+    }
+
+    #[test]
+    fn test_user_old() {
+        let arg = user_old();
+        assert_eq!(arg.get_id(), "old-user");
+    }
+
+    #[test]
+    fn test_user_new() {
+        let arg = user_new();
+        assert_eq!(arg.get_id(), "new-user");
+    }
+
+    #[test]
+    fn test_pass() {
+        let arg = pass();
+        assert_eq!(arg.get_id(), "password");
+    }
+
+    #[test]
+    fn test_url() {
+        let arg = url();
+        assert_eq!(arg.get_id(), "url");
+        assert!(arg.is_global_set());
+    }
+
+    #[test]
+    fn test_url_old() {
+        let arg = url_old();
+        assert_eq!(arg.get_id(), "old-url");
+    }
+
+    #[test]
+    fn test_url_new() {
+        let arg = url_new();
+        assert_eq!(arg.get_id(), "new-url");
+    }
+
+    #[test]
+    fn test_account_id() {
+        let arg = account_id();
+        assert_eq!(arg.get_id(), "account-id");
+    }
+
+    #[test]
+    fn test_secret_public() {
+        let arg = secret_public();
+        assert_eq!(arg.get_id(), "public");
+    }
+
+    #[test]
+    fn test_secret_private() {
+        let arg = secret_private();
+        assert_eq!(arg.get_id(), "private");
+    }
+
+    #[test]
+    fn test_root_cert() {
+        let arg = root_cert();
+        assert_eq!(arg.get_id(), "root");
+    }
+
+    #[test]
+    fn test_key() {
+        let arg = key();
+        assert_eq!(arg.get_id(), "key");
+    }
+
+    #[test]
+    fn test_secret() {
+        let arg = secret();
+        assert_eq!(arg.get_id(), "secret");
+    }
+
+    #[test]
+    fn test_tags() {
+        let arg = tags();
+        assert_eq!(arg.get_id(), "tags");
+    }
+
+    #[test]
+    fn test_all_tags() {
+        let arg = all_tags();
+        assert_eq!(arg.get_id(), "all-tags");
+    }
+
+    #[test]
+    fn test_any_tags() {
+        let arg = any_tags();
+        assert_eq!(arg.get_id(), "any-tags");
     }
 }
