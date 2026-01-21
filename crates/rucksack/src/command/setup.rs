@@ -56,6 +56,7 @@ pub fn run() -> Command {
             .arg(db::pwd())
             .arg(db::salt())
             .arg(db::backup_dir())
+            .arg(db::needed())
     )
     .subcommand(
         Command::new("backup")
@@ -64,6 +65,7 @@ pub fn run() -> Command {
             .arg(db::pwd())
             .arg(db::salt())
             .arg(db::backup_dir())
+            .arg(db::needed())
             .subcommand(
                 Command::new("delete")
                     .about("Delete one ore more backup files")
@@ -83,6 +85,7 @@ pub fn run() -> Command {
             .arg(db::pwd())
             .arg(db::salt())
             .arg(db::backup_dir())
+            .arg(db::needed())
             .subcommand(
                 Command::new("list")
                     .about("List all the backup files")
@@ -109,6 +112,7 @@ pub fn run() -> Command {
             .arg(db::salt())
             .arg(db::backup_dir())
             .arg(dedupe::dd_type())
+            .arg(db::needed())
     )
     .subcommand(
         Command::new("delete")
@@ -122,8 +126,8 @@ pub fn run() -> Command {
             .arg(db::path())
             .arg(db::pwd())
             .arg(db::salt())
-            .arg(db::backup_dir()
-        )
+            .arg(db::backup_dir())
+            .arg(db::needed())
     )
     .subcommand(
         Command::new("export")
@@ -142,6 +146,7 @@ pub fn run() -> Command {
             .arg(db::serialised_format())
             .arg(record::kind())
             .arg(record::category())
+            .arg(db::needed())
     )
     .subcommand(
         Command::new("gen")
@@ -212,6 +217,7 @@ pub fn run() -> Command {
             .arg(db::pwd())
             .arg(db::salt())
             .arg(db::backup_dir())
+            .arg(db::needed())
     )
     .subcommand(
         Command::new("list")
@@ -336,6 +342,7 @@ pub fn run() -> Command {
                     .arg(record::name())
                     .arg(record::user().required(true))
                     .arg(record::url().required(true)))
+            .arg(db::needed())
     )
     .subcommand(
         Command::new("set")
@@ -347,6 +354,7 @@ pub fn run() -> Command {
             .arg(record::category())
             .arg(record::kind())
             .arg(record::name())
+            .arg(db::needed())
             .subcommand(
                 Command::new("password")
                     .about("Change the password for the given record")
@@ -440,6 +448,7 @@ pub fn run() -> Command {
             .arg(db::pwd())
             .arg(db::salt())
             .arg(db::backup_dir())
+            .arg(db::needed())
     )
 }
 
