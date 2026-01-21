@@ -66,3 +66,128 @@ pub fn restore(
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Write;
+    use tempfile::{tempdir, NamedTempFile};
+
+    #[test]
+    fn test_backup_name() {
+        let name = backup_name("test.db".to_string(), "1.0.0".to_string());
+        assert!(name.starts_with("test.db-"));
+        assert!(name.ends_with("-v1.0.0"));
+    }
+
+    #[test]
+    fn test_backup_name_with_path() {
+        let name = backup_name("data.db".to_string(), "2.5.3".to_string());
+        assert!(name.contains("data.db"));
+        assert!(name.contains("v2.5.3"));
+    }
+
+    #[test]
+    fn test_copy_success() {
+        let mut src_file = NamedTempFile::new().unwrap();
+        src_file.write_all(b"test data").unwrap();
+        let src_path = src_file.path().to_str().unwrap().to_string();
+
+        let dest_dir = tempdir().unwrap();
+        let dest_path = dest_dir.path().to_str().unwrap().to_string();
+
+        let result = copy(src_path, dest_path, "1.0.0".to_string());
+        assert!(result.is_ok());
+        let backup_file = result.unwrap();
+        assert!(std::path::Path::new(&backup_file).exists());
+    }
+
+    #[test]
+    fn test_copy_nonexistent_file() {
+        let dest_dir = tempdir().unwrap();
+        let result = copy(
+            "/nonexistent/file.db".to_string(),
+            dest_dir.path().to_str().unwrap().to_string(),
+            "1.0.0".to_string(),
+        );
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_list_backups() {
+        let backup_dir = tempdir().unwrap();
+        let backup_path = backup_dir.path();
+
+        // Create some backup files
+        std::fs::write(backup_path.join("db-2024-01-01-v1.0.0"), b"data1").unwrap();
+        std::fs::write(backup_path.join("db-2024-01-02-v1.0.1"), b"data2").unwrap();
+
+        let result = list(backup_path.to_str().unwrap().to_string());
+        assert!(result.is_ok());
+        let backups = result.unwrap();
+        assert!(backups.len() >= 2);
+    }
+
+    #[test]
+    fn test_list_empty_directory() {
+        let backup_dir = tempdir().unwrap();
+        let result = list(backup_dir.path().to_str().unwrap().to_string());
+        assert!(result.is_ok());
+        let backups = result.unwrap();
+        assert_eq!(backups.len(), 0);
+    }
+
+    #[test]
+    fn test_latest_backup() {
+        let backup_dir = tempdir().unwrap();
+        let backup_path = backup_dir.path();
+
+        std::fs::write(backup_path.join("db-2024-01-01-v1.0.0"), b"data1").unwrap();
+        std::fs::write(backup_path.join("db-2024-01-02-v1.0.1"), b"data2").unwrap();
+
+        let result = latest(backup_path.to_str().unwrap().to_string());
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_latest_no_backups() {
+        let backup_dir = tempdir().unwrap();
+        let result = latest(backup_dir.path().to_str().unwrap().to_string());
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_restore_success() {
+        let backup_dir = tempdir().unwrap();
+        let backup_path = backup_dir.path();
+        let backup_file = "test-backup.db";
+        std::fs::write(backup_path.join(backup_file), b"backup data").unwrap();
+
+        let dest_dir = tempdir().unwrap();
+        let dest_path = dest_dir.path().join("restored.db");
+
+        let result = restore(
+            backup_path.to_path_buf(),
+            backup_file.to_string(),
+            dest_path.clone(),
+        );
+        assert!(result.is_ok());
+        assert!(dest_path.exists());
+        let contents = std::fs::read_to_string(dest_path).unwrap();
+        assert_eq!(contents, "backup data");
+    }
+
+    #[test]
+    fn test_restore_nonexistent_backup() {
+        let backup_dir = tempdir().unwrap();
+        let dest_dir = tempdir().unwrap();
+        let dest_path = dest_dir.path().join("restored.db");
+
+        let result = restore(
+            backup_dir.path().to_path_buf(),
+            "nonexistent.db".to_string(),
+            dest_path,
+        );
+        assert!(result.is_err());
+    }
+}

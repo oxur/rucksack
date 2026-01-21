@@ -124,7 +124,7 @@ Projects of particular interest:
 
 ## License
 
-Copyright © 2022-2023, Oxur Group
+Copyright © 2022-2026, Oxur Group
 
 Apache License, Version 2.0
 

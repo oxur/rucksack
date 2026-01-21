@@ -73,3 +73,99 @@ pub fn from_decrypted(dr: records::DecryptedRecord) -> Record {
         ..Default::default()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new() {
+        let record = new("https://example.com".to_string(), "testuser".to_string());
+        assert_eq!(record.url, "https://example.com");
+        assert_eq!(record.username, "testuser");
+        assert_eq!(record.password, "");
+    }
+
+    #[test]
+    fn test_new_with_password() {
+        let record = new_with_password(
+            "https://example.com".to_string(),
+            "testuser".to_string(),
+            "testpass".to_string(),
+        );
+        assert_eq!(record.url, "https://example.com");
+        assert_eq!(record.username, "testuser");
+        assert_eq!(record.password, "testpass");
+    }
+
+    #[test]
+    fn test_to_decrypted() {
+        let record = new_with_password(
+            "https://example.com".to_string(),
+            "testuser".to_string(),
+            "testpass".to_string(),
+        );
+        let decrypted = record.to_decrypted();
+        assert_eq!(decrypted.secrets.user, "testuser");
+        assert_eq!(decrypted.secrets.password, "testpass");
+        assert_eq!(decrypted.metadata.url, "https://example.com");
+        assert_eq!(decrypted.metadata.name, "testuser");
+    }
+
+    #[test]
+    fn test_to_decrypted_with_timestamps() {
+        let record = Record {
+            url: "https://example.com".to_string(),
+            username: "testuser".to_string(),
+            password: "testpass".to_string(),
+            time_created: 1609459200,
+            time_last_used: 1609545600,
+            time_password_changed: 1609632000,
+            ..Default::default()
+        };
+        let decrypted = record.to_decrypted();
+        assert!(!decrypted.metadata.created.is_empty());
+        assert!(!decrypted.metadata.last_used.is_empty());
+        assert!(!decrypted.metadata.password_changed.is_empty());
+    }
+
+    #[test]
+    fn test_from_decrypted() {
+        let mut decrypted = records::DecryptedRecord {
+            secrets: secrets_from_user_pass("testuser", "testpass"),
+            metadata: records::default_metadata(),
+            history: Vec::new(),
+        };
+        decrypted.metadata.url = "https://example.com".to_string();
+        decrypted.metadata.name = "testuser".to_string();
+
+        let firefox_record = from_decrypted(decrypted.clone());
+        assert_eq!(firefox_record.url, "https://example.com");
+        assert_eq!(firefox_record.username, "testuser");
+        assert_eq!(firefox_record.password, "testpass");
+        assert!(!firefox_record.guid.is_empty());
+    }
+
+    #[test]
+    fn test_from_decrypted_empty_name() {
+        let mut decrypted = records::DecryptedRecord {
+            secrets: secrets_from_user_pass("testuser", "testpass"),
+            metadata: records::default_metadata(),
+            history: Vec::new(),
+        };
+        decrypted.metadata.url = "https://example.com".to_string();
+        decrypted.metadata.name = "".to_string();
+
+        let firefox_record = from_decrypted(decrypted);
+        assert_eq!(firefox_record.username, "testuser");
+    }
+
+    #[test]
+    fn test_default_record() {
+        let record = Record::default();
+        assert_eq!(record.url, "");
+        assert_eq!(record.username, "");
+        assert_eq!(record.password, "");
+        assert_eq!(record.time_created, 0);
+    }
+}
