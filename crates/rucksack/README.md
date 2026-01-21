@@ -26,6 +26,7 @@
 * [x] Colourised and fully tabular output (0.8.0)
 * [x] Password history (0.8.0)
 * [ ] Refactor for safety, style, idiom, anti-patterns (0.9.0)
+* [ ] Structured logging (0.9.0)
 * [ ] Database backups, restores, and support for multiple backends (0.10.0)
 * [ ] [Alternate storage backend implementations](https://github.com/oxur/rucksack/milestone/12)
 * [ ] [Local network sync](https://github.com/oxur/rucksack/milestone/13)
