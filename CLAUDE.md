@@ -42,6 +42,8 @@ git clone https://github.com/oxur/ai-rust assets/ai/ai-rust
 - [ ] Coverage ≥ 95% (`make coverage`)
 - [ ] Linting passes (`make lint`)
 - [ ] Code formatted (`make format`)
+- [ ] Run the CLI integration tests (`./tests/rucksack.sh`)
+- [ ] Run the DB migration tests (`./tests/old_db_formats.sh`)
 - [ ] No compiler warnings
 - [ ] Checked against Rust anti-patterns (`11-anti-patterns.md`)
 - [ ] Documentation updated (doc comments on public items)
