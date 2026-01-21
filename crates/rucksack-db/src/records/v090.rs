@@ -40,7 +40,8 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
     log::trace!("Created hashmap.");
     let sorted_vec: Vec<(String, EncryptedRecord)>;
     log::trace!("Created vec for sorted data.");
-    if version < shared::version(VERSION).unwrap() {
+    let current_version = shared::version(VERSION).map_err(|e| anyhow!("{}", e))?;
+    if version < current_version {
         // version.
         log::info!("Attempting to decode hashmap from previous version (0.8.0)");
         let hm = v080::decode_hashmap(bytes, version)?;
@@ -327,11 +328,13 @@ impl EncryptedRecord {
     pub fn decrypt(&self, store_pwd: String, salt: String) -> Result<DecryptedRecord> {
         let decrypted_secrets = decrypt(self.value.clone(), store_pwd.clone(), salt.clone())?;
         let (decoded_secrets, _len) =
-            bincode::decode_from_slice(&decrypted_secrets[..], util::bincode_cfg()).unwrap();
+            bincode::decode_from_slice(&decrypted_secrets[..], util::bincode_cfg())
+                .map_err(|e| anyhow!("failed to decode secrets: {}", e))?;
 
         let decrypted_history = decrypt(self.history.clone(), store_pwd, salt)?;
         let (decoded_history, _len) =
-            bincode::decode_from_slice(&decrypted_history[..], util::bincode_cfg()).unwrap();
+            bincode::decode_from_slice(&decrypted_history[..], util::bincode_cfg())
+                .map_err(|e| anyhow!("failed to decode history: {}", e))?;
 
         Ok(DecryptedRecord {
             secrets: decoded_secrets,

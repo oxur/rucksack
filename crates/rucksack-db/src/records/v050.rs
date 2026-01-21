@@ -19,7 +19,8 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
     log::trace!("Created hashmap.");
     let sorted_vec: Vec<(String, EncryptedRecord)>;
     log::trace!("Created vec for sorted data.");
-    if version < shared::version(VERSION).unwrap() {
+    let current_version = shared::version(VERSION).map_err(|e| anyhow!("{}", e))?;
+    if version < current_version {
         let msg = format!("automatic migration not supported for versions prior to: {VERSION}");
         log::error!("{}", msg);
         return Err(anyhow!(msg));

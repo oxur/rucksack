@@ -35,7 +35,8 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
     log::trace!("Created hashmap.");
     let sorted_vec: Vec<(String, EncryptedRecord)>;
     log::trace!("Created vec for sorted data.");
-    if version < shared::version(VERSION).unwrap() {
+    let current_version = shared::version(VERSION).map_err(|e| anyhow!("{}", e))?;
+    if version < current_version {
         // version.
         log::info!("Attempting to decode hashmap from previous version (0.7.0)");
         let hm = v070::decode_hashmap(bytes, version)?;
