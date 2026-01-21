@@ -82,3 +82,105 @@ impl Table {
         ));
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::output::result;
+
+    #[test]
+    fn test_new() {
+        let results = vec![result::new("id".to_string(), "name".to_string(), "url".to_string())];
+        let opts = Opts::default();
+        let table = new(results.clone(), opts);
+        assert_eq!(table.results.len(), 1);
+    }
+
+    #[test]
+    fn test_new_with_empty_results() {
+        let results = vec![];
+        let opts = Opts::default();
+        let table = new(results, opts);
+        assert_eq!(table.results.len(), 0);
+    }
+
+    #[test]
+    fn test_table_default() {
+        let table = Table::default();
+        assert_eq!(table.results.len(), 0);
+        assert_eq!(table.columns.len(), 0);
+    }
+
+    #[test]
+    fn test_table_clone() {
+        let results = vec![result::new("id".to_string(), "name".to_string(), "url".to_string())];
+        let opts = Opts::default();
+        let table1 = new(results, opts);
+        let table2 = table1.clone();
+        assert_eq!(table1.results.len(), table2.results.len());
+    }
+
+    #[test]
+    fn test_results_method() {
+        let results = vec![result::new("id".to_string(), "name".to_string(), "url".to_string())];
+        let opts = Opts::default();
+        let mut table = new(results, opts);
+        table.results();
+        // Should not panic
+        assert!(true);
+    }
+
+    #[test]
+    fn test_set_columns_only_keys() {
+        let results = vec![];
+        let mut opts = Opts::default();
+        opts.only_keys = true;
+        let table = new(results, opts);
+        assert!(table.columns.len() > 0);
+    }
+
+    #[test]
+    fn test_set_columns_kinds() {
+        let results = vec![];
+        let mut opts = Opts::default();
+        opts.kinds = true;
+        let table = new(results, opts);
+        assert!(table.columns.len() > 0);
+    }
+
+    #[test]
+    fn test_set_columns_tags() {
+        let results = vec![];
+        let mut opts = Opts::default();
+        opts.tags = true;
+        let table = new(results, opts);
+        assert!(table.columns.len() > 0);
+    }
+
+    #[test]
+    fn test_set_columns_categories() {
+        let results = vec![];
+        let mut opts = Opts::default();
+        opts.categories = true;
+        let table = new(results, opts);
+        assert!(table.columns.len() > 0);
+    }
+
+    #[test]
+    fn test_set_columns_backup_files() {
+        let results = vec![];
+        let mut opts = Opts::default();
+        opts.backup_files = true;
+        let table = new(results, opts);
+        assert!(table.columns.len() > 0);
+    }
+
+    #[test]
+    fn test_set_columns_default() {
+        let results = vec![];
+        let opts = Opts::default();
+        let table = new(results, opts);
+        // Default columns should be set
+        assert!(table.columns.len() > 0);
+    }
+}
