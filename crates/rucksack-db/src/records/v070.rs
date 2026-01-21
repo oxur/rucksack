@@ -479,6 +479,7 @@ pub fn name_from_key(key: String) -> String {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::testing;
     use rucksack_lib::time;
 
@@ -514,5 +515,204 @@ mod tests {
         dpr.add_tags(vec![tag2.clone(), tag3.clone()]);
         assert_eq!(dpr.metadata().tags.len(), 3);
         assert_eq!(dpr.metadata().tag_values(), vec![tag3, tag1, tag2]);
+    }
+
+    #[test]
+    fn test_kinds() {
+        let kind_list = kinds();
+        assert!(!kind_list.is_empty());
+        assert!(kind_list.contains(&Kind::Password));
+        assert!(kind_list.contains(&Kind::Account));
+    }
+
+    #[test]
+    fn test_types() {
+        let type_list = types();
+        assert!(!type_list.is_empty());
+        // types() returns kebab-case strings
+        assert!(type_list.iter().any(|t| t.contains("password")));
+        assert!(type_list.iter().any(|t| t.contains("account")));
+    }
+
+    #[test]
+    fn test_default_secrets() {
+        let secrets = default_secrets();
+        assert_eq!(secrets.user, "");
+        assert_eq!(secrets.password, "");
+    }
+
+    #[test]
+    fn test_secrets_from_user_pass() {
+        let secrets = secrets_from_user_pass("testuser", "testpass");
+        assert_eq!(secrets.user, "testuser");
+        assert_eq!(secrets.password, "testpass");
+    }
+
+    #[test]
+    fn test_new_tag() {
+        let tag = new_tag("test_tag".to_string());
+        assert_eq!(tag.value, "test_tag");
+        assert_ne!(tag.created, time::epoch_zero());
+    }
+
+    #[test]
+    fn test_new_tags() {
+        let tags = new_tags(vec!["tag1".to_string(), "tag2".to_string()]);
+        assert_eq!(tags.len(), 2);
+        assert_eq!(tags[0].value, "tag1");
+    }
+
+    #[test]
+    fn test_new_tags_empty() {
+        let tags = new_tags(vec![]);
+        assert_eq!(tags.len(), 0);
+    }
+
+    #[test]
+    fn test_default_metadata() {
+        let metadata = default_metadata();
+        assert_eq!(metadata.name, "");
+        assert_eq!(metadata.category, DEFAULT_CATEGORY);
+        assert_ne!(metadata.created, time::epoch_zero());
+    }
+
+    #[test]
+    fn test_key_function() {
+        let key = key("test_cat", Kind::Password, "user", "example.com");
+        assert!(key.contains("test_cat"));
+        assert!(key.contains("Password"));
+        assert!(key.contains("user"));
+        assert!(key.contains("example.com"));
+    }
+
+    #[test]
+    fn test_key_function_empty() {
+        let key = key("", Kind::Password, "", "");
+        assert!(key.contains("Password"));
+    }
+
+    #[test]
+    fn test_name_from_key() {
+        // name_from_key is for v060-style keys: "user:url"
+        let key = "username:example.com".to_string();
+        let name = name_from_key(key);
+        assert_eq!(name, "username");
+    }
+
+    #[test]
+    fn test_name_from_key_empty() {
+        let key = ":".to_string();
+        let name = name_from_key(key);
+        assert_eq!(name, "");
+    }
+
+    #[test]
+    fn test_encrypt_decrypt_roundtrip() {
+        let pwd = testing::data::store_pwd();
+        let salt = time::now();
+        let record = testing::data::plaintext_record_v070();
+
+        let encrypted = record.encrypt(pwd.clone(), salt.clone());
+        assert!(!encrypted.value.is_empty());
+
+        let decrypted = encrypted.decrypt(pwd, salt).unwrap();
+        assert_eq!(decrypted.secrets.user, record.secrets.user);
+        assert_eq!(decrypted.secrets.password, record.secrets.password);
+    }
+
+    #[test]
+    fn test_decode_hashmap_v070() {
+        let pwd = testing::data::store_pwd();
+        let salt = time::now();
+        let hm: HashMap = dashmap::DashMap::new();
+
+        let record = testing::data::plaintext_record_v070();
+        let encrypted = record.encrypt(pwd, salt);
+        hm.insert("test_key".to_string(), encrypted);
+
+        // Serialize
+        let mut data: Vec<(String, EncryptedRecord)> = Vec::new();
+        for i in hm.iter() {
+            data.push((i.key().clone(), i.value().clone()));
+        }
+        data.sort_by_key(|k| k.0.clone());
+        let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
+
+        // Decode
+        let version = shared::version(VERSION);
+        let decoded = decode_hashmap(bytes, version).unwrap();
+        assert_eq!(decoded.len(), 1);
+    }
+
+    #[test]
+    fn test_decode_hashmap_empty() {
+        let data: Vec<(String, EncryptedRecord)> = Vec::new();
+        let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
+
+        let version = shared::version(VERSION);
+        let decoded = decode_hashmap(bytes, version).unwrap();
+        assert_eq!(decoded.len(), 0);
+    }
+
+    #[test]
+    fn test_decrypted_record_methods() {
+        let mut record = testing::data::plaintext_record_v070();
+
+        // Test getters
+        assert!(!record.user().is_empty());
+        assert!(!record.password().is_empty());
+        assert!(!record.key().is_empty());
+        // Name comes from v060 migration, where user becomes name
+        assert_eq!(record.name(), "alice@site.com");
+
+        // Test name_or_user
+        let name_or_user = record.name_or_user();
+        assert_eq!(name_or_user, "alice@site.com");
+
+        // Test direct field modification (no setters in v070)
+        record.secrets.user = "newuser".to_string();
+        assert_eq!(record.user(), "newuser");
+
+        record.secrets.password = "newpass".to_string();
+        assert_eq!(record.password(), "newpass");
+
+        record.metadata.url = "newurl.com".to_string();
+        record.metadata.name = "TestName".to_string();
+        let key = record.key();
+        assert!(key.contains("TestName"));
+        assert!(key.contains("newurl.com"));
+    }
+
+    #[test]
+    fn test_encrypted_record_methods() {
+        let pwd = testing::data::store_pwd();
+        let salt = time::now();
+        let record = testing::data::plaintext_record_v070();
+        let encrypted = record.encrypt(pwd, salt);
+
+        assert!(!encrypted.key().is_empty());
+        assert!(!encrypted.value().is_empty());
+        let metadata = encrypted.metadata();
+        assert_eq!(metadata.category, record.metadata.category);
+    }
+
+    #[test]
+    fn test_tag_operations() {
+        let mut record = testing::data::plaintext_record_v070();
+
+        record.add_tag("newtag".to_string());
+        assert!(record.metadata.tags.len() > 0);
+
+        record.add_tags(vec!["tag2".to_string(), "tag3".to_string()]);
+        let tag_values = record.metadata.tag_values();
+        assert!(tag_values.len() >= 3);
+    }
+
+    #[test]
+    fn test_version_constant() {
+        assert_eq!(VERSION, "0.7.0");
+        let version = shared::version(VERSION);
+        assert_eq!(version.major, 0);
+        assert_eq!(version.minor, 7);
     }
 }
