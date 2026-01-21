@@ -1,1 +1,1 @@
-rucksack/README.md
+crates/rucksack/README.md

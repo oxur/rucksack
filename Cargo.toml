@@ -1,6 +1,6 @@
 [workspace]
 members = [
-        "rucksack-db",
-        "rucksack-lib",
-        "rucksack",
+        "crates/rucksack-db",
+        "crates/rucksack-lib",
+        "crates/rucksack",
 ]
