@@ -39,3 +39,87 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rucksack_lib::time;
+
+    fn test_metadata() -> Metadata {
+        Metadata {
+            kind: Kind::Password,
+            url: "https://example.com".to_string(),
+            created: time::now(),
+            imported: time::epoch_zero(),
+            updated: time::now(),
+            password_changed: time::epoch_zero(),
+            last_used: time::epoch_zero(),
+            access_count: 0,
+        }
+    }
+
+    fn test_decrypted_record() -> DecryptedRecord {
+        DecryptedRecord {
+            creds: Creds {
+                user: "testuser".to_string(),
+                password: "testpass".to_string(),
+            },
+            metadata: test_metadata(),
+        }
+    }
+
+    #[test]
+    fn test_version_constant() {
+        assert_eq!(VERSION, "0.5.0");
+    }
+
+    #[test]
+    fn test_decode_hashmap() {
+        let hm: HashMap = dashmap::DashMap::new();
+        let record = test_decrypted_record();
+        let salt = time::now();
+        let encrypted = record.encrypt("password".to_string(), salt);
+        hm.insert("test_key".to_string(), encrypted);
+
+        let mut data: Vec<(String, EncryptedRecord)> = Vec::new();
+        for i in hm.iter() {
+            data.push((i.key().clone(), i.value().clone()));
+        }
+        data.sort_by_key(|k| k.0.clone());
+        let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
+
+        let version = versions::SemVer::new(VERSION).unwrap();
+        let decoded_hm = decode_hashmap(bytes, version).unwrap();
+        assert_eq!(decoded_hm.len(), 1);
+        assert!(decoded_hm.contains_key("test_key"));
+    }
+
+    #[test]
+    fn test_decode_hashmap_empty() {
+        let data: Vec<(String, EncryptedRecord)> = Vec::new();
+        let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
+
+        let version = versions::SemVer::new(VERSION).unwrap();
+        let decoded_hm = decode_hashmap(bytes, version).unwrap();
+        assert_eq!(decoded_hm.len(), 0);
+    }
+
+    #[test]
+    fn test_decode_hashmap_error() {
+        let invalid_bytes = vec![1, 2, 3, 4, 5];
+        let version = versions::SemVer::new(VERSION).unwrap();
+        let result = decode_hashmap(invalid_bytes, version);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_decode_hashmap_old_version() {
+        let data: Vec<(String, EncryptedRecord)> = Vec::new();
+        let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
+
+        let old_version = versions::SemVer::new("0.4.0").unwrap();
+        let result = decode_hashmap(bytes, old_version);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("migration not supported"));
+    }
+}

@@ -124,3 +124,168 @@ impl EncryptedRecord {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rucksack_lib::time;
+
+    fn test_creds() -> Creds {
+        Creds {
+            user: "testuser".to_string(),
+            password: "testpass".to_string(),
+        }
+    }
+
+    fn test_metadata() -> Metadata {
+        Metadata {
+            kind: Kind::Password,
+            url: "https://example.com".to_string(),
+            created: time::now(),
+            imported: time::epoch_zero(),
+            updated: time::now(),
+            password_changed: time::epoch_zero(),
+            last_used: time::epoch_zero(),
+            access_count: 0,
+        }
+    }
+
+    fn test_decrypted_record() -> DecryptedRecord {
+        DecryptedRecord {
+            creds: test_creds(),
+            metadata: test_metadata(),
+        }
+    }
+
+    #[test]
+    fn test_version_constant() {
+        assert_eq!(VERSION, "0.3.0");
+    }
+
+    #[test]
+    fn test_decrypted_record_key() {
+        let record = test_decrypted_record();
+        let key = record.key();
+        assert!(key.contains("testuser"));
+        assert!(key.contains("example.com"));
+    }
+
+    #[test]
+    fn test_decrypted_record_metadata() {
+        let record = test_decrypted_record();
+        let metadata = record.metadata();
+        assert_eq!(metadata.url, "https://example.com");
+        assert_eq!(metadata.kind, Kind::Password);
+    }
+
+    #[test]
+    fn test_encrypt_decrypt_roundtrip() {
+        let record = test_decrypted_record();
+        let pwd = "store_password".to_string();
+
+        let encrypted = record.encrypt(pwd.clone());
+        assert!(!encrypted.value.is_empty());
+        assert_eq!(encrypted.key(), record.key());
+
+        let decrypted = encrypted.decrypt(pwd).unwrap();
+        assert_eq!(decrypted.creds.user, record.creds.user);
+        assert_eq!(decrypted.creds.password, record.creds.password);
+    }
+
+    #[test]
+    fn test_encrypted_record_key() {
+        let record = test_decrypted_record();
+        let encrypted = record.encrypt("password".to_string());
+        assert_eq!(encrypted.key(), record.key());
+    }
+
+    #[test]
+    fn test_encrypted_record_metadata() {
+        let record = test_decrypted_record();
+        let encrypted = record.encrypt("password".to_string());
+        let metadata = encrypted.metadata();
+        assert_eq!(metadata.url, record.metadata.url);
+    }
+
+    #[test]
+    fn test_decode_hashmap() {
+        let hm: HashMap = dashmap::DashMap::new();
+        let record = test_decrypted_record();
+        let encrypted = record.encrypt("password".to_string());
+        hm.insert("test_key".to_string(), encrypted);
+
+        let mut data: Vec<(String, EncryptedRecord)> = Vec::new();
+        for i in hm.iter() {
+            data.push((i.key().clone(), i.value().clone()));
+        }
+        data.sort_by_key(|k| k.0.clone());
+        let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
+
+        let version = versions::SemVer::new(VERSION).unwrap();
+        let decoded_hm = decode_hashmap(bytes, version).unwrap();
+        assert_eq!(decoded_hm.len(), 1);
+        assert!(decoded_hm.contains_key("test_key"));
+    }
+
+    #[test]
+    fn test_decode_hashmap_empty() {
+        let data: Vec<(String, EncryptedRecord)> = Vec::new();
+        let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
+
+        let version = versions::SemVer::new(VERSION).unwrap();
+        let decoded_hm = decode_hashmap(bytes, version).unwrap();
+        assert_eq!(decoded_hm.len(), 0);
+    }
+
+    #[test]
+    fn test_decode_hashmap_error() {
+        let invalid_bytes = vec![1, 2, 3, 4, 5];
+        let version = versions::SemVer::new(VERSION).unwrap();
+        let result = decode_hashmap(invalid_bytes, version);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_migrate_metadata_from_v020() {
+        let md_v020 = v020::Metadata {
+            kind: Kind::Password,
+            url: "https://test.com".to_string(),
+            created: "2024-01-01".to_string(),
+            updated: "2024-01-02".to_string(),
+            password_changed: "2024-01-03".to_string(),
+        };
+
+        let md_v030 = migrate_metadata_from_v020(md_v020.clone());
+        assert_eq!(md_v030.kind, md_v020.kind);
+        assert_eq!(md_v030.url, md_v020.url);
+        assert_eq!(md_v030.created, md_v020.created);
+        assert_eq!(md_v030.updated, md_v020.updated);
+        assert_eq!(md_v030.password_changed, md_v020.password_changed);
+        assert_eq!(md_v030.imported, "");
+        assert_eq!(md_v030.last_used, "");
+        assert_eq!(md_v030.access_count, 0);
+    }
+
+    #[test]
+    fn test_migrate_decrypted_record_from_v020() {
+        let dr_v020 = v020::DecryptedRecord {
+            key: "user:https://test.com".to_string(),
+            value: Creds {
+                user: "user".to_string(),
+                password: "pass".to_string(),
+            },
+            metadata: v020::Metadata {
+                kind: Kind::Password,
+                url: "https://test.com".to_string(),
+                created: time::now(),
+                updated: time::now(),
+                password_changed: time::epoch_zero(),
+            },
+        };
+
+        let dr_v030 = migrate_decrypted_record_from_v020(dr_v020.clone());
+        assert_eq!(dr_v030.creds.user, dr_v020.value.user);
+        assert_eq!(dr_v030.creds.password, dr_v020.value.password);
+        assert_eq!(dr_v030.metadata.url, dr_v020.metadata.url);
+    }
+}
