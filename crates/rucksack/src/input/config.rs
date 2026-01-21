@@ -168,14 +168,14 @@ impl Config {
     pub fn new(opts: &Opts) -> Result<Config> {
         let defaults = Self::default();
         let cfg: Config = if opts.in_memory {
-            Confygery::new()
-                .add_str(&opts.config)
-                .add_struct(&defaults)
+            Confygery::new()?
+                .add_str(&opts.config)?
+                .add_struct(&defaults)?
                 .build::<Config>()?
         } else {
-            Confygery::new()
-                .add_file(&opts.file_name)
-                .add_struct(&defaults)
+            Confygery::new()?
+                .add_file(&opts.file_name)?
+                .add_struct(&defaults)?
                 .build::<Config>()?
         };
         Ok(cfg)
@@ -192,7 +192,20 @@ impl Config {
         if !opts.log_level.is_empty() {
             cfg.logging.level = opts.log_level.clone();
         }
-        twyg::setup_logger(&cfg.logging.to_twyg())?;
+        let twyg_opts = cfg
+            .logging
+            .to_twyg()
+            .map_err(|e| anyhow::anyhow!("Failed to convert logging config: {}", e))?;
+        // Try to setup logger, but ignore InitError (happens when logger is already set, e.g. in tests)
+        match twyg::setup(twyg_opts) {
+            Ok(_) => (),
+            Err(twyg::TwygError::InitError) => {
+                // Logger already initialized, which is fine (happens in tests)
+            }
+            Err(e) => {
+                return Err(anyhow::anyhow!("Failed to setup logger: {:?}", e));
+            }
+        }
         cfg.rucksack.cfg_file = opts.file_name.clone();
         log::debug!("Config setup complete (using {})", cfg.rucksack.cfg_file);
         cfg.rucksack.name = opts.name.clone();

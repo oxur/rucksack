@@ -284,13 +284,27 @@ impl Logging {
         }
     }
 
-    pub fn to_twyg(&self) -> twyg::LoggerOpts {
-        twyg::LoggerOpts {
-            coloured: self.coloured,
-            file: self.file.clone(),
-            level: self.level.clone(),
-            report_caller: self.report_caller,
-        }
+    pub fn to_twyg(&self) -> Result<twyg::Opts, String> {
+        // Parse level string into LogLevel enum
+        let level: twyg::LogLevel = self
+            .level
+            .parse()
+            .map_err(|_| format!("Invalid log level: {}", self.level))?;
+
+        // Convert file Option<String> to Output enum
+        let output = match &self.file {
+            Some(path) => twyg::Output::file(path),
+            None => twyg::Output::Stdout,
+        };
+
+        // Build opts using OptsBuilder
+        twyg::OptsBuilder::new()
+            .coloured(self.coloured)
+            .output(output)
+            .level(level)
+            .report_caller(self.report_caller)
+            .build()
+            .map_err(|e| format!("Failed to build twyg opts: {:?}", e))
     }
 }
 
