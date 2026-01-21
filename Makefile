@@ -242,7 +242,7 @@ check-deps: ensure-binstall
 	@OUTPUT=$$(cargo outdated --root-deps-only); \
 	echo "$$OUTPUT"; \
 	echo ""; \
-	if echo "$$OUTPUT" | grep -E "^[a-z0-9_-]+\s+" | awk '{print $$3}' | grep -v "^---$$" | grep -v "^Compat$$" | grep -q .; then \
+	if echo "$$OUTPUT" | grep -E "^[a-z0-9_-]+\s+" | grep -v "^----" | awk '{print $$3}' | grep -v "^---$$" | grep -v "^Compat$$" | grep -E "^[0-9]" | grep -q .; then \
 		echo "$(RED)✗ Compatible dependency updates available$(RESET)"; \
 		echo "$(YELLOW)→ Run 'make deps' to update and commit the updated Cargo.lock$(RESET)"; \
 		exit 1; \
