@@ -6,3 +6,14 @@ pub fn dd_type() -> Arg {
         .long("dedupe-type")
         .env("RUXAK_DEDUPE_TYPE")
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_dd_type() {
+        let arg = dd_type();
+        assert_eq!(arg.get_id(), "dedupe-type");
+    }
+}

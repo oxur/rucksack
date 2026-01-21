@@ -62,3 +62,59 @@ pub fn serialised_format() -> Arg {
         .value_parser(["", "chrome", "debug", "firefox"])
         .global(true)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_path() {
+        let arg = path();
+        assert_eq!(arg.get_id(), "db");
+        assert!(arg.is_global_set());
+    }
+
+    #[test]
+    fn test_pwd() {
+        let arg = pwd();
+        assert_eq!(arg.get_id(), "db-pass");
+        assert!(arg.is_global_set());
+    }
+
+    #[test]
+    fn test_salt() {
+        let arg = salt();
+        assert_eq!(arg.get_id(), "salt");
+        assert!(arg.is_global_set());
+    }
+
+    #[test]
+    fn test_backup_dir() {
+        let arg = backup_dir();
+        assert_eq!(arg.get_id(), "backup-dir");
+        assert!(arg.is_global_set());
+    }
+
+    #[test]
+    fn test_not_needed() {
+        let arg = not_needed();
+        assert_eq!(arg.get_id(), "db-needed");
+        assert!(arg.is_global_set());
+        assert!(arg.is_hide_set());
+    }
+
+    #[test]
+    fn test_needed() {
+        let arg = needed();
+        assert_eq!(arg.get_id(), "db-needed");
+        assert!(arg.is_global_set());
+        assert!(arg.is_hide_set());
+    }
+
+    #[test]
+    fn test_serialised_format() {
+        let arg = serialised_format();
+        assert_eq!(arg.get_id(), "format");
+        assert!(arg.is_global_set());
+    }
+}

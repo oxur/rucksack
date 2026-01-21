@@ -19,3 +19,22 @@ pub fn log_level() -> Arg {
         .value_parser(["error", "warn", "info", "debug", "trace", ""])
         .global(true)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_config() {
+        let arg = config();
+        assert_eq!(arg.get_id(), "config-file");
+        assert!(arg.is_global_set());
+    }
+
+    #[test]
+    fn test_log_level() {
+        let arg = log_level();
+        assert_eq!(arg.get_id(), "log-level");
+        assert!(arg.is_global_set());
+    }
+}
