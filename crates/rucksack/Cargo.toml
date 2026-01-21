@@ -17,19 +17,19 @@ name = "rucksack"
 [dependencies]
 actix = "0.13"
 anyhow = "1.0"
-clap = { version = "4.0", features = ["string", "env"] }
-clap_complete = "4.0"
+clap = { version = "4.5", features = ["string", "env"] }
+clap_complete = "4.5"
 confyg = "0.3"
 digest = "0.10.7"
 log = "0.4"
 passwords = "3.1"
 prettytable-rs = "0.10.0"
-rpassword = "7.1"
+rpassword = "7.4"
 secrecy = "0.8"
 serde = { version = "1.0", features = ["derive"] }
 sha2 = "0.10"
 twyg = "0.6"
-versions = "6.0.0"
+versions = "6.3.2"
 
 [dependencies.rucksack-db]
 path = "../rucksack-db"

@@ -208,6 +208,14 @@ check: build lint test
 	@echo "$(GREEN)✓ All checks passed (build + lint + test)$(RESET)"
 	@echo ""
 
+.PHONY: deps
+deps:
+	@echo "$(BLUE)Updating dependencies ...$(RESET)"
+	@echo "$(CYAN)• Running tests with coverage (includes integration tests in ./tests)...$(RESET)"
+	@cargo install cargo-edit && cargo upgrade
+	@echo "$(GREEN)✓ Coverage report generated$(RESET)"
+	@echo "$(YELLOW)→ For detailed HTML report, run: make coverage-html$(RESET)"
+
 .PHONY: check-all
 check-all: build lint coverage
 	@echo ""
