@@ -7,7 +7,14 @@ use aes_gcm::{
     Aes256Gcm, Nonce,
 };
 
+/// Size of the AES-GCM nonce in bytes
 const NONCE_SIZE: usize = 12;
+
+/// Size of 128-bit AES key in bytes
+const KEY_SIZE_128: usize = 16;
+
+/// Size of 256-bit AES key in bytes
+const KEY_SIZE_256: usize = 32;
 
 #[non_exhaustive]
 pub enum KeySize {
@@ -106,8 +113,8 @@ pub fn decrypt(encrypted: Vec<u8>, pwd: &str, salt: &str) -> Result<Vec<u8>> {
 
 fn sized_key(source: &str, key_size: KeySize) -> Vec<u8> {
     let size: usize = match key_size {
-        KeySize::Bit128 => 16,
-        KeySize::Bit256 => 32,
+        KeySize::Bit128 => KEY_SIZE_128,
+        KeySize::Bit256 => KEY_SIZE_256,
     };
     let mut bytes = source.as_bytes().to_vec();
     match bytes.len().cmp(&size) {

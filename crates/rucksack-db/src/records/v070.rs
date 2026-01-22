@@ -86,6 +86,26 @@ impl Status {
     }
 }
 
+impl fmt::Display for Status {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
+}
+
+impl std::str::FromStr for Status {
+    type Err = anyhow::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "active" => Ok(Status::Active),
+            "inactive" => Ok(Status::Inactive),
+            "deleted" => Ok(Status::Deleted),
+            "any" => Ok(Status::Any),
+            _ => Err(anyhow::anyhow!("invalid status: '{}' (valid values: active, inactive, deleted, any)", s)),
+        }
+    }
+}
+
 // Hashmap - the primary store data structure
 
 pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
