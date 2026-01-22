@@ -76,7 +76,7 @@ mod tests {
         let hm: HashMap = dashmap::DashMap::new();
         let record = test_decrypted_record();
         let salt = time::now();
-        let encrypted = record.encrypt("password".to_string(), salt).unwrap();
+        let encrypted = record.encrypt("password", &salt).unwrap();
         hm.insert("test_key".to_string(), encrypted);
 
         let mut data: Vec<(String, EncryptedRecord)> = Vec::new();

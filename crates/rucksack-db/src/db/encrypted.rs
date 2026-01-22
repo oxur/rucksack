@@ -19,8 +19,8 @@ impl EncryptedDB {
     pub fn from_decrypted(
         decrypted: Vec<u8>,
         path: impl Into<PathBuf>,
-        pwd: String,
-        salt: String,
+        pwd: impl Into<String>,
+        salt: impl Into<String>,
     ) -> Result<EncryptedDB> {
         EncryptedDB::new(None, Some(decrypted), path, pwd, salt)
     }
@@ -28,13 +28,17 @@ impl EncryptedDB {
     pub fn from_encrypted(
         encrypted: Vec<u8>,
         path: impl Into<PathBuf>,
-        pwd: String,
-        salt: String,
+        pwd: impl Into<String>,
+        salt: impl Into<String>,
     ) -> Result<EncryptedDB> {
         EncryptedDB::new(Some(encrypted), None, path, pwd, salt)
     }
 
-    pub fn from_file(path: impl Into<PathBuf>, pwd: String, salt: String) -> Result<EncryptedDB> {
+    pub fn from_file(
+        path: impl Into<PathBuf>,
+        pwd: impl Into<String>,
+        salt: impl Into<String>,
+    ) -> Result<EncryptedDB> {
         EncryptedDB::new(None, None, path, pwd, salt)
     }
 
@@ -42,15 +46,15 @@ impl EncryptedDB {
         bytes: Option<Vec<u8>>,
         decrypted: Option<Vec<u8>>,
         path: impl Into<PathBuf>,
-        pwd: String,
-        salt: String,
+        pwd: impl Into<String>,
+        salt: impl Into<String>,
     ) -> Result<EncryptedDB> {
         let mut edb = EncryptedDB {
             bytes: Vec::new(),
             decrypted: Secret::new(Vec::new()),
             path: path.into(),
-            pwd: SecretString::new(pwd),
-            salt: SecretString::new(salt),
+            pwd: SecretString::new(pwd.into()),
+            salt: SecretString::new(salt.into()),
         };
         if bytes.is_none() && decrypted.is_none() {
             log::debug!(source = "file", path = edb.path.to_string_lossy().as_ref(), operation = "init"; "No bytes provided; reading from file");
@@ -104,8 +108,8 @@ impl EncryptedDB {
         &self.path
     }
 
-    pub fn pwd(&self) -> String {
-        self.pwd.expose_secret().to_string()
+    pub fn pwd(&self) -> &str {
+        self.pwd.expose_secret()
     }
 
     pub fn read(&mut self) -> Result<()> {
@@ -115,8 +119,8 @@ impl EncryptedDB {
         Ok(())
     }
 
-    pub fn salt(&self) -> String {
-        self.salt.expose_secret().to_string()
+    pub fn salt(&self) -> &str {
+        self.salt.expose_secret()
     }
 
     pub fn write(&self) -> Result<()> {
@@ -187,7 +191,7 @@ mod tests {
         let (_dir, path) = setup_test_dir();
 
         // First encrypt some data
-        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone()).unwrap();
+        let encrypted = crypto::encrypt(data.clone(), &pwd, &salt).unwrap();
 
         // Create from encrypted
         let edb = EncryptedDB::from_encrypted(
@@ -228,7 +232,7 @@ mod tests {
         let (_dir, path) = setup_test_dir();
 
         // Write encrypted data to file
-        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone()).unwrap();
+        let encrypted = crypto::encrypt(data.clone(), &pwd, &salt).unwrap();
         fs::write(&path, encrypted).unwrap();
 
         // Load from file
@@ -270,7 +274,7 @@ mod tests {
         let data = b"Original".to_vec();
         let pwd = "pwd".to_string();
         let salt = "salt".to_string();
-        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone()).unwrap();
+        let encrypted = crypto::encrypt(data.clone(), &pwd, &salt).unwrap();
         let (_dir, path) = setup_test_dir();
 
         let edb = EncryptedDB::new(
@@ -294,7 +298,7 @@ mod tests {
         let (_dir, path) = setup_test_dir();
 
         // Prepare file
-        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone()).unwrap();
+        let encrypted = crypto::encrypt(data.clone(), &pwd, &salt).unwrap();
         fs::write(&path, encrypted).unwrap();
 
         // Create from file
@@ -466,7 +470,7 @@ mod tests {
         let path_str = path.to_str().unwrap().to_string();
 
         // Write encrypted data to file
-        let encrypted = crypto::encrypt(data.clone(), pwd.clone(), salt.clone()).unwrap();
+        let encrypted = crypto::encrypt(data.clone(), &pwd, &salt).unwrap();
         fs::write(&path, encrypted.clone()).unwrap();
 
         // Create empty EncryptedDB and read

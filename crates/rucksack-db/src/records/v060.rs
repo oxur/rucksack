@@ -91,7 +91,7 @@ impl DecryptedRecord {
         self.creds.user.clone()
     }
 
-    pub fn encrypt(&self, store_pwd: String, salt: String) -> Result<EncryptedRecord> {
+    pub fn encrypt(&self, store_pwd: &str, salt: &str) -> Result<EncryptedRecord> {
         let encoded = bincode::encode_to_vec(&self.creds, util::bincode_cfg()).unwrap();
         let encrypted = encrypt(encoded, store_pwd, salt)?;
 
@@ -131,7 +131,7 @@ impl EncryptedRecord {
         self.metadata.clone()
     }
 
-    pub fn decrypt(&self, store_pwd: String, salt: String) -> Result<DecryptedRecord> {
+    pub fn decrypt(&self, store_pwd: &str, salt: &str) -> Result<DecryptedRecord> {
         let decrypted = decrypt(self.value.clone(), store_pwd, salt)?;
         let (decoded, _len) =
             bincode::decode_from_slice(&decrypted[..], util::bincode_cfg()).unwrap();
@@ -187,9 +187,9 @@ mod tests {
             format!("{:?}", dpr.creds),
             "Creds{user: alice@site.com, password: *****}"
         );
-        let epr = dpr.encrypt(pwd.clone(), salt.clone()).unwrap();
+        let epr = dpr.encrypt(&pwd, &salt).unwrap();
         assert_eq!(54, epr.value.len());
-        let re_dpr = epr.decrypt(pwd, salt).unwrap();
+        let re_dpr = epr.decrypt(&pwd, &salt).unwrap();
         assert_eq!(re_dpr.creds.password, "4 s3kr1t");
     }
 }

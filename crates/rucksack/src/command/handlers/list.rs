@@ -347,7 +347,7 @@ fn extract_results(
         let record = records::decrypt_versioned(
             i.value(),
             app.db.store_pwd(),
-            app.inputs.salt(),
+            &app.inputs.salt(),
             app.db.version(),
         )?;
         let analyzed = analyzer::analyze(record.password());

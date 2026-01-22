@@ -90,7 +90,7 @@ pub fn categories(_matches: &ArgMatches, app: &App) -> Result<()> {
         let dr = records::decrypt_versioned(
             i.value(),
             app.db.store_pwd(),
-            app.inputs.salt(),
+            &app.inputs.salt(),
             app.db.version(),
         )
         .with_context(|| format!("failed to decrypt record '{}'", i.key()))?;
@@ -116,7 +116,7 @@ pub fn tags(_matches: &ArgMatches, app: &App) -> Result<()> {
         let dr = records::decrypt_versioned(
             i.value(),
             app.db.store_pwd(),
-            app.inputs.salt(),
+            &app.inputs.salt(),
             app.db.version(),
         )
         .with_context(|| format!("failed to decrypt record '{}'", i.key()))?;

@@ -15,7 +15,7 @@ pub enum KeySize {
 }
 
 #[must_use = "encryption result must be checked - data may not be encrypted"]
-pub fn encrypt(data: Vec<u8>, pwd: String, salt: String) -> Result<Vec<u8>> {
+pub fn encrypt(data: Vec<u8>, pwd: &str, salt: &str) -> Result<Vec<u8>> {
     let key_bytes = sized_key(pwd, KeySize::Bit256);
     let key = aead::Key::<Aes256Gcm>::from_slice(key_bytes.as_ref());
     let cipher = Aes256Gcm::new(key);
@@ -27,7 +27,7 @@ pub fn encrypt(data: Vec<u8>, pwd: String, salt: String) -> Result<Vec<u8>> {
 }
 
 #[must_use = "decryption result must be checked - data may not be decrypted"]
-pub fn decrypt(encrypted: Vec<u8>, pwd: String, salt: String) -> Result<Vec<u8>> {
+pub fn decrypt(encrypted: Vec<u8>, pwd: &str, salt: &str) -> Result<Vec<u8>> {
     let key_bytes = sized_key(pwd, KeySize::Bit256);
     let key = aead::Key::<Aes256Gcm>::from_slice(key_bytes.as_ref());
     let cipher = Aes256Gcm::new(key);
@@ -38,7 +38,7 @@ pub fn decrypt(encrypted: Vec<u8>, pwd: String, salt: String) -> Result<Vec<u8>>
     })
 }
 
-fn sized_key(source: String, key_size: KeySize) -> Vec<u8> {
+fn sized_key(source: &str, key_size: KeySize) -> Vec<u8> {
     let size: usize = match key_size {
         KeySize::Bit128 => 16,
         KeySize::Bit256 => 32,
@@ -53,7 +53,7 @@ fn sized_key(source: String, key_size: KeySize) -> Vec<u8> {
     }
 }
 
-fn sized_nonce(source: String) -> Vec<u8> {
+fn sized_nonce(source: &str) -> Vec<u8> {
     let mut bytes = source.as_bytes().to_vec();
     bytes.resize(NONCE_SIZE, 0x00);
     bytes
@@ -66,10 +66,10 @@ mod tests {
     #[test]
     fn test_encrypt_decrypt_roundtrip() {
         let data = b"Hello, World!".to_vec();
-        let pwd = "test_password".to_string();
-        let salt = "test_salt".to_string();
+        let pwd = "test_password";
+        let salt = "test_salt";
 
-        let encrypted = encrypt(data.clone(), pwd.clone(), salt.clone()).unwrap();
+        let encrypted = encrypt(data.clone(), pwd, salt).unwrap();
         assert_ne!(
             data, encrypted,
             "Encrypted data should differ from original"
@@ -82,10 +82,10 @@ mod tests {
     #[test]
     fn test_encrypt_decrypt_empty_data() {
         let data = Vec::new();
-        let pwd = "password".to_string();
-        let salt = "salt".to_string();
+        let pwd = "password";
+        let salt = "salt";
 
-        let encrypted = encrypt(data.clone(), pwd.clone(), salt.clone()).unwrap();
+        let encrypted = encrypt(data.clone(), pwd, salt).unwrap();
         let decrypted = decrypt(encrypted, pwd, salt).unwrap();
         assert_eq!(data, decrypted);
     }
@@ -93,10 +93,10 @@ mod tests {
     #[test]
     fn test_encrypt_decrypt_large_data() {
         let data = vec![42u8; 10000];
-        let pwd = "strong_password".to_string();
-        let salt = "unique_salt".to_string();
+        let pwd = "strong_password";
+        let salt = "unique_salt";
 
-        let encrypted = encrypt(data.clone(), pwd.clone(), salt.clone()).unwrap();
+        let encrypted = encrypt(data.clone(), pwd, salt).unwrap();
         let decrypted = decrypt(encrypted, pwd, salt).unwrap();
         assert_eq!(data, decrypted);
     }
@@ -104,12 +104,12 @@ mod tests {
     #[test]
     fn test_decrypt_with_wrong_password() {
         let data = b"Secret data".to_vec();
-        let pwd = "correct_password".to_string();
-        let salt = "salt".to_string();
+        let pwd = "correct_password";
+        let salt = "salt";
 
-        let encrypted = encrypt(data, pwd, salt.clone()).unwrap();
+        let encrypted = encrypt(data, pwd, salt).unwrap();
 
-        let wrong_pwd = "wrong_password".to_string();
+        let wrong_pwd = "wrong_password";
         let result = decrypt(encrypted, wrong_pwd, salt);
         assert!(
             result.is_err(),
@@ -120,12 +120,12 @@ mod tests {
     #[test]
     fn test_decrypt_with_wrong_salt() {
         let data = b"Secret data".to_vec();
-        let pwd = "password".to_string();
-        let salt = "correct_salt".to_string();
+        let pwd = "password";
+        let salt = "correct_salt";
 
-        let encrypted = encrypt(data, pwd.clone(), salt).unwrap();
+        let encrypted = encrypt(data, pwd, salt).unwrap();
 
-        let wrong_salt = "wrong_salt".to_string();
+        let wrong_salt = "wrong_salt";
         let result = decrypt(encrypted, pwd, wrong_salt);
         assert!(result.is_err(), "Decryption with wrong salt should fail");
     }
@@ -133,10 +133,10 @@ mod tests {
     #[test]
     fn test_decrypt_corrupted_data() {
         let data = b"Some data".to_vec();
-        let pwd = "password".to_string();
-        let salt = "salt".to_string();
+        let pwd = "password";
+        let salt = "salt";
 
-        let mut encrypted = encrypt(data, pwd.clone(), salt.clone()).unwrap();
+        let mut encrypted = encrypt(data, pwd, salt).unwrap();
 
         // Corrupt the encrypted data
         if !encrypted.is_empty() {
@@ -149,7 +149,7 @@ mod tests {
 
     #[test]
     fn test_sized_key_bit256_short() {
-        let source = "short".to_string();
+        let source = "short";
         let key = sized_key(source, KeySize::Bit256);
         assert_eq!(key.len(), 32, "Bit256 key should be 32 bytes");
         assert_eq!(&key[0..5], b"short");
@@ -160,7 +160,7 @@ mod tests {
     #[test]
     fn test_sized_key_bit256_exact() {
         let source = "a".repeat(32);
-        let key = sized_key(source.clone(), KeySize::Bit256);
+        let key = sized_key(&source, KeySize::Bit256);
         assert_eq!(key.len(), 32);
         assert_eq!(key, source.as_bytes());
     }
@@ -168,13 +168,13 @@ mod tests {
     #[test]
     fn test_sized_key_bit256_long() {
         let source = "a".repeat(50);
-        let key = sized_key(source, KeySize::Bit256);
+        let key = sized_key(&source, KeySize::Bit256);
         assert_eq!(key.len(), 32, "Bit256 key should be truncated to 32 bytes");
     }
 
     #[test]
     fn test_sized_key_bit128_short() {
-        let source = "test".to_string();
+        let source = "test";
         let key = sized_key(source, KeySize::Bit128);
         assert_eq!(key.len(), 16, "Bit128 key should be 16 bytes");
         assert_eq!(&key[0..4], b"test");
@@ -184,7 +184,7 @@ mod tests {
     #[test]
     fn test_sized_key_bit128_exact() {
         let source = "b".repeat(16);
-        let key = sized_key(source.clone(), KeySize::Bit128);
+        let key = sized_key(&source, KeySize::Bit128);
         assert_eq!(key.len(), 16);
         assert_eq!(key, source.as_bytes());
     }
@@ -192,13 +192,13 @@ mod tests {
     #[test]
     fn test_sized_key_bit128_long() {
         let source = "c".repeat(30);
-        let key = sized_key(source, KeySize::Bit128);
+        let key = sized_key(&source, KeySize::Bit128);
         assert_eq!(key.len(), 16, "Bit128 key should be truncated to 16 bytes");
     }
 
     #[test]
     fn test_sized_nonce_short() {
-        let source = "abc".to_string();
+        let source = "abc";
         let nonce = sized_nonce(source);
         assert_eq!(nonce.len(), NONCE_SIZE);
         assert_eq!(&nonce[0..3], b"abc");
@@ -208,7 +208,7 @@ mod tests {
     #[test]
     fn test_sized_nonce_exact() {
         let source = "x".repeat(NONCE_SIZE);
-        let nonce = sized_nonce(source.clone());
+        let nonce = sized_nonce(&source);
         assert_eq!(nonce.len(), NONCE_SIZE);
         assert_eq!(nonce, source.as_bytes());
     }
@@ -216,7 +216,7 @@ mod tests {
     #[test]
     fn test_sized_nonce_long() {
         let source = "y".repeat(20);
-        let nonce = sized_nonce(source);
+        let nonce = sized_nonce(&source);
         assert_eq!(
             nonce.len(),
             NONCE_SIZE,
@@ -227,10 +227,10 @@ mod tests {
     #[test]
     fn test_encrypt_deterministic_with_same_inputs() {
         let data = b"Test data".to_vec();
-        let pwd = "password".to_string();
-        let salt = "salt".to_string();
+        let pwd = "password";
+        let salt = "salt";
 
-        let encrypted1 = encrypt(data.clone(), pwd.clone(), salt.clone()).unwrap();
+        let encrypted1 = encrypt(data.clone(), pwd, salt).unwrap();
         let encrypted2 = encrypt(data, pwd, salt).unwrap();
 
         assert_eq!(
@@ -242,10 +242,10 @@ mod tests {
     #[test]
     fn test_encrypt_different_with_different_salt() {
         let data = b"Test data".to_vec();
-        let pwd = "password".to_string();
+        let pwd = "password";
 
-        let encrypted1 = encrypt(data.clone(), pwd.clone(), "salt1".to_string()).unwrap();
-        let encrypted2 = encrypt(data, pwd, "salt2".to_string()).unwrap();
+        let encrypted1 = encrypt(data.clone(), pwd, "salt1").unwrap();
+        let encrypted2 = encrypt(data, pwd, "salt2").unwrap();
 
         assert_ne!(
             encrypted1, encrypted2,
@@ -256,10 +256,10 @@ mod tests {
     #[test]
     fn test_encrypt_different_with_different_password() {
         let data = b"Test data".to_vec();
-        let salt = "salt".to_string();
+        let salt = "salt";
 
-        let encrypted1 = encrypt(data.clone(), "password1".to_string(), salt.clone()).unwrap();
-        let encrypted2 = encrypt(data, "password2".to_string(), salt).unwrap();
+        let encrypted1 = encrypt(data.clone(), "password1", salt).unwrap();
+        let encrypted2 = encrypt(data, "password2", salt).unwrap();
 
         assert_ne!(
             encrypted1, encrypted2,

@@ -182,9 +182,9 @@ mod tests {
             format!("{:?}", dpr.secrets),
             "Creds{user: alice@site.com, password: *****}"
         );
-        let epr = dpr.encrypt(pwd.clone(), salt.clone()).unwrap();
+        let epr = dpr.encrypt(&pwd, &salt).unwrap();
         assert_eq!(118, epr.value.len());
-        let re_dpr = epr.decrypt(pwd, salt).unwrap();
+        let re_dpr = epr.decrypt(&pwd, &salt).unwrap();
         assert_eq!(re_dpr.secrets.password, "4 s3kr1t");
     }
 
@@ -319,7 +319,7 @@ mod tests {
         let hm: HashMap = dashmap::DashMap::new();
 
         let record = testing::data::plaintext_record_v080();
-        let encrypted = record.encrypt(pwd, salt).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
         hm.insert("test_key".to_string(), encrypted);
 
         // Serialize hashmap
@@ -361,7 +361,7 @@ mod tests {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
         let v070_record = testing::data::plaintext_record_v070();
-        let v070_encrypted = v070_record.encrypt(pwd, salt).unwrap();
+        let v070_encrypted = v070_record.encrypt(&pwd, &salt).unwrap();
 
         let migrated = migrate_encrypted_record_from_v070(v070_encrypted.clone());
         assert_eq!(migrated.key(), v070_encrypted.key());
@@ -374,10 +374,10 @@ mod tests {
         let salt = time::now();
         let record = testing::data::plaintext_record_v080();
 
-        let encrypted = record.encrypt(pwd.clone(), salt.clone()).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
         assert_ne!(encrypted.value, vec![]);
 
-        let decrypted = encrypted.decrypt(pwd, salt).unwrap();
+        let decrypted = encrypted.decrypt(&pwd, &salt).unwrap();
         assert_eq!(decrypted.secrets.user, record.secrets.user);
         assert_eq!(decrypted.secrets.password, record.secrets.password);
     }
@@ -410,7 +410,7 @@ mod tests {
         let salt = time::now();
 
         let record_v070 = testing::data::plaintext_record_v070();
-        let encrypted_v070 = record_v070.encrypt(pwd, salt).unwrap();
+        let encrypted_v070 = record_v070.encrypt(&pwd, &salt).unwrap();
         hm_v070.insert("test_key".to_string(), encrypted_v070);
 
         let hm_v080 = migrate_hashmap_from_v070(hm_v070);
@@ -425,7 +425,7 @@ mod tests {
         let hm_v070: v070::HashMap = dashmap::DashMap::new();
 
         let record = testing::data::plaintext_record_v070();
-        let encrypted = record.encrypt(pwd, salt).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
         hm_v070.insert("v070_key".to_string(), encrypted);
 
         let mut data: Vec<(String, v070::EncryptedRecord)> = Vec::new();

@@ -91,9 +91,9 @@ impl std::fmt::Debug for Creds {
 }
 
 impl DecryptedRecord {
-    pub fn encrypt(&self, store_pwd: String) -> Result<EncryptedRecord> {
+    pub fn encrypt(&self, store_pwd: &str) -> Result<EncryptedRecord> {
         let encoded = bincode::encode_to_vec(&self.value, util::bincode_cfg()).unwrap();
-        let encrypted = encrypt(encoded, store_pwd, self.metadata.updated.clone())?;
+        let encrypted = encrypt(encoded, store_pwd, &self.metadata.updated)?;
 
         Ok(EncryptedRecord {
             key: self.key.clone(),
@@ -104,9 +104,8 @@ impl DecryptedRecord {
 }
 
 impl EncryptedRecord {
-    pub fn decrypt(&self, store_pwd: String) -> DecryptedRecord {
-        let decrypted =
-            decrypt(self.value.clone(), store_pwd, self.metadata.updated.clone()).unwrap();
+    pub fn decrypt(&self, store_pwd: &str) -> DecryptedRecord {
+        let decrypted = decrypt(self.value.clone(), store_pwd, &self.metadata.updated).unwrap();
         let (decoded, _len) =
             bincode::decode_from_slice(&decrypted[..], util::bincode_cfg()).unwrap();
 
@@ -147,9 +146,9 @@ mod tests {
             format!("{:?}", dpr.value),
             "Creds{user: alice@site.com, password: *****}"
         );
-        let epr = dpr.encrypt(store_pwd.clone()).unwrap();
+        let epr = dpr.encrypt(&store_pwd).unwrap();
         assert_eq!(54, epr.value.len());
-        let re_dpr = epr.decrypt(store_pwd);
+        let re_dpr = epr.decrypt(&store_pwd);
         assert_eq!(re_dpr.value.password, "4 s3kr1t");
     }
 }

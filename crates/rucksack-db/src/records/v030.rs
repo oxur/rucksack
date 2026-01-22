@@ -82,9 +82,9 @@ impl DecryptedRecord {
         self.metadata.clone()
     }
 
-    pub fn encrypt(&self, store_pwd: String) -> Result<EncryptedRecord> {
+    pub fn encrypt(&self, store_pwd: &str) -> Result<EncryptedRecord> {
         let encoded = bincode::encode_to_vec(&self.creds, util::bincode_cfg()).unwrap();
-        let encrypted = encrypt(encoded, store_pwd, self.metadata().updated)?;
+        let encrypted = encrypt(encoded, store_pwd, &self.metadata().updated)?;
 
         Ok(EncryptedRecord {
             key: self.key(),
@@ -110,8 +110,8 @@ impl EncryptedRecord {
         self.metadata.clone()
     }
 
-    pub fn decrypt(&self, store_pwd: String) -> Result<DecryptedRecord> {
-        let decrypted = decrypt(self.value.clone(), store_pwd, self.metadata().updated)?;
+    pub fn decrypt(&self, store_pwd: &str) -> Result<DecryptedRecord> {
+        let decrypted = decrypt(self.value.clone(), store_pwd, &self.metadata().updated)?;
         let (decoded, _len) =
             bincode::decode_from_slice(&decrypted[..], util::bincode_cfg()).unwrap();
 
@@ -180,11 +180,11 @@ mod tests {
         let record = test_decrypted_record();
         let pwd = "store_password".to_string();
 
-        let encrypted = record.encrypt(pwd.clone()).unwrap();
+        let encrypted = record.encrypt(&pwd).unwrap();
         assert!(!encrypted.value.is_empty());
         assert_eq!(encrypted.key(), record.key());
 
-        let decrypted = encrypted.decrypt(pwd).unwrap();
+        let decrypted = encrypted.decrypt(&pwd).unwrap();
         assert_eq!(decrypted.creds.user, record.creds.user);
         assert_eq!(decrypted.creds.password, record.creds.password);
     }
@@ -192,14 +192,14 @@ mod tests {
     #[test]
     fn test_encrypted_record_key() {
         let record = test_decrypted_record();
-        let encrypted = record.encrypt("password".to_string()).unwrap();
+        let encrypted = record.encrypt("password").unwrap();
         assert_eq!(encrypted.key(), record.key());
     }
 
     #[test]
     fn test_encrypted_record_metadata() {
         let record = test_decrypted_record();
-        let encrypted = record.encrypt("password".to_string()).unwrap();
+        let encrypted = record.encrypt("password").unwrap();
         let metadata = encrypted.metadata();
         assert_eq!(metadata.url, record.metadata.url);
     }
@@ -208,7 +208,7 @@ mod tests {
     fn test_decode_hashmap() {
         let hm: HashMap = dashmap::DashMap::new();
         let record = test_decrypted_record();
-        let encrypted = record.encrypt("password".to_string()).unwrap();
+        let encrypted = record.encrypt("password").unwrap();
         hm.insert("test_key".to_string(), encrypted);
 
         let mut data: Vec<(String, EncryptedRecord)> = Vec::new();

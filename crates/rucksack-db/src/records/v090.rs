@@ -177,9 +177,9 @@ impl DecryptedRecord {
         self.metadata.add_tags(values)
     }
 
-    pub fn encrypt(&self, store_pwd: String, salt: String) -> Result<EncryptedRecord> {
+    pub fn encrypt(&self, store_pwd: &str, salt: &str) -> Result<EncryptedRecord> {
         let encoded_secrets = bincode::encode_to_vec(&self.secrets, util::bincode_cfg()).unwrap();
-        let encrypted_secrets = encrypt(encoded_secrets, store_pwd.clone(), salt.clone())?;
+        let encrypted_secrets = encrypt(encoded_secrets, store_pwd, salt)?;
 
         let encoded_history = bincode::encode_to_vec(&self.history, util::bincode_cfg()).unwrap();
         let encrypted_history = encrypt(encoded_history, store_pwd, salt)?;
@@ -322,8 +322,8 @@ impl EncryptedRecord {
         self.metadata.clone()
     }
 
-    pub fn decrypt(&self, store_pwd: String, salt: String) -> Result<DecryptedRecord> {
-        let decrypted_secrets = decrypt(self.value.clone(), store_pwd.clone(), salt.clone())?;
+    pub fn decrypt(&self, store_pwd: &str, salt: &str) -> Result<DecryptedRecord> {
+        let decrypted_secrets = decrypt(self.value.clone(), store_pwd, salt)?;
         let (decoded_secrets, _len) =
             bincode::decode_from_slice(&decrypted_secrets[..], util::bincode_cfg())
                 .map_err(|e| anyhow!("failed to decode secrets: {}", e))?;
@@ -388,9 +388,9 @@ mod tests {
             format!("{:?}", dpr.secrets),
             "Creds{user: alice@site.com, password: *****}"
         );
-        let epr = dpr.encrypt(pwd.clone(), salt.clone()).unwrap();
+        let epr = dpr.encrypt(&pwd, &salt).unwrap();
         assert_eq!(118, epr.value.len());
-        let re_dpr = epr.decrypt(pwd, salt).unwrap();
+        let re_dpr = epr.decrypt(&pwd, &salt).unwrap();
         assert_eq!(re_dpr.secrets.password, "6 s3kr1t");
     }
 
@@ -645,10 +645,10 @@ mod tests {
         record.secrets.password = "secret123".to_string();
         record.metadata.name = "Test".to_string();
 
-        let encrypted = record.encrypt(pwd.clone(), salt.clone()).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
         assert_ne!(encrypted.value, vec![]);
 
-        let decrypted = encrypted.decrypt(pwd, salt).unwrap();
+        let decrypted = encrypted.decrypt(&pwd, &salt).unwrap();
         assert_eq!(decrypted.secrets.user, record.secrets.user);
         assert_eq!(decrypted.secrets.password, record.secrets.password);
         assert_eq!(decrypted.metadata.name, record.metadata.name);
@@ -659,7 +659,7 @@ mod tests {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
         let record = testing::data::plaintext_record_v090();
-        let encrypted = record.encrypt(pwd, salt).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
 
         assert!(!encrypted.key().is_empty());
         assert!(!encrypted.value().is_empty());
@@ -672,7 +672,7 @@ mod tests {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
         let record = DecryptedRecord::new();
-        let mut encrypted = record.encrypt(pwd, salt).unwrap();
+        let mut encrypted = record.encrypt(&pwd, &salt).unwrap();
 
         encrypted.add_tag("new_tag".to_string());
         assert_eq!(encrypted.metadata.tags.len(), 1);
@@ -684,7 +684,7 @@ mod tests {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
         let record = DecryptedRecord::new();
-        let mut encrypted = record.encrypt(pwd, salt).unwrap();
+        let mut encrypted = record.encrypt(&pwd, &salt).unwrap();
 
         encrypted.add_tags(vec!["tag1".to_string(), "tag2".to_string()]);
         assert_eq!(encrypted.metadata.tags.len(), 2);
@@ -734,8 +734,8 @@ mod tests {
         record.secrets.password = "pass1".to_string();
         record.set_password("pass2".to_string());
 
-        let encrypted = record.encrypt(pwd.clone(), salt.clone()).unwrap();
-        let decrypted = encrypted.decrypt(pwd, salt).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
+        let decrypted = encrypted.decrypt(&pwd, &salt).unwrap();
 
         assert_eq!(decrypted.history.len(), 1);
         assert_eq!(decrypted.history[0].secrets.password, "pass1");
@@ -748,7 +748,7 @@ mod tests {
         let hm: HashMap = dashmap::DashMap::new();
 
         let record = DecryptedRecord::new();
-        let encrypted = record.encrypt(pwd, salt).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
         hm.insert("test_key".to_string(), encrypted);
 
         // Serialize hashmap

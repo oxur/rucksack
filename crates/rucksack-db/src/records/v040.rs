@@ -57,7 +57,7 @@ impl DecryptedRecord {
         self.creds.user.clone()
     }
 
-    pub fn encrypt(&self, store_pwd: String, salt: String) -> Result<EncryptedRecord> {
+    pub fn encrypt(&self, store_pwd: &str, salt: &str) -> Result<EncryptedRecord> {
         let encoded = bincode::encode_to_vec(&self.creds, util::bincode_cfg()).unwrap();
         let encrypted = encrypt(encoded, store_pwd, salt)?;
 
@@ -89,7 +89,7 @@ impl EncryptedRecord {
         self.metadata.clone()
     }
 
-    pub fn decrypt(&self, store_pwd: String, salt: String) -> Result<DecryptedRecord> {
+    pub fn decrypt(&self, store_pwd: &str, salt: &str) -> Result<DecryptedRecord> {
         let decrypted = decrypt(self.value.clone(), store_pwd, salt)?;
         let (decoded, _len) =
             bincode::decode_from_slice(&decrypted[..], util::bincode_cfg()).unwrap();
@@ -121,9 +121,9 @@ mod tests {
             format!("{:?}", dpr.creds),
             "Creds{user: alice@site.com, password: *****}"
         );
-        let epr = dpr.encrypt(pwd.clone(), salt.clone()).unwrap();
+        let epr = dpr.encrypt(&pwd, &salt).unwrap();
         assert_eq!(54, epr.value.len());
-        let re_dpr = epr.decrypt(pwd, salt).unwrap();
+        let re_dpr = epr.decrypt(&pwd, &salt).unwrap();
         assert_eq!(re_dpr.creds.password, "4 s3kr1t");
     }
 
@@ -164,7 +164,7 @@ mod tests {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
         let record = testing::data::plaintext_record_v040();
-        let encrypted = record.encrypt(pwd, salt).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
         let key = encrypted.key();
         assert!(key.contains("alice@site.com"));
     }
@@ -174,7 +174,7 @@ mod tests {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
         let record = testing::data::plaintext_record_v040();
-        let encrypted = record.encrypt(pwd, salt).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
         let metadata = encrypted.metadata();
         assert_eq!(metadata.kind, Kind::Password);
     }
@@ -184,7 +184,7 @@ mod tests {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
         let record = testing::data::plaintext_record_v040();
-        let encrypted = record.encrypt(pwd, salt).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
         let value = encrypted.value();
         assert!(!value.is_empty());
     }
@@ -195,7 +195,7 @@ mod tests {
         let record = testing::data::plaintext_record_v040();
         let pwd = testing::data::store_pwd();
         let salt = time::now();
-        let encrypted = record.encrypt(pwd, salt).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
         hm.insert("test_key".to_string(), encrypted);
 
         let mut data: Vec<(String, EncryptedRecord)> = Vec::new();

@@ -393,7 +393,7 @@ impl DecryptedRecord {
         self.secrets.user.clone()
     }
 
-    pub fn encrypt(&self, store_pwd: String, salt: String) -> Result<EncryptedRecord> {
+    pub fn encrypt(&self, store_pwd: &str, salt: &str) -> Result<EncryptedRecord> {
         let encoded = bincode::encode_to_vec(&self.secrets, util::bincode_cfg()).unwrap();
         let encrypted = encrypt(encoded, store_pwd, salt)?;
 
@@ -441,7 +441,7 @@ impl EncryptedRecord {
         self.metadata.clone()
     }
 
-    pub fn decrypt(&self, store_pwd: String, salt: String) -> Result<DecryptedRecord> {
+    pub fn decrypt(&self, store_pwd: &str, salt: &str) -> Result<DecryptedRecord> {
         let decrypted = decrypt(self.value.clone(), store_pwd, salt)?;
         let (decoded, _len) =
             bincode::decode_from_slice(&decrypted[..], util::bincode_cfg()).unwrap();
@@ -494,9 +494,9 @@ mod tests {
             format!("{:?}", dpr.secrets),
             "Creds{user: alice@site.com, password: *****}"
         );
-        let epr = dpr.encrypt(pwd.clone(), salt.clone()).unwrap();
+        let epr = dpr.encrypt(&pwd, &salt).unwrap();
         assert_eq!(118, epr.value.len());
-        let re_dpr = epr.decrypt(pwd, salt).unwrap();
+        let re_dpr = epr.decrypt(&pwd, &salt).unwrap();
         assert_eq!(re_dpr.secrets.password, "4 s3kr1t");
     }
 
@@ -610,10 +610,10 @@ mod tests {
         let salt = time::now();
         let record = testing::data::plaintext_record_v070();
 
-        let encrypted = record.encrypt(pwd.clone(), salt.clone()).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
         assert!(!encrypted.value.is_empty());
 
-        let decrypted = encrypted.decrypt(pwd, salt).unwrap();
+        let decrypted = encrypted.decrypt(&pwd, &salt).unwrap();
         assert_eq!(decrypted.secrets.user, record.secrets.user);
         assert_eq!(decrypted.secrets.password, record.secrets.password);
     }
@@ -625,7 +625,7 @@ mod tests {
         let hm: HashMap = dashmap::DashMap::new();
 
         let record = testing::data::plaintext_record_v070();
-        let encrypted = record.encrypt(pwd, salt).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
         hm.insert("test_key".to_string(), encrypted);
 
         // Serialize
@@ -686,7 +686,7 @@ mod tests {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
         let record = testing::data::plaintext_record_v070();
-        let encrypted = record.encrypt(pwd, salt).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
 
         assert!(!encrypted.key().is_empty());
         assert!(!encrypted.value().is_empty());
@@ -746,7 +746,7 @@ mod tests {
         let salt = time::now();
 
         let record_v060 = testing::data::plaintext_record_v060();
-        let encrypted_v060 = record_v060.encrypt(pwd, salt).unwrap();
+        let encrypted_v060 = record_v060.encrypt(&pwd, &salt).unwrap();
         hm_v060.insert("test_key".to_string(), encrypted_v060);
 
         let hm_v070 = migrate_hashmap_from_v060(hm_v060);
@@ -761,7 +761,7 @@ mod tests {
         let hm_v060: v060::HashMap = dashmap::DashMap::new();
 
         let record = testing::data::plaintext_record_v060();
-        let encrypted = record.encrypt(pwd, salt).unwrap();
+        let encrypted = record.encrypt(&pwd, &salt).unwrap();
         hm_v060.insert("v060_key".to_string(), encrypted);
 
         let mut data: Vec<(String, v060::EncryptedRecord)> = Vec::new();
@@ -830,7 +830,7 @@ mod tests {
         let pwd = testing::data::store_pwd();
         let salt = time::now();
         let record_v060 = testing::data::plaintext_record_v060();
-        let encrypted_v060 = record_v060.encrypt(pwd, salt).unwrap();
+        let encrypted_v060 = record_v060.encrypt(&pwd, &salt).unwrap();
 
         let encrypted_v070 = migrate_encrypted_record_from_v060(encrypted_v060.clone());
         assert_eq!(encrypted_v070.key(), encrypted_v060.key());

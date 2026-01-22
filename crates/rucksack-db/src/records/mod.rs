@@ -31,8 +31,8 @@ pub fn version() -> versions::SemVer {
 /// - v0.9.0+:       Secrets struct with history field
 pub fn decrypt_versioned(
     encrypted: &EncryptedRecord,
-    store_pwd: String,
-    salt: String,
+    store_pwd: &str,
+    salt: &str,
     db_version: versions::SemVer,
 ) -> anyhow::Result<DecryptedRecord> {
     use anyhow::anyhow;

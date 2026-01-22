@@ -315,7 +315,7 @@ impl DB {
         self.hash_map.iter()
     }
 
-    pub fn salt(&self) -> String {
+    pub fn salt(&self) -> &str {
         self.salt
             .as_ref()
             .expect(
@@ -323,7 +323,6 @@ impl DB {
                 This indicates the database was not properly initialized with a salt.",
             )
             .expose_secret()
-            .to_string()
     }
 
     fn serialise(&self) -> Result<Vec<u8>> {
@@ -348,7 +347,7 @@ impl DB {
         }
     }
 
-    pub fn store_pwd(&self) -> String {
+    pub fn store_pwd(&self) -> &str {
         self.store_pwd
             .as_ref()
             .expect(
@@ -356,7 +355,6 @@ impl DB {
                 This indicates the database was not properly initialized with a password.",
             )
             .expose_secret()
-            .to_string()
     }
 
     // Note that the key has to be passed here, even though the
