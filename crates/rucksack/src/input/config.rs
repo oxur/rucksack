@@ -162,7 +162,7 @@ impl Config {
             log::debug!(operation = "init"; "File already exists; skipping init");
             return Ok(());
         }
-        file::write(DEFAULT.as_bytes().to_vec(), opts.file_name.clone())
+        file::write(DEFAULT.as_bytes(), opts.file_name.clone())
     }
 
     pub fn new(opts: &Opts) -> Result<Config> {

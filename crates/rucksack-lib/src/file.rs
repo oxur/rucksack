@@ -150,7 +150,7 @@ pub fn read(file_name: impl AsRef<path::Path>) -> Result<Vec<u8>> {
 }
 
 #[must_use = "file write result must be checked"]
-pub fn write(data: Vec<u8>, path: impl AsRef<path::Path>) -> Result<()> {
+pub fn write(data: &[u8], path: impl AsRef<path::Path>) -> Result<()> {
     let path_ref = path.as_ref();
     let ap = create_parents(path_ref)?;
     // Then write the file
@@ -162,7 +162,7 @@ pub fn write(data: Vec<u8>, path: impl AsRef<path::Path>) -> Result<()> {
         .open(&ap)
         .with_context(|| format!("failed to open file for writing: {}", path_ref.display()))?;
 
-    file.write_all(&data[..])
+    file.write_all(data)
         .with_context(|| format!("failed to write data to file: {}", path_ref.display()))?;
 
     file.sync_all()
@@ -289,7 +289,7 @@ mod tests {
         let file_path = dir.path().join("test.txt");
         let data = b"Hello, World!".to_vec();
 
-        let result = write(data.clone(), &file_path);
+        let result = write(&data, &file_path);
         assert!(result.is_ok());
 
         let read_data = read(&file_path).unwrap();
@@ -302,7 +302,7 @@ mod tests {
         let file_path = dir.path().join("empty.txt");
         let data = Vec::new();
 
-        let result = write(data.clone(), &file_path);
+        let result = write(&data, &file_path);
         assert!(result.is_ok());
 
         let read_data = read(&file_path).unwrap();
@@ -315,7 +315,7 @@ mod tests {
         let file_path = dir.path().join("large.bin");
         let data = vec![42u8; 10000];
 
-        let result = write(data.clone(), &file_path);
+        let result = write(&data, &file_path);
         assert!(result.is_ok());
 
         let read_data = read(&file_path).unwrap();
@@ -328,7 +328,7 @@ mod tests {
         let file_path = dir.path().join("nested/dirs/file.txt");
         let data = b"test".to_vec();
 
-        let result = write(data.clone(), &file_path);
+        let result = write(&data, &file_path);
         assert!(result.is_ok());
         assert!(file_path.exists());
     }
@@ -443,11 +443,11 @@ mod tests {
 
         // Write initial data
         let data1 = b"first".to_vec();
-        write(data1, &file_path).unwrap();
+        write(&data1, &file_path).unwrap();
 
         // Overwrite with new data
         let data2 = b"second".to_vec();
-        write(data2.clone(), &file_path).unwrap();
+        write(&data2, &file_path).unwrap();
 
         // Verify new data
         let read_data = read(&file_path).unwrap();

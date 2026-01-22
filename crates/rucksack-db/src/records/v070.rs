@@ -102,7 +102,7 @@ pub fn migrate_hashmap_from_v060(hm_v060: v060::HashMap) -> HashMap {
     hm
 }
 
-pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<HashMap> {
+pub fn decode_hashmap(bytes: &[u8], mut version: versions::SemVer) -> Result<HashMap> {
     log::debug!(version = version.to_string().as_str(), operation = "decode"; "Decoding hashmap from stored bytes");
     version = shared::trim_version(version);
     let hm: HashMap = dashmap::DashMap::new();
@@ -113,7 +113,7 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
     if version < current_version {
         // version.
         log::info!(version = "0.6.0", operation = "migrate"; "Attempting to decode hashmap from previous version");
-        let hm = v060::decode_hashmap(bytes, version)?;
+        let hm = v060::decode_hashmap(&bytes, version)?;
         return Ok(migrate_hashmap_from_v060(hm));
     }
     match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
@@ -640,7 +640,7 @@ mod tests {
 
         // Decode
         let version = shared::version(VERSION).unwrap();
-        let decoded = decode_hashmap(bytes, version).unwrap();
+        let decoded = decode_hashmap(&bytes, version).unwrap();
         assert_eq!(decoded.len(), 1);
     }
 
@@ -650,7 +650,7 @@ mod tests {
         let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
 
         let version = shared::version(VERSION).unwrap();
-        let decoded = decode_hashmap(bytes, version).unwrap();
+        let decoded = decode_hashmap(&bytes, version).unwrap();
         assert_eq!(decoded.len(), 0);
     }
 
@@ -774,7 +774,7 @@ mod tests {
         let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
 
         let version = shared::version("0.6.0").unwrap();
-        let decoded_hm = decode_hashmap(bytes, version).unwrap();
+        let decoded_hm = decode_hashmap(&bytes, version).unwrap();
         assert_eq!(decoded_hm.len(), 1);
         assert!(decoded_hm.contains_key("v060_key"));
     }
@@ -783,7 +783,7 @@ mod tests {
     fn test_decode_hashmap_error() {
         let invalid_bytes = vec![1, 2, 3, 4, 5];
         let version = shared::version(VERSION).unwrap();
-        let result = decode_hashmap(invalid_bytes, version);
+        let result = decode_hashmap(&invalid_bytes, version);
         assert!(result.is_err());
     }
 

@@ -72,8 +72,8 @@ impl EncryptedDB {
         Ok(edb)
     }
 
-    pub fn bytes(&self) -> Vec<u8> {
-        self.bytes.clone()
+    pub fn bytes(&self) -> &[u8] {
+        &self.bytes
     }
 
     pub fn decrypt(&mut self) -> Result<()> {

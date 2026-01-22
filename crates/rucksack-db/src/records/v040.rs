@@ -12,7 +12,7 @@ pub const VERSION: &str = "0.4.0";
 
 pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
 
-pub fn decode_hashmap(bytes: Vec<u8>, version: versions::SemVer) -> Result<HashMap> {
+pub fn decode_hashmap(bytes: &[u8], version: versions::SemVer) -> Result<HashMap> {
     log::debug!(version = version.to_string().as_str(), operation = "decode"; "Decoding hashmap from stored bytes");
     let hm: HashMap = dashmap::DashMap::new();
     log::trace!(operation = "decode"; "Created hashmap");
@@ -206,7 +206,7 @@ mod tests {
         let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
 
         let version = versions::SemVer::new(VERSION).unwrap();
-        let decoded_hm = decode_hashmap(bytes, version).unwrap();
+        let decoded_hm = decode_hashmap(&bytes, version).unwrap();
         assert_eq!(decoded_hm.len(), 1);
         assert!(decoded_hm.contains_key("test_key"));
     }
@@ -217,7 +217,7 @@ mod tests {
         let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
 
         let version = versions::SemVer::new(VERSION).unwrap();
-        let decoded_hm = decode_hashmap(bytes, version).unwrap();
+        let decoded_hm = decode_hashmap(&bytes, version).unwrap();
         assert_eq!(decoded_hm.len(), 0);
     }
 
@@ -225,7 +225,7 @@ mod tests {
     fn test_decode_hashmap_error() {
         let invalid_bytes = vec![1, 2, 3, 4, 5];
         let version = versions::SemVer::new(VERSION).unwrap();
-        let result = decode_hashmap(invalid_bytes, version);
+        let result = decode_hashmap(&invalid_bytes, version);
         assert!(result.is_err());
     }
 }

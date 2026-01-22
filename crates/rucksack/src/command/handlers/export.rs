@@ -75,7 +75,7 @@ fn to_chrome_csv(matches: &ArgMatches, app: &App, csv_path: String) -> Result<()
         .into_inner()
         .map_err(|e| anyhow!("failed to finalize CSV data: {}", e))?;
     print_report(count, app.db.hash_map().len());
-    file::write(data, csv_path.clone())
+    file::write(&data, csv_path.clone())
         .with_context(|| format!("failed to write Chrome CSV export to '{}'", csv_path))
 }
 
@@ -101,7 +101,7 @@ fn to_firefox_csv(matches: &ArgMatches, app: &App, csv_path: String) -> Result<(
         .into_inner()
         .map_err(|e| anyhow!("failed to finalize CSV data: {}", e))?;
     print_report(count, app.db.hash_map().len());
-    file::write(data, csv_path.clone())
+    file::write(&data, csv_path.clone())
         .with_context(|| format!("failed to write Firefox CSV export to '{}'", csv_path))
 }
 

@@ -11,7 +11,7 @@ pub const VERSION: &str = "0.2.0";
 
 pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
 
-pub fn decode_hashmap(bytes: Vec<u8>, version: versions::SemVer) -> Result<HashMap> {
+pub fn decode_hashmap(bytes: &[u8], version: versions::SemVer) -> Result<HashMap> {
     log::debug!(version = version.to_string().as_str(), operation = "decode"; "Decoding hashmap from stored bytes");
     let hm: HashMap = dashmap::DashMap::new();
     log::trace!(operation = "decode"; "Created hashmap");

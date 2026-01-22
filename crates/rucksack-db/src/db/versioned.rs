@@ -41,8 +41,8 @@ impl VersionedDB {
         VersionedDB::new(bytes, records::version().to_string())
     }
 
-    pub fn bytes(&self) -> Vec<u8> {
-        self.bytes.clone()
+    pub fn bytes(&self) -> &[u8] {
+        &self.bytes
     }
 
     pub fn hash(&self) -> u32 {

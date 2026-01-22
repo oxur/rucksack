@@ -26,7 +26,7 @@ pub fn migrate_hashmap_from_v050(hm_v050: v050::HashMap) -> HashMap {
     hm
 }
 
-pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<HashMap> {
+pub fn decode_hashmap(bytes: &[u8], mut version: versions::SemVer) -> Result<HashMap> {
     log::debug!(version = version.to_string().as_str(), operation = "decode"; "Decoding hashmap from stored bytes");
     version = shared::trim_version(version);
     let hm: HashMap = dashmap::DashMap::new();
@@ -36,7 +36,7 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
     let current_version = shared::version(VERSION).map_err(|e| anyhow!("{}", e))?;
     if version < current_version {
         log::info!(version = "0.5.0", operation = "migrate"; "Attempting to decode hashmap from previous version");
-        let hm = v050::decode_hashmap(bytes, version)?;
+        let hm = v050::decode_hashmap(&bytes, version)?;
         return Ok(migrate_hashmap_from_v050(hm));
     }
     match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
