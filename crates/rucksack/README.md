@@ -29,9 +29,9 @@
 * [x] Refactors for safety, style, idiom, anti-patterns (0.9.0)
 * [x] Structured logging (0.9.0)
 * [ ] Breaking refactors for safety, style, idiom, anti-patterns (0.10.0)
-* [ ] Perfoance optimisations (0.11.0)
-* [ ] Fully document all public functions, structs, enums (0.11.0)
-* [ ] Database backups, restores, and support for multiple backends (0.12.0)
+* [ ] Perfoance optimisations (0.10.0)
+* [ ] Fully document all public functions, structs, enums (0.10.0)
+* [ ] Database backups, restores, and support for multiple backends (0.11.0)
 * [ ] [Alternate storage backend implementations](https://github.com/oxur/rucksack/milestone/12)
 * [ ] [Local network sync](https://github.com/oxur/rucksack/milestone/13)
 * [ ] [1Password, JSON, import/export improvements](https://github.com/oxur/rucksack/milestone/14), etc.
@@ -87,6 +87,7 @@ Primary project documentation is here:
 A quick peek at the top-level help from the terminal:
 
 ```text
+$ ./bin/rucksack --help
 rucksack: A terminal-based secrets manager, generator, and importer/exporter (Firefox, Chrome) backed with a concurrent hashmap
 
 Usage: rucksack [OPTIONS] [COMMAND]
@@ -96,19 +97,24 @@ Commands:
   backup   Operations related to the a single backup of the secrets DB; used with no subcommand, perform a backup
   backups  Operations related to multiple backups of the secrets DB
   config   Operations related to rucksack configuration
+  dedupe   Deduplication operations on rucksack records
   delete   Delete a single record [aliases: rm, remove]
   export   Export the rucksack db
   gen      Generate a secret
   import   Pull in secrets from other sources
-  list     List all secrets
+  list     List secrets records
   set      Perform various 'write' operations
   show     Display rucksack-specific information
   start    Run rucksack as a daemon, enabling local network syncing services
   help     Print this message or the help of the given subcommand(s)
 
 Options:
-      --config-file <config-file>  The path to the config file to use or create [default: "<user config dir>/rucksack/config.toml"]
-      --log-level <log-level>      Override the configured log-level setting [default: ] [possible values: error, warn, info, debug, trace, ]
+      --config-file <config-file>  The path to the config file to use or create [env: RUXAK_CONFIG_FILE=]
+      --log-level <log-level>      Override the configured log-level setting [env: RUXAK_LOG_LEVEL=] [possible values: error, warn, info, debug, trace, ]
+  -d, --db <db>                    Path to the encrypted database to use [env: RUXAK_DB=]
+      --db-pass <db-pass>          Password used to encrypt the database [env: RUXAK_DB_PASS=]
+      --salt <salt>                The salt to use for encrypting the database [env: RUXAK_SALT=]
+      --backup-dir <backup-dir>    Path for database backups [env: RUXAK_BACKUP_DIR=]
       --completions <SHELL>        Emit shell tab completions [possible values: bash, elvish, fish, powershell, zsh]
   -v, --version                    Print version information
   -h, --help                       Print help
