@@ -80,7 +80,7 @@ pub fn new(matches: &ArgMatches) -> Result<()> {
 
 fn generate_pwd(matches: &ArgMatches, encode: Option<&bool>) -> Result<()> {
     let length = matches.get_one::<usize>("length").unwrap();
-    password::display_scored(password::rand(length), encode)
+    password::display_scored(password::rand(length)?, encode)
 }
 
 fn generate_pwd_lipsum(matches: &ArgMatches, encode: Option<&bool>) -> Result<()> {
@@ -91,7 +91,7 @@ fn generate_pwd_lipsum(matches: &ArgMatches, encode: Option<&bool>) -> Result<()
     let suffix_length = matches.get_one::<usize>("suffix-length").unwrap();
     let word_count = matches.get_one::<usize>("word-count").unwrap();
     password::display_scored(
-        password::lipsum(word_count, suffix_length, delimiter),
+        password::lipsum(word_count, suffix_length, delimiter)?,
         encode,
     )
 }

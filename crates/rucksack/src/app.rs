@@ -40,7 +40,12 @@ impl App {
     pub fn config_path(&self) -> path::PathBuf {
         let mut path = path::PathBuf::new();
         path.push(self.inputs.config_file());
-        path.parent().unwrap().to_path_buf()
+        // SAFETY: Config file paths always have a parent directory.
+        // If this path somehow doesn't have a parent (e.g., root "/"),
+        // fall back to current directory.
+        path.parent()
+            .map(|p| p.to_path_buf())
+            .unwrap_or_else(|| path::PathBuf::from("."))
     }
 
     pub fn data_dir(&self) -> String {
@@ -48,7 +53,13 @@ impl App {
     }
 
     pub fn data_path(&self) -> path::PathBuf {
-        self.db_path().parent().unwrap().to_path_buf()
+        // SAFETY: Database file paths always have a parent directory.
+        // If this path somehow doesn't have a parent (e.g., root "/"),
+        // fall back to current directory.
+        self.db_path()
+            .parent()
+            .map(|p| p.to_path_buf())
+            .unwrap_or_else(|| path::PathBuf::from("."))
     }
 
     pub fn db_file(&self) -> String {
