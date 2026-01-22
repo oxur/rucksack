@@ -7,6 +7,36 @@ use rucksack_lib::file;
 
 use crate::crypto;
 
+/// An encrypted database file with decryption capabilities.
+///
+/// `EncryptedDB` represents a database file in its encrypted form, along with the
+/// credentials needed to decrypt it. It manages both the encrypted bytes and the
+/// decrypted plaintext, using `Secret` wrappers to protect sensitive data in memory.
+///
+/// # Security
+///
+/// - Passwords and salts are stored in `SecretString` wrappers
+/// - Decrypted data is stored in `Secret<Vec<u8>>` to prevent accidental exposure
+/// - Encryption uses AES-256-GCM for authenticated encryption
+///
+/// # Examples
+///
+/// ```ignore
+/// use rucksack_db::db::encrypted::EncryptedDB;
+///
+/// // Load and decrypt from file
+/// let db = EncryptedDB::from_file(
+///     "/path/to/db.rucksack",
+///     "password",
+///     "salt",
+/// )?;
+///
+/// // Access decrypted data
+/// let plaintext = db.decrypted();
+///
+/// // Write encrypted data to disk
+/// db.write()?;
+/// ```
 pub struct EncryptedDB {
     bytes: Vec<u8>,
     decrypted: Secret<Vec<u8>>,

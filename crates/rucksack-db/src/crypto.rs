@@ -15,6 +15,34 @@ pub enum KeySize {
     Bit256,
 }
 
+/// Encrypts data using AES-256-GCM.
+///
+/// This function uses AES-256-GCM (Galois/Counter Mode) for authenticated encryption,
+/// providing both confidentiality and integrity. The password is used to derive a
+/// 256-bit encryption key, and the salt is used as a nonce.
+///
+/// # Arguments
+///
+/// * `data` - The plaintext data to encrypt
+/// * `pwd` - Password used to derive the encryption key (will be padded/truncated to 32 bytes)
+/// * `salt` - Salt used as the nonce for encryption (will be padded/truncated to 12 bytes)
+///
+/// # Returns
+///
+/// Returns the encrypted data on success, or an error if encryption fails.
+///
+/// # Errors
+///
+/// Returns an error if:
+/// - The encryption operation fails (e.g., data too large)
+/// - The cipher initialization fails
+///
+/// # Security Considerations
+///
+/// - Uses AES-256-GCM for authenticated encryption
+/// - Password is deterministically padded/truncated to 32 bytes
+/// - Salt is deterministically padded/truncated to 12 bytes
+/// - Same password and salt will always produce the same result for the same data
 #[must_use = "encryption result must be checked - data may not be encrypted"]
 pub fn encrypt(data: Vec<u8>, pwd: &str, salt: &str) -> Result<Vec<u8>> {
     let key_bytes = sized_key(pwd, KeySize::Bit256);
@@ -27,6 +55,43 @@ pub fn encrypt(data: Vec<u8>, pwd: &str, salt: &str) -> Result<Vec<u8>> {
         .map_err(|e| anyhow!("encryption failed: {}", e))
 }
 
+/// Decrypts data that was encrypted using AES-256-GCM.
+///
+/// This function reverses the encryption performed by [`encrypt`], using the same
+/// password and salt to derive the decryption key and nonce. The data is authenticated
+/// during decryption, ensuring it hasn't been tampered with.
+///
+/// # Arguments
+///
+/// * `encrypted` - The encrypted data to decrypt
+/// * `pwd` - Password used to derive the decryption key (must match the encryption password)
+/// * `salt` - Salt used as the nonce (must match the encryption salt)
+///
+/// # Returns
+///
+/// Returns the decrypted plaintext data on success, or an error if decryption fails.
+///
+/// # Errors
+///
+/// Returns an error if:
+/// - The password is incorrect
+/// - The salt doesn't match the one used for encryption
+/// - The encrypted data has been corrupted or tampered with
+/// - The decryption operation fails for any other reason
+///
+/// # Examples
+///
+/// ```no_run
+/// use rucksack_db::crypto;
+///
+/// # fn main() -> anyhow::Result<()> {
+/// let data = b"secret message".to_vec();
+/// let encrypted = crypto::encrypt(data.clone(), "password", "salt")?;
+/// let decrypted = crypto::decrypt(encrypted, "password", "salt")?;
+/// assert_eq!(data, decrypted);
+/// # Ok(())
+/// # }
+/// ```
 #[must_use = "decryption result must be checked - data may not be decrypted"]
 pub fn decrypt(encrypted: Vec<u8>, pwd: &str, salt: &str) -> Result<Vec<u8>> {
     let key_bytes = sized_key(pwd, KeySize::Bit256);

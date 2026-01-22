@@ -33,6 +33,50 @@ use crate::records::{DecryptedRecord, EncryptedRecord, Metadata};
 use crate::store;
 use crate::store::manager::StoreManager;
 
+/// An encrypted password/secrets database.
+///
+/// `DB` provides an encrypted, versioned database for storing passwords and other
+/// secrets. Data is encrypted using AES-256-GCM and stored on disk. The database
+/// supports automatic backups, version migration, and concurrent access through
+/// a thread-safe hashmap.
+///
+/// # Architecture
+///
+/// - **Storage**: Encrypted file on disk with automatic backups
+/// - **In-memory**: Thread-safe hashmap (DashMap) for fast access
+/// - **Encryption**: AES-256-GCM with password-derived keys
+/// - **Versioning**: Schema versioning with automatic migration
+///
+/// # Examples
+///
+/// ```no_run
+/// use rucksack_db::db::DB;
+///
+/// # fn main() -> anyhow::Result<()> {
+/// // Create and initialize a new database
+/// DB::init(
+///     "/path/to/secrets.db",
+///     "/path/to/backups",
+///     Some("my_password".to_string()),
+///     Some("my_salt".to_string()),
+/// )?;
+///
+/// // Open an existing database
+/// let mut db = DB::new(
+///     "/path/to/secrets.db",
+///     "/path/to/backups",
+///     Some("my_password".to_string()),
+///     Some("my_salt".to_string()),
+/// );
+/// db.open()?;
+///
+/// // ... use the database ...
+///
+/// // Close and save changes
+/// db.close()?;
+/// # Ok(())
+/// # }
+/// ```
 pub struct DB {
     file_name: PathBuf,
     backup_dir: PathBuf,
@@ -55,6 +99,31 @@ impl fmt::Debug for DB {
 }
 
 impl DB {
+    /// Creates a new database instance.
+    ///
+    /// This constructor initializes a database with the specified file path, backup
+    /// directory, password, and salt. The database is not opened or created until
+    /// [`init`](Self::init) or [`open`](Self::open) is called.
+    ///
+    /// # Arguments
+    ///
+    /// * `file_name` - Path to the database file
+    /// * `backup_dir` - Directory where database backups will be stored
+    /// * `store_pwd` - Optional password for encrypting the database
+    /// * `salt` - Optional salt for encryption
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use rucksack_db::db::DB;
+    ///
+    /// let db = DB::new(
+    ///     "/path/to/db.rucksack",
+    ///     "/path/to/backups",
+    ///     Some("password".to_string()),
+    ///     Some("salt".to_string()),
+    /// );
+    /// ```
     pub fn new(
         file_name: impl Into<PathBuf>,
         backup_dir: impl Into<PathBuf>,
@@ -89,6 +158,46 @@ impl DB {
         self.file_name = path.into();
     }
 
+    /// Initializes a new database file.
+    ///
+    /// Creates a new encrypted database file at the specified path. If the file already
+    /// exists, it will be opened instead. The database is automatically closed after
+    /// initialization.
+    ///
+    /// # Arguments
+    ///
+    /// * `file_name` - Path where the database file will be created
+    /// * `backup_dir` - Directory for storing database backups
+    /// * `store_pwd` - Password for encrypting the database
+    /// * `salt` - Salt for encryption
+    ///
+    /// # Returns
+    ///
+    /// Returns `Ok(())` if initialization succeeds, or an error if file operations fail.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The parent directory cannot be created
+    /// - File permissions are insufficient
+    /// - Encryption fails
+    /// - The database file cannot be written
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use rucksack_db::db::DB;
+    ///
+    /// # fn main() -> anyhow::Result<()> {
+    /// DB::init(
+    ///     "/path/to/db.rucksack",
+    ///     "/path/to/backups",
+    ///     Some("password".to_string()),
+    ///     Some("salt".to_string()),
+    /// )?;
+    /// # Ok(())
+    /// # }
+    /// ```
     // Moved in v0.9.0
     pub fn init(
         file_name: impl Into<PathBuf>,
@@ -102,6 +211,45 @@ impl DB {
         db.close()
     }
 
+    /// Opens an existing database file.
+    ///
+    /// Reads and decrypts the database from disk, loading all records into memory.
+    /// The database must have been previously initialized with [`init`](Self::init).
+    /// Password and salt must match those used during initialization.
+    ///
+    /// # Returns
+    ///
+    /// Returns `Ok(())` if the database opens successfully, or an error if it fails.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The password or salt is incorrect
+    /// - The database file doesn't exist
+    /// - The file cannot be read
+    /// - Decryption fails
+    /// - The database format is invalid or corrupted
+    ///
+    /// # Panics
+    ///
+    /// Panics if `store_pwd` or `salt` were not set during construction.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use rucksack_db::db::DB;
+    ///
+    /// # fn main() -> anyhow::Result<()> {
+    /// let mut db = DB::new(
+    ///     "/path/to/db.rucksack",
+    ///     "/path/to/backups",
+    ///     Some("password".to_string()),
+    ///     Some("salt".to_string()),
+    /// );
+    /// db.open()?;
+    /// # Ok(())
+    /// # }
+    /// ```
     // Moved in v0.9.0
     #[must_use = "database operations must be checked for errors"]
     pub fn open(&mut self) -> Result<()> {
@@ -165,6 +313,44 @@ impl DB {
         Ok(())
     }
 
+    /// Closes the database and writes all changes to disk.
+    ///
+    /// This method serializes the in-memory database, encrypts it, and writes it to
+    /// disk. A backup of the previous database file is created before writing the
+    /// new version. This should be called before the database goes out of scope to
+    /// ensure all changes are persisted.
+    ///
+    /// # Returns
+    ///
+    /// Returns `Ok(())` if the database closes successfully, or an error if it fails.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - Serialization fails
+    /// - Encryption fails
+    /// - Backup creation fails
+    /// - File write operations fail
+    /// - Directory creation fails
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use rucksack_db::db::DB;
+    ///
+    /// # fn main() -> anyhow::Result<()> {
+    /// let mut db = DB::new(
+    ///     "/path/to/db.rucksack",
+    ///     "/path/to/backups",
+    ///     Some("password".to_string()),
+    ///     Some("salt".to_string()),
+    /// );
+    /// db.open()?;
+    /// // ... make changes to the database ...
+    /// db.close()?; // Save all changes
+    /// # Ok(())
+    /// # }
+    /// ```
     #[must_use = "database operations must be checked for errors"]
     pub fn close(&self) -> Result<()> {
         log::debug!(operation = "close", db_file = self.file_name().to_string_lossy().as_ref(); "Closing DB file");

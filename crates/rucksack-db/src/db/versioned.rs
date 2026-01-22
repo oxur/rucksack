@@ -6,6 +6,35 @@ use rucksack_lib::util;
 
 use crate::records;
 
+/// A versioned wrapper around database bytes.
+///
+/// `VersionedDB` associates database content with a schema version string, enabling
+/// automatic migration between different database formats. The version is validated
+/// on construction and used to select appropriate decode/migration logic.
+///
+/// # Schema Evolution
+///
+/// The database format has evolved through multiple versions:
+/// - v0.2.0-v0.3.0: Initial formats with basic encryption
+/// - v0.4.0-v0.6.0: Introduced separate key/value structure
+/// - v0.7.0-v0.8.0: Added secrets management
+/// - v0.9.0+: Current format with full metadata
+///
+/// # Examples
+///
+/// ```ignore
+/// use rucksack_db::db::versioned::VersionedDB;
+///
+/// // Create a versioned database wrapper
+/// let data = vec![1, 2, 3, 4];
+/// let versioned = VersionedDB::new(data, "0.9.0".to_string())?;
+///
+/// // Serialize for storage
+/// let bytes = versioned.serialise()?;
+///
+/// // Deserialize from storage
+/// let loaded = VersionedDB::deserialise(bytes)?;
+/// ```
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub struct VersionedDB {
     bytes: Vec<u8>,
