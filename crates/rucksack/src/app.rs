@@ -23,7 +23,7 @@ impl App {
         Ok(App { inputs, db })
     }
 
-    pub fn backup_dir(&self) -> String {
+    pub fn backup_dir(&self) -> &path::Path {
         self.db.backup_dir()
     }
 
@@ -62,8 +62,8 @@ impl App {
             .unwrap_or_else(|| path::PathBuf::from("."))
     }
 
-    pub fn db_file(&self) -> String {
-        self.db.file_name.clone()
+    pub fn db_file(&self) -> &path::Path {
+        self.db.file_name()
     }
 
     pub fn db_path(&self) -> path::PathBuf {
@@ -83,7 +83,7 @@ impl App {
     pub fn run(&self, matches: &ArgMatches) -> Result<()> {
         log::info!(operation = "execute"; "Executing rucksack command");
         if !self.backup_path().exists() {
-            log::debug!(dir = self.backup_dir().as_str(), operation = "check_backup_dir"; "Checking for backup dir");
+            log::debug!(dir = self.backup_dir().to_string_lossy().as_ref(), operation = "check_backup_dir"; "Checking for backup dir");
             file::create_dirs(self.backup_path())?;
             log::info!(operation = "create_backup_dir"; "Created backup dir");
         }
@@ -108,7 +108,7 @@ impl App {
 
 pub fn setup_db(inputs: &Inputs, cmd: String) -> Result<DB> {
     log::debug!(operation = "setup_db"; "Setting up database");
-    log::trace!(db_file = inputs.db_file().as_str(), operation = "setup_db"; "Got inputs");
+    log::trace!(db_file = inputs.db_file().to_string_lossy().as_ref(), operation = "setup_db"; "Got inputs");
     if !inputs.db_needed() {
         log::debug!(cmd = &cmd[..], operation = "setup_db"; "Database not needed for command; skipping load");
         return Ok(DB::new(inputs.db_file(), inputs.backup_dir(), None, None));

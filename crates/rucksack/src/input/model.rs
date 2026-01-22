@@ -14,6 +14,7 @@
 //! well, from highest priority to lowest priority.
 //!
 use std::env;
+use std::path;
 
 use clap::ArgMatches;
 use secrecy::{ExposeSecret, Secret, SecretString};
@@ -87,32 +88,32 @@ impl Inputs {
         }
     }
 
-    pub fn config_file(&self) -> String {
+    pub fn config_file(&self) -> path::PathBuf {
         let mut cf = options::config_file(&self.matches);
         if !cf.is_empty() {
-            return cf;
+            return path::PathBuf::from(cf);
         }
         cf = self.rucksack.cfg_file.clone();
         if !cf.is_empty() {
-            return cf;
+            return path::PathBuf::from(cf);
         }
         file::config_file(constant::NAME)
     }
 
-    pub fn db_file(&self) -> String {
+    pub fn db_file(&self) -> path::PathBuf {
         match options::db(&self.matches) {
             Some(file_name) => {
                 log::debug!(file = file_name.as_str(), source = "flag", operation = "get_db_file"; "Got database file from flag");
-                file_name
+                path::PathBuf::from(file_name)
             }
             None => {
-                let mut db_file = self.db.path.clone();
-                if !db_file.is_empty() {
-                    log::debug!(file = db_file.as_str(), source = "config", operation = "get_db_file"; "No database flag provided; using configured file");
-                    return db_file;
+                let db_file_str = self.db.path.clone();
+                if !db_file_str.is_empty() {
+                    log::debug!(file = db_file_str.as_str(), source = "config", operation = "get_db_file"; "No database flag provided; using configured file");
+                    return path::PathBuf::from(db_file_str);
                 }
-                db_file = file::db_file(constant::NAME);
-                log::debug!(file = db_file.as_str(), source = "default", operation = "get_db_file"; "No configured database file; using default");
+                let db_file = file::db_file(constant::NAME);
+                log::debug!(file = db_file.to_string_lossy().as_ref(), source = "default", operation = "get_db_file"; "No configured database file; using default");
                 db_file
             }
         }

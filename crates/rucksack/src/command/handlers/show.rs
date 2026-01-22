@@ -50,18 +50,19 @@ use crate::app::App;
 use crate::output::{option, result, table};
 
 pub fn backup_dir(_matches: &ArgMatches, app: &App) -> Result<()> {
-    println!("\n{}\n", app.backup_dir());
+    println!("\n{}\n", app.backup_dir().display());
     Ok(())
 }
 
 pub fn config_file(_matches: &ArgMatches, app: &App) -> Result<()> {
-    println!("\n{}\n", app.inputs.config_file());
+    println!("\n{}\n", app.inputs.config_file().display());
     Ok(())
 }
 
 pub fn config(_matches: &ArgMatches, app: &App) -> Result<()> {
-    let bytes = file::read(app.inputs.config_file())
-        .with_context(|| format!("failed to read config file '{}'", app.inputs.config_file()))?;
+    let config_file = app.inputs.config_file();
+    let bytes = file::read(&config_file)
+        .with_context(|| format!("failed to read config file '{}'", config_file.display()))?;
     let config_str =
         str::from_utf8(bytes.as_ref()).context("config file contains invalid UTF-8")?;
     println!("\n{}", config_str);
@@ -74,7 +75,7 @@ pub fn data_dir(_matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 pub fn db_file(_matches: &ArgMatches, app: &App) -> Result<()> {
-    println!("\n{}\n", app.db_file());
+    println!("\n{}\n", app.db_file().display());
     Ok(())
 }
 

@@ -1,3 +1,5 @@
+use std::path::{Path, PathBuf};
+
 use anyhow::{anyhow, Result};
 use secrecy::{ExposeSecret, Secret, SecretString};
 
@@ -8,7 +10,7 @@ use crate::crypto;
 pub struct EncryptedDB {
     bytes: Vec<u8>,
     decrypted: Secret<Vec<u8>>,
-    path: String,
+    path: PathBuf,
     pwd: SecretString,
     salt: SecretString,
 }
@@ -16,7 +18,7 @@ pub struct EncryptedDB {
 impl EncryptedDB {
     pub fn from_decrypted(
         decrypted: Vec<u8>,
-        path: String,
+        path: impl Into<PathBuf>,
         pwd: String,
         salt: String,
     ) -> Result<EncryptedDB> {
@@ -25,33 +27,33 @@ impl EncryptedDB {
 
     pub fn from_encrypted(
         encrypted: Vec<u8>,
-        path: String,
+        path: impl Into<PathBuf>,
         pwd: String,
         salt: String,
     ) -> Result<EncryptedDB> {
         EncryptedDB::new(Some(encrypted), None, path, pwd, salt)
     }
 
-    pub fn from_file(path: String, pwd: String, salt: String) -> Result<EncryptedDB> {
+    pub fn from_file(path: impl Into<PathBuf>, pwd: String, salt: String) -> Result<EncryptedDB> {
         EncryptedDB::new(None, None, path, pwd, salt)
     }
 
     pub fn new(
         bytes: Option<Vec<u8>>,
         decrypted: Option<Vec<u8>>,
-        path: String,
+        path: impl Into<PathBuf>,
         pwd: String,
         salt: String,
     ) -> Result<EncryptedDB> {
         let mut edb = EncryptedDB {
             bytes: Vec::new(),
             decrypted: Secret::new(Vec::new()),
-            path,
+            path: path.into(),
             pwd: SecretString::new(pwd),
             salt: SecretString::new(salt),
         };
         if bytes.is_none() && decrypted.is_none() {
-            log::debug!(source = "file", path = edb.path.as_str(), operation = "init"; "No bytes provided; reading from file");
+            log::debug!(source = "file", path = edb.path.to_string_lossy().as_ref(), operation = "init"; "No bytes provided; reading from file");
             edb.read()?;
             edb.decrypt()?;
         } else if let Some(b) = bytes {
@@ -98,8 +100,8 @@ impl EncryptedDB {
         Ok(())
     }
 
-    pub fn path(&self) -> String {
-        self.path.clone()
+    pub fn path(&self) -> &Path {
+        &self.path
     }
 
     pub fn pwd(&self) -> String {
@@ -108,7 +110,7 @@ impl EncryptedDB {
 
     pub fn read(&mut self) -> Result<()> {
         log::trace!(bytes_len_before = self.bytes.len(), operation = "read"; "Byte length before read");
-        self.bytes = file::read(self.path())?;
+        self.bytes = file::read(&self.path)?;
         log::trace!(bytes_len_after = self.bytes.len(), operation = "read"; "Byte length after read");
         Ok(())
     }
@@ -118,8 +120,8 @@ impl EncryptedDB {
     }
 
     pub fn write(&self) -> Result<()> {
-        log::debug!(operation = "write", path = self.path().as_str(); "Writing encrypted DB");
-        file::write(self.bytes(), self.path())
+        log::debug!(operation = "write", path = self.path().to_string_lossy().as_ref(); "Writing encrypted DB");
+        file::write(self.bytes(), &self.path)
     }
 }
 
@@ -351,7 +353,7 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(edb.path(), path_str);
+        assert_eq!(edb.path(), std::path::Path::new(&path_str));
     }
 
     #[test]
@@ -471,7 +473,7 @@ mod tests {
         let mut edb = EncryptedDB {
             bytes: Vec::new(),
             decrypted: Secret::new(Vec::new()),
-            path: path_str,
+            path: std::path::PathBuf::from(path_str),
             pwd: SecretString::new(pwd),
             salt: SecretString::new(salt),
         };
@@ -488,7 +490,7 @@ mod tests {
         let mut edb = EncryptedDB {
             bytes: vec![1, 2, 3], // Invalid encrypted data
             decrypted: Secret::new(Vec::new()),
-            path: path.to_str().unwrap().to_string(),
+            path: path.to_path_buf(),
             pwd: SecretString::new("pwd".to_string()),
             salt: SecretString::new("salt".to_string()),
         };

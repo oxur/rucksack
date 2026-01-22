@@ -15,16 +15,18 @@ const DEFAULT_DB_NAME: &str = "secrets";
 const DB_EXTENSION: &str = "db";
 
 #[must_use = "path operation result must be checked"]
-pub fn abs_path(path_name: String) -> io::Result<path::PathBuf> {
-    let expanded = expanded_name(path_name);
-    let path = path::Path::new(expanded.as_str());
-    let absolute_path = if path.is_absolute() {
-        path.to_path_buf()
+pub fn abs_path(path_name: impl AsRef<path::Path>) -> io::Result<path::PathBuf> {
+    let path = path_name.as_ref();
+    let expanded = shellexpand::tilde(path.to_str().ok_or_else(|| {
+        io::Error::new(io::ErrorKind::InvalidInput, "path contains invalid UTF-8")
+    })?);
+    let clean_path = path::Path::new(expanded.as_ref());
+    let absolute_path = if clean_path.is_absolute() {
+        clean_path.to_path_buf()
     } else {
-        env::current_dir()?.join(path)
+        env::current_dir()?.join(clean_path)
     };
-    absolute_path.clean();
-    Ok(absolute_path)
+    Ok(absolute_path.clean())
 }
 
 pub fn backup_dir(project: &str) -> path::PathBuf {
@@ -40,34 +42,34 @@ pub fn config_dir(project: &str) -> path::PathBuf {
     path
 }
 
-pub fn config_file(project: &str) -> String {
+pub fn config_file(project: &str) -> path::PathBuf {
     let mut path = config_dir(project);
     path.push("config");
     path.set_extension("toml");
-    path.to_str()
-        .expect("config file path contains invalid UTF-8")
-        .to_string()
+    path
 }
 
 #[must_use = "directory creation result must be checked"]
-pub fn create_parents(path: String) -> Result<path::PathBuf> {
+pub fn create_parents(path: impl AsRef<path::Path>) -> Result<path::PathBuf> {
+    let path_ref = path.as_ref();
     // Make sure the path is created
-    log::debug!(path = path.as_str(), operation = "create_parent"; "Attempting to create parent directory");
-    let ap = abs_path(path.clone())?;
+    log::debug!(path = path_ref.to_string_lossy().as_ref(), operation = "create_parent"; "Attempting to create parent directory");
+    let ap = abs_path(path_ref)?;
     let parent = ap
         .parent()
-        .ok_or_else(|| anyhow!("path has no parent directory: {}", path))?
+        .ok_or_else(|| anyhow!("path has no parent directory: {}", ap.display()))?
         .to_path_buf();
     log::debug!(path = parent.to_string_lossy().as_ref(), operation = "create_dir"; "Attempting to create directory");
-    create_dirs(parent)?;
+    create_dirs(&parent)?;
     Ok(ap)
 }
 
 #[must_use = "directory creation result must be checked"]
-pub fn create_dirs(path: path::PathBuf) -> Result<path::PathBuf> {
-    let path_name = path.display();
-    match fs::create_dir_all(path.clone()) {
-        Ok(_) => Ok(path),
+pub fn create_dirs(path: impl AsRef<path::Path>) -> Result<path::PathBuf> {
+    let path_ref = path.as_ref();
+    let path_name = path_ref.display();
+    match fs::create_dir_all(path_ref) {
+        Ok(_) => Ok(path_ref.to_path_buf()),
         Err(e) => {
             let msg = "Could not create missing parent dirs for";
             log::error!(path = path_name.to_string().as_str(), error = e.to_string().as_str(), operation = "create_dir"; "{}", msg);
@@ -83,18 +85,16 @@ pub fn data_dir(project: &str) -> path::PathBuf {
     path
 }
 
-pub fn db_file(project: &str) -> String {
+pub fn db_file(project: &str) -> path::PathBuf {
     let mut path = data_dir(project);
     path.push(DEFAULT_DB_NAME);
     path.set_extension(DB_EXTENSION);
-    path.to_str()
-        .expect("database file path contains invalid UTF-8")
-        .to_string()
+    path
 }
 
 #[must_use = "file deletion result must be checked"]
-pub fn delete(file_path: path::PathBuf) -> Result<()> {
-    match fs::remove_file(file_path) {
+pub fn delete(file_path: impl AsRef<path::Path>) -> Result<()> {
+    match fs::remove_file(file_path.as_ref()) {
         Ok(x) => {
             log::debug!(operation = "delete"; "Deleted file");
             Ok(x)
@@ -103,14 +103,16 @@ pub fn delete(file_path: path::PathBuf) -> Result<()> {
     }
 }
 
-pub fn dir_parent(dir: String) -> String {
-    let mut parent: Vec<&str> = dir.split(std::path::MAIN_SEPARATOR).collect();
-    parent.pop();
-    parent.join(std::path::MAIN_SEPARATOR.to_string().as_str())
+pub fn dir_parent(dir: impl AsRef<path::Path>) -> Option<path::PathBuf> {
+    dir.as_ref().parent().map(|p| p.to_path_buf())
 }
 
-pub fn expanded_name(path_name: String) -> String {
-    let expanded = shellexpand::tilde(path_name.as_str());
+pub fn expanded_name(path_name: impl AsRef<path::Path>) -> String {
+    let path_str = path_name
+        .as_ref()
+        .to_str()
+        .expect("path contains invalid UTF-8");
+    let expanded = shellexpand::tilde(path_str);
     expanded.to_string()
 }
 
@@ -118,9 +120,10 @@ pub type Data = (String, String, String);
 pub type Listing = Vec<Data>;
 
 #[must_use = "directory listing result must be checked"]
-pub fn files(dir: String) -> Result<Listing> {
+pub fn files(dir: impl AsRef<path::Path>) -> Result<Listing> {
+    let dir_path = dir.as_ref();
     let mut f = Vec::<(String, String, String)>::new();
-    for entry in fs::read_dir(dir)? {
+    for entry in fs::read_dir(dir_path)? {
         let dir = entry?;
         let metadata = dir.metadata()?;
         let created: DateTime<Local> = metadata.created()?.into();
@@ -139,15 +142,17 @@ pub fn files(dir: String) -> Result<Listing> {
 }
 
 #[must_use = "file read result must be checked"]
-pub fn read(file_name: String) -> Result<Vec<u8>> {
-    let expanded = expanded_name(file_name.clone());
+pub fn read(file_name: impl AsRef<path::Path>) -> Result<Vec<u8>> {
+    let file_path = file_name.as_ref();
+    let expanded = expanded_name(file_path);
     log::debug!(file = expanded.as_str(), operation = "read"; "Reading file");
-    fs::read(&expanded).with_context(|| format!("failed to read file: {}", file_name))
+    fs::read(&expanded).with_context(|| format!("failed to read file: {}", file_path.display()))
 }
 
 #[must_use = "file write result must be checked"]
-pub fn write(data: Vec<u8>, path: String) -> Result<()> {
-    let ap = create_parents(path.clone())?;
+pub fn write(data: Vec<u8>, path: impl AsRef<path::Path>) -> Result<()> {
+    let path_ref = path.as_ref();
+    let ap = create_parents(path_ref)?;
     // Then write the file
     log::debug!(file = ap.to_string_lossy().as_ref(), operation = "write"; "Writing file");
     let mut file = std::fs::OpenOptions::new()
@@ -155,13 +160,13 @@ pub fn write(data: Vec<u8>, path: String) -> Result<()> {
         .create(true)
         .truncate(true)
         .open(&ap)
-        .with_context(|| format!("failed to open file for writing: {}", path))?;
+        .with_context(|| format!("failed to open file for writing: {}", path_ref.display()))?;
 
     file.write_all(&data[..])
-        .with_context(|| format!("failed to write data to file: {}", path))?;
+        .with_context(|| format!("failed to write data to file: {}", path_ref.display()))?;
 
     file.sync_all()
-        .with_context(|| format!("failed to sync file to disk: {}", path))
+        .with_context(|| format!("failed to sync file to disk: {}", path_ref.display()))
 }
 
 #[cfg(test)]
@@ -172,13 +177,13 @@ mod tests {
 
     #[test]
     fn test_expanded_name_no_tilde() {
-        let path = "/usr/local/bin".to_string();
-        assert_eq!(expanded_name(path.clone()), path);
+        let path = path::Path::new("/usr/local/bin");
+        assert_eq!(expanded_name(path), "/usr/local/bin");
     }
 
     #[test]
     fn test_expanded_name_with_tilde() {
-        let path = "~/test".to_string();
+        let path = path::Path::new("~/test");
         let expanded = expanded_name(path);
         assert!(!expanded.starts_with('~'));
         assert!(expanded.contains("test"));
@@ -186,27 +191,27 @@ mod tests {
 
     #[test]
     fn test_expanded_name_empty() {
-        let path = "".to_string();
+        let path = path::Path::new("");
         assert_eq!(expanded_name(path), "");
     }
 
     #[test]
     fn test_abs_path_absolute() {
-        let path = "/tmp/test".to_string();
+        let path = "/tmp/test";
         let result = abs_path(path).unwrap();
         assert!(result.is_absolute());
     }
 
     #[test]
     fn test_abs_path_relative() {
-        let path = "test".to_string();
+        let path = "test";
         let result = abs_path(path).unwrap();
         assert!(result.is_absolute());
     }
 
     #[test]
     fn test_abs_path_with_tilde() {
-        let path = "~/test".to_string();
+        let path = "~/test";
         let result = abs_path(path).unwrap();
         assert!(result.is_absolute());
         assert!(!result.to_str().unwrap().contains('~'));
@@ -214,23 +219,23 @@ mod tests {
 
     #[test]
     fn test_dir_parent_basic() {
-        let dir = "/home/user/documents".to_string();
+        let dir = path::Path::new("/home/user/documents");
         let parent = dir_parent(dir);
-        assert_eq!(parent, "/home/user");
+        assert_eq!(parent, Some(path::PathBuf::from("/home/user")));
     }
 
     #[test]
     fn test_dir_parent_root() {
-        let dir = "/home".to_string();
+        let dir = path::Path::new("/home");
         let parent = dir_parent(dir);
-        assert_eq!(parent, "");
+        assert_eq!(parent, Some(path::PathBuf::from("/")));
     }
 
     #[test]
     fn test_dir_parent_nested() {
-        let dir = "/a/b/c/d/e".to_string();
+        let dir = path::Path::new("/a/b/c/d/e");
         let parent = dir_parent(dir);
-        assert_eq!(parent, "/a/b/c/d");
+        assert_eq!(parent, Some(path::PathBuf::from("/a/b/c/d")));
     }
 
     #[test]
@@ -244,9 +249,10 @@ mod tests {
     fn test_config_file() {
         let project = "test_project";
         let file = config_file(project);
-        assert!(file.contains(project));
-        assert!(file.ends_with(".toml"));
-        assert!(file.contains("config"));
+        let file_str = file.to_str().unwrap();
+        assert!(file_str.contains(project));
+        assert!(file_str.ends_with(".toml"));
+        assert!(file_str.contains("config"));
     }
 
     #[test]
@@ -271,9 +277,10 @@ mod tests {
     fn test_db_file() {
         let project = "test_project";
         let file = db_file(project);
-        assert!(file.contains(project));
-        assert!(file.contains(DEFAULT_DB_NAME));
-        assert!(file.ends_with(&format!(".{}", DB_EXTENSION)));
+        let file_str = file.to_str().unwrap();
+        assert!(file_str.contains(project));
+        assert!(file_str.contains(DEFAULT_DB_NAME));
+        assert!(file_str.ends_with(&format!(".{}", DB_EXTENSION)));
     }
 
     #[test]
@@ -282,10 +289,10 @@ mod tests {
         let file_path = dir.path().join("test.txt");
         let data = b"Hello, World!".to_vec();
 
-        let result = write(data.clone(), file_path.to_str().unwrap().to_string());
+        let result = write(data.clone(), &file_path);
         assert!(result.is_ok());
 
-        let read_data = read(file_path.to_str().unwrap().to_string()).unwrap();
+        let read_data = read(&file_path).unwrap();
         assert_eq!(read_data, data);
     }
 
@@ -295,10 +302,10 @@ mod tests {
         let file_path = dir.path().join("empty.txt");
         let data = Vec::new();
 
-        let result = write(data.clone(), file_path.to_str().unwrap().to_string());
+        let result = write(data.clone(), &file_path);
         assert!(result.is_ok());
 
-        let read_data = read(file_path.to_str().unwrap().to_string()).unwrap();
+        let read_data = read(&file_path).unwrap();
         assert_eq!(read_data, data);
     }
 
@@ -308,10 +315,10 @@ mod tests {
         let file_path = dir.path().join("large.bin");
         let data = vec![42u8; 10000];
 
-        let result = write(data.clone(), file_path.to_str().unwrap().to_string());
+        let result = write(data.clone(), &file_path);
         assert!(result.is_ok());
 
-        let read_data = read(file_path.to_str().unwrap().to_string()).unwrap();
+        let read_data = read(&file_path).unwrap();
         assert_eq!(read_data, data);
     }
 
@@ -321,14 +328,14 @@ mod tests {
         let file_path = dir.path().join("nested/dirs/file.txt");
         let data = b"test".to_vec();
 
-        let result = write(data.clone(), file_path.to_str().unwrap().to_string());
+        let result = write(data.clone(), &file_path);
         assert!(result.is_ok());
         assert!(file_path.exists());
     }
 
     #[test]
     fn test_read_nonexistent() {
-        let result = read("/nonexistent/file/path.txt".to_string());
+        let result = read("/nonexistent/file/path.txt");
         assert!(result.is_err());
     }
 
@@ -357,7 +364,7 @@ mod tests {
         let dir = TempDir::new().unwrap();
         let file_path = dir.path().join("nested/file.txt");
 
-        let result = create_parents(file_path.to_str().unwrap().to_string());
+        let result = create_parents(&file_path);
         assert!(result.is_ok());
         assert!(dir.path().join("nested").exists());
     }
@@ -386,7 +393,7 @@ mod tests {
     #[test]
     fn test_files_empty_dir() {
         let dir = TempDir::new().unwrap();
-        let result = files(dir.path().to_str().unwrap().to_string());
+        let result = files(dir.path());
         assert!(result.is_ok());
         assert_eq!(result.unwrap().len(), 0);
     }
@@ -399,7 +406,7 @@ mod tests {
         fs::write(&file1, b"test1").unwrap();
         fs::write(&file2, b"test2").unwrap();
 
-        let result = files(dir.path().to_str().unwrap().to_string()).unwrap();
+        let result = files(dir.path()).unwrap();
         assert_eq!(result.len(), 2);
 
         // Check that filenames are present
@@ -410,7 +417,7 @@ mod tests {
 
     #[test]
     fn test_files_nonexistent_dir() {
-        let result = files("/nonexistent/directory".to_string());
+        let result = files("/nonexistent/directory");
         assert!(result.is_err());
     }
 
@@ -420,7 +427,7 @@ mod tests {
         let file = dir.path().join("file.txt");
         fs::write(&file, b"test").unwrap();
 
-        let result = files(dir.path().to_str().unwrap().to_string()).unwrap();
+        let result = files(dir.path()).unwrap();
         assert_eq!(result.len(), 1);
 
         let (name, timestamp, permissions) = &result[0];
@@ -433,18 +440,17 @@ mod tests {
     fn test_write_overwrites_existing() {
         let dir = TempDir::new().unwrap();
         let file_path = dir.path().join("overwrite.txt");
-        let path_str = file_path.to_str().unwrap().to_string();
 
         // Write initial data
         let data1 = b"first".to_vec();
-        write(data1, path_str.clone()).unwrap();
+        write(data1, &file_path).unwrap();
 
         // Overwrite with new data
         let data2 = b"second".to_vec();
-        write(data2.clone(), path_str.clone()).unwrap();
+        write(data2.clone(), &file_path).unwrap();
 
         // Verify new data
-        let read_data = read(path_str).unwrap();
+        let read_data = read(&file_path).unwrap();
         assert_eq!(read_data, data2);
     }
 

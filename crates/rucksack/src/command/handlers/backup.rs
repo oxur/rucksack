@@ -53,7 +53,7 @@ pub fn delete(matches: &ArgMatches, app: &App) -> Result<()> {
 
 pub fn list(matches: &ArgMatches, app: &App) -> Result<()> {
     let backup_dir = app.backup_dir();
-    log::debug!(dir = backup_dir.as_str(), operation = "list_backups"; "Preparing to list backup DB files");
+    log::debug!(dir = backup_dir.to_string_lossy().as_ref(), operation = "list_backups"; "Preparing to list backup DB files");
     let opts = Opts {
         backup_files: true,
         latest_only: options::latest(matches),
@@ -89,7 +89,7 @@ pub fn restore(matches: &ArgMatches, app: &App) -> Result<()> {
     // Do a backup before we go any further
     run(matches, app)?;
     backup::restore(app.backup_path(), backup_name.clone(), app.db_path())?;
-    log::info!(backup_file = backup_name.as_str(), db_file = app.db_file().as_str(), operation = "restore_backup"; "Successfully restored backup");
+    log::info!(backup_file = backup_name.as_str(), db_file = app.db_file().to_string_lossy().as_ref(), operation = "restore_backup"; "Successfully restored backup");
     Ok(())
 }
 
@@ -98,14 +98,14 @@ pub fn run(_matches: &ArgMatches, app: &App) -> Result<()> {
     let r = backup::copy(
         app.db_file(),
         app.backup_dir(),
-        app.db_version().to_string(),
+        &app.db_version().to_string(),
     );
-    let backup_file: String = match r {
+    let backup_file = match r {
         Ok(b) => b,
         Err(e) => {
             return Err(anyhow!(e));
         }
     };
-    log::debug!(backup_file = backup_file.as_str(), operation = "backup"; "Backed up database");
+    log::debug!(backup_file = backup_file.to_string_lossy().as_ref(), operation = "backup"; "Backed up database");
     Ok(())
 }

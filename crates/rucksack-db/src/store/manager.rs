@@ -1,10 +1,12 @@
+use std::path::{Path, PathBuf};
+
 use anyhow::Result;
 
 use crate::db::encrypted::EncryptedDB;
 
 pub trait StoreManager {
-    fn backup(&self, src_file: String, dest_dir: String, version: String) -> Result<String>;
-    fn read(&self, path: String, pwd: String, salt: String) -> Result<EncryptedDB>;
+    fn backup(&self, src_file: &Path, dest_dir: &Path, version: &str) -> Result<PathBuf>;
+    fn read(&self, path: &Path, pwd: String, salt: String) -> Result<EncryptedDB>;
 }
 
 pub fn new() -> Box<dyn StoreManager> {

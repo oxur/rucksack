@@ -1,3 +1,5 @@
+use std::path::{Path, PathBuf};
+
 use anyhow::Result;
 
 use crate::db::encrypted::EncryptedDB;
@@ -15,11 +17,11 @@ impl FileSystemBackend {
 }
 
 impl StoreManager for FileSystemBackend {
-    fn backup(&self, src_file: String, dest_dir: String, version: String) -> Result<String> {
+    fn backup(&self, src_file: &Path, dest_dir: &Path, version: &str) -> Result<PathBuf> {
         backup::copy(src_file, dest_dir, version)
     }
 
-    fn read(&self, path: String, pwd: String, salt: String) -> Result<EncryptedDB> {
+    fn read(&self, path: &Path, pwd: String, salt: String) -> Result<EncryptedDB> {
         EncryptedDB::from_file(path, pwd, salt)
     }
 }

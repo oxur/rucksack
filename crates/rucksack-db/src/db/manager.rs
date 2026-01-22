@@ -18,6 +18,7 @@
 // * The hashmap is stored as a field on the DB struct
 //
 use std::fmt;
+use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Context, Error, Result};
 use dashmap::DashMap;
@@ -33,8 +34,8 @@ use crate::store;
 use crate::store::manager::StoreManager;
 
 pub struct DB {
-    pub file_name: String,
-    backup_dir: String,
+    file_name: PathBuf,
+    backup_dir: PathBuf,
     enabled: bool,
     hash_map: records::HashMap,
     manager: Box<dyn StoreManager>,
@@ -55,14 +56,14 @@ impl fmt::Debug for DB {
 
 impl DB {
     pub fn new(
-        file_name: String,
-        backup_dir: String,
+        file_name: impl Into<PathBuf>,
+        backup_dir: impl Into<PathBuf>,
         store_pwd: Option<String>,
         salt: Option<String>,
     ) -> DB {
         DB {
-            file_name,
-            backup_dir,
+            file_name: file_name.into(),
+            backup_dir: backup_dir.into(),
             store_pwd: store_pwd.map(SecretString::new),
             salt: salt.map(SecretString::new),
             manager: store::manager::new(),
@@ -73,10 +74,25 @@ impl DB {
         }
     }
 
+    /// Returns the database file path
+    pub fn file_name(&self) -> &Path {
+        &self.file_name
+    }
+
+    /// Returns the backup directory path
+    pub fn backup_dir(&self) -> &Path {
+        &self.backup_dir
+    }
+
+    /// Sets the database file path
+    pub fn set_file_name(&mut self, path: impl Into<PathBuf>) {
+        self.file_name = path.into();
+    }
+
     // Moved in v0.9.0
     pub fn init(
-        file_name: String,
-        backup_dir: String,
+        file_name: impl Into<PathBuf>,
+        backup_dir: impl Into<PathBuf>,
         store_pwd: Option<String>,
         salt: Option<String>,
     ) -> Result<()> {
@@ -102,30 +118,33 @@ impl DB {
             .expect("salt must be set to open database")
             .expose_secret()
             .to_string();
-        let file_path = file::create_parents(self.file_name.clone()).with_context(|| {
+        let file_path = file::create_parents(&self.file_name).with_context(|| {
             format!(
                 "failed to create parent directory for database: {}",
-                self.file_name
+                self.file_name.display()
             )
         })?;
         if file_path.exists() {
-            log::debug!(operation = "decrypt", db_file = self.file_name.as_str(); "Creating encrypted DB");
+            log::debug!(operation = "decrypt", db_file = self.file_name.to_string_lossy().as_ref(); "Creating encrypted DB");
             let enc_db = self
                 .manager
-                .read(self.file_name.clone(), store_pwd, salt)
+                .read(&self.file_name, store_pwd, salt)
                 .with_context(|| {
                     format!(
                         "failed to read database file: {} (check password and salt)",
-                        self.file_name
+                        self.file_name.display()
                     )
                 })?;
             let vsn_db = match VersionedDB::deserialise(enc_db.decrypted()) {
                 Ok(db) => db,
                 Err(_) => {
-                    log::info!(db_file = self.file_name.as_str(), format = "non-versioned"; "Given database appears to be non-versioned; be sure to upgrade to the latest micro release of our old version before continuing");
+                    log::info!(db_file = self.file_name.to_string_lossy().as_ref(), format = "non-versioned"; "Given database appears to be non-versioned; be sure to upgrade to the latest micro release of our old version before continuing");
                     log::trace!(bytes_len = enc_db.decrypted().len(); "Database bytes");
                     VersionedDB::from_bytes(enc_db.decrypted()).with_context(|| {
-                        format!("failed to parse database version from: {}", self.file_name)
+                        format!(
+                            "failed to parse database version from: {}",
+                            self.file_name.display()
+                        )
                     })?
                 }
             };
@@ -142,56 +161,58 @@ impl DB {
                 })?;
         };
 
-        self.file_name = file_path.display().to_string();
+        self.file_name = file_path;
         self.enabled = true;
-        log::debug!(db_file = self.file_name.as_str(); "Set database path");
+        log::debug!(db_file = self.file_name.to_string_lossy().as_ref(); "Set database path");
         Ok(())
-    }
-
-    pub fn backup_dir(&self) -> String {
-        self.backup_dir.clone()
     }
 
     #[must_use = "database operations must be checked for errors"]
     pub fn close(&self) -> Result<()> {
-        log::debug!(operation = "close", db_file = self.file_name().as_str(); "Closing DB file");
+        log::debug!(operation = "close", db_file = self.file_name().to_string_lossy().as_ref(); "Closing DB file");
         let path = file::create_parents(self.file_name()).with_context(|| {
             format!(
                 "failed to create parent directory for database: {}",
-                self.file_name()
+                self.file_name().display()
             )
         })?;
         if path.exists() {
-            log::debug!(db_file = self.file_name().as_str(), operation = "backup"; "Database file exists; backing up");
+            log::debug!(db_file = self.file_name().to_string_lossy().as_ref(), operation = "backup"; "Database file exists; backing up");
             let backup_file = self
                 .manager
                 .backup(
                     self.file_name(),
                     self.backup_dir(),
-                    self.schema_version().to_string(),
+                    &self.schema_version().to_string(),
                 )
                 .with_context(|| {
-                    format!("failed to create backup of database: {}", self.file_name())
+                    format!(
+                        "failed to create backup of database: {}",
+                        self.file_name().display()
+                    )
                 })?;
-            log::debug!(backup_file = backup_file.as_str(), operation = "backup_complete"; "Backed up file");
+            log::debug!(backup_file = backup_file.to_string_lossy().as_ref(), operation = "backup_complete"; "Backed up file");
         }
 
         // Reverse the workflow of `open` ... encode the hashmap
-        let srl = self
-            .serialise()
-            .with_context(|| format!("failed to serialize database: {}", self.file_name()))?;
+        let srl = self.serialise().with_context(|| {
+            format!(
+                "failed to serialize database: {}",
+                self.file_name().display()
+            )
+        })?;
 
         // Create versioned data
         let vsn_db = VersionedDB::from_bytes(srl).with_context(|| {
             format!(
                 "failed to create versioned database wrapper: {}",
-                self.file_name()
+                self.file_name().display()
             )
         })?;
         let encoded = vsn_db.serialise().with_context(|| {
             format!(
                 "failed to serialize versioned database: {}",
-                self.file_name()
+                self.file_name().display()
             )
         })?;
         // Get the hash for the versioned data
@@ -203,12 +224,17 @@ impl DB {
         // Encrypt the versioned data
         let enc_db =
             EncryptedDB::from_decrypted(encoded, self.file_name(), self.store_pwd(), self.salt())
-                .with_context(|| format!("failed to encrypt database: {}", self.file_name()))?;
+                .with_context(|| {
+                format!("failed to encrypt database: {}", self.file_name().display())
+            })?;
 
         // Save the encrypted data
-        enc_db
-            .write()
-            .with_context(|| format!("failed to write database to disk: {}", self.file_name()))
+        enc_db.write().with_context(|| {
+            format!(
+                "failed to write database to disk: {}",
+                self.file_name().display()
+            )
+        })
     }
 
     #[must_use = "database operations must be checked for errors"]
@@ -287,10 +313,6 @@ impl DB {
 
     pub fn iter(&self) -> dashmap::iter::Iter<'_, String, EncryptedRecord> {
         self.hash_map.iter()
-    }
-
-    pub fn file_name(&self) -> String {
-        self.file_name.clone()
     }
 
     pub fn salt(&self) -> String {
@@ -440,8 +462,8 @@ mod tests {
             salt,
         );
 
-        assert_eq!(db.file_name(), "/tmp/test.db");
-        assert_eq!(db.backup_dir(), "/tmp/backups");
+        assert_eq!(db.file_name(), std::path::Path::new("/tmp/test.db"));
+        assert_eq!(db.backup_dir(), std::path::Path::new("/tmp/backups"));
         assert!(db.enabled());
         assert_eq!(db.hash_map().len(), 0);
     }
@@ -457,8 +479,8 @@ mod tests {
             salt.clone(),
         );
 
-        assert_eq!(db.file_name(), "/path/to/db");
-        assert_eq!(db.backup_dir(), "/path/to/backups");
+        assert_eq!(db.file_name(), std::path::Path::new("/path/to/db"));
+        assert_eq!(db.backup_dir(), std::path::Path::new("/path/to/backups"));
         assert_eq!(db.store_pwd(), pwd.unwrap());
         assert_eq!(db.salt(), salt.unwrap());
         assert!(db.enabled());

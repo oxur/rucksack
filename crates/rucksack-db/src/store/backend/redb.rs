@@ -1,3 +1,5 @@
+use std::path::{Path, PathBuf};
+
 use anyhow::Result;
 
 use crate::db::encrypted::EncryptedDB;
@@ -15,11 +17,11 @@ impl ReDBBackend {
 }
 
 impl StoreManager for ReDBBackend {
-    fn backup(&self, src_file: String, dest_dir: String, version: String) -> Result<String> {
+    fn backup(&self, src_file: &Path, dest_dir: &Path, version: &str) -> Result<PathBuf> {
         backup::copy(src_file, dest_dir, version)
     }
 
-    fn read(&self, _path: String, _pwd: String, _salt: String) -> Result<EncryptedDB> {
+    fn read(&self, _path: &Path, _pwd: String, _salt: String) -> Result<EncryptedDB> {
         todo!()
     }
 }
@@ -50,19 +52,19 @@ mod tests {
         // Create a temp source file
         let mut src_file = NamedTempFile::new().unwrap();
         src_file.write_all(b"test data").unwrap();
-        let src_path = src_file.path().to_str().unwrap().to_string();
+        let src_path = src_file.path();
 
         // Create a temp destination directory
         let dest_dir = tempdir().unwrap();
-        let dest_path = dest_dir.path().to_str().unwrap().to_string();
+        let dest_path = dest_dir.path();
 
         // Test backup
-        let result = backend.backup(src_path, dest_path, "1.0.0".to_string());
+        let result = backend.backup(src_path, dest_path, "1.0.0");
         assert!(result.is_ok());
 
         let backup_file = result.unwrap();
-        assert!(std::path::Path::new(&backup_file).exists());
-        assert!(backup_file.contains("v1.0.0"));
+        assert!(backup_file.exists());
+        assert!(backup_file.to_string_lossy().contains("v1.0.0"));
     }
 
     #[test]
@@ -70,7 +72,7 @@ mod tests {
     fn test_read_not_implemented() {
         let backend = ReDBBackend::new();
         let _ = backend.read(
-            "/some/path".to_string(),
+            std::path::Path::new("/some/path"),
             "password".to_string(),
             "salt".to_string(),
         );
@@ -87,17 +89,9 @@ mod tests {
 
         let dest_dir = tempdir().unwrap();
 
-        let result1 = backend1.backup(
-            src_file.path().to_str().unwrap().to_string(),
-            dest_dir.path().to_str().unwrap().to_string(),
-            "1.0.0".to_string(),
-        );
+        let result1 = backend1.backup(src_file.path(), dest_dir.path(), "1.0.0");
 
-        let result2 = backend2.backup(
-            src_file.path().to_str().unwrap().to_string(),
-            dest_dir.path().to_str().unwrap().to_string(),
-            "1.0.0".to_string(),
-        );
+        let result2 = backend2.backup(src_file.path(), dest_dir.path(), "1.0.0");
 
         assert!(result1.is_ok());
         assert!(result2.is_ok());
