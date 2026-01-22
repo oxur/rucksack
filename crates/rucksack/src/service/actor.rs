@@ -7,6 +7,7 @@ use super::protocol::Command;
 
 pub struct Commander {
     pub app: App,
+    #[allow(dead_code)] // TODO: will be used when command dispatch is implemented
     recipient: Recipient<Command>,
 }
 

@@ -61,7 +61,7 @@ pub fn run(app: &App, matches: &ArgMatches) -> Result<()> {
             None => todo!(),
         },
         Some((cmd, _)) => {
-            log::warn!(cmd = &cmd[..], operation = "dispatch"; "unknown command");
+            log::warn!(cmd = cmd, operation = "dispatch"; "unknown command");
             todo!()
         }
         None => todo!(),
