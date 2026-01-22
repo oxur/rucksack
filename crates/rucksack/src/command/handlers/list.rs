@@ -428,7 +428,7 @@ fn extract_results(
         } else if opts.group_by_hash {
             result.add(Column::LastUpdated, record.metadata().last_used);
             let entry = groups
-                .entry(hash_by_columns(record.clone(), opts.hash_fields.clone()))
+                .entry(hash_by_columns(&record, opts.hash_fields.clone()))
                 .or_default();
             entry.push(result.clone());
         }
@@ -602,7 +602,7 @@ fn updated_hash_fields() -> Vec<Column> {
     vec![Column::Name, Column::Url, Column::Kind, Column::Category]
 }
 
-fn get_by_column(rec: records::DecryptedRecord, col: &Column) -> String {
+fn get_by_column(rec: &records::DecryptedRecord, col: &Column) -> String {
     match col {
         Column::Category => rec.metadata().category,
         Column::Kind => rec.metadata().kind.to_string(),
@@ -613,15 +613,15 @@ fn get_by_column(rec: records::DecryptedRecord, col: &Column) -> String {
     }
 }
 
-fn get_by_columns(rec: records::DecryptedRecord, cols: Vec<Column>) -> Vec<String> {
+fn get_by_columns(rec: &records::DecryptedRecord, cols: Vec<Column>) -> Vec<String> {
     let mut vals: Vec<String> = vec![];
     for col in cols.iter() {
-        vals.push(get_by_column(rec.clone(), col));
+        vals.push(get_by_column(rec, col));
     }
     vals
 }
 
-fn hash_by_columns(rec: records::DecryptedRecord, cols: Vec<Column>) -> String {
+fn hash_by_columns(rec: &records::DecryptedRecord, cols: Vec<Column>) -> String {
     format!(
         "{:x}",
         Sha256::new()

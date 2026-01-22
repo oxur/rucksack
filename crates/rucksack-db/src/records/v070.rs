@@ -635,7 +635,7 @@ mod tests {
         for i in hm.iter() {
             data.push((i.key().clone(), i.value().clone()));
         }
-        data.sort_by_key(|k| k.0.clone());
+        data.sort_by(|a, b| a.0.cmp(&b.0));
         let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
 
         // Decode
@@ -770,7 +770,7 @@ mod tests {
         for i in hm_v060.iter() {
             data.push((i.key().clone(), i.value().clone()));
         }
-        data.sort_by_key(|k| k.0.clone());
+        data.sort_by(|a, b| a.0.cmp(&b.0));
         let bytes = bincode::encode_to_vec(data, util::bincode_cfg()).unwrap();
 
         let version = shared::version("0.6.0").unwrap();

@@ -330,7 +330,7 @@ impl DB {
             data.push((i.key().clone(), i.value().clone()))
         }
         log::trace!(operation = "serialize_convert"; "Converted hashmap to vec");
-        data.sort_by_key(|k| k.0.clone());
+        data.sort_by(|a, b| a.0.cmp(&b.0));
         log::trace!(operation = "serialize_sort"; "Sorted vec");
         match bincode::encode_to_vec(data, util::bincode_cfg()) {
             Ok(encoded) => {
