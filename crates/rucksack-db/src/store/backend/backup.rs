@@ -36,7 +36,10 @@ pub fn latest(backup_dir: &Path) -> Result<file::Data> {
     match list(backup_dir) {
         Ok(all) => match all.first() {
             Some(data) => Ok(data.clone()),
-            None => Err(anyhow!("no backup files found in directory: {}", backup_dir.display())),
+            None => Err(anyhow!(
+                "no backup files found in directory: {}",
+                backup_dir.display()
+            )),
         },
         Err(e) => Err(anyhow!(e)),
     }

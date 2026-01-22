@@ -22,7 +22,7 @@ pub fn decode_hashmap(bytes: &[u8], mut version: versions::SemVer) -> Result<Has
         log::error!(version = VERSION, operation = "decode"; "{}", msg);
         return Err(anyhow!(msg));
     }
-    match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
+    match bincode::decode_from_slice(bytes, util::bincode_cfg()) {
         Ok((result, _len)) => {
             sorted_vec = result;
             for (key, val) in sorted_vec {

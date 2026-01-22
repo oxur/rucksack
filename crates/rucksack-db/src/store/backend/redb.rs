@@ -7,9 +7,13 @@ use crate::store::manager::StoreManager;
 
 use super::backup;
 
+// When both filesystem and redb features are enabled, filesystem takes precedence
+// in manager::new(), making this code unused
+#[cfg_attr(all(feature = "redb", feature = "filesystem"), allow(dead_code))]
 #[derive(Clone, Default)]
 pub struct ReDBBackend {}
 
+#[cfg_attr(all(feature = "redb", feature = "filesystem"), allow(dead_code))]
 impl ReDBBackend {
     pub fn new() -> ReDBBackend {
         ReDBBackend {}
@@ -71,11 +75,7 @@ mod tests {
     #[should_panic(expected = "not yet implemented")]
     fn test_read_not_implemented() {
         let backend = ReDBBackend::new();
-        let _ = backend.read(
-            std::path::Path::new("/some/path"),
-            "password",
-            "salt",
-        );
+        let _ = backend.read(std::path::Path::new("/some/path"), "password", "salt");
     }
 
     #[test]

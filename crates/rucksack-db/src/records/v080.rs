@@ -36,10 +36,10 @@ pub fn decode_hashmap(bytes: &[u8], mut version: versions::SemVer) -> Result<Has
     if version < current_version {
         // version.
         log::info!(version = "0.7.0", operation = "migrate"; "Attempting to decode hashmap from previous version");
-        let hm = v070::decode_hashmap(&bytes, version)?;
+        let hm = v070::decode_hashmap(bytes, version)?;
         return Ok(migrate_hashmap_from_v070(hm));
     }
-    match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
+    match bincode::decode_from_slice(bytes, util::bincode_cfg()) {
         Ok((result, _len)) => {
             sorted_vec = result;
             for (key, val) in sorted_vec {
