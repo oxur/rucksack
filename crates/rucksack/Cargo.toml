@@ -33,12 +33,12 @@ versions = "6.3.2"
 
 [dependencies.rucksack-db]
 path = "../rucksack-db"
-version = "=0.11.0"
+version = "0.11"
 features = ["filesystem"]
 
 [dependencies.rucksack-lib]
 path = "../rucksack-lib"
-version = "=0.10.0"
+version = "0.10"
 
 [[bin]]
 name = "rucksack"
