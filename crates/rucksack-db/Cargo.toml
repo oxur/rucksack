@@ -15,6 +15,7 @@ edition = "2021"
 name = "rucksack_db"
 
 [features]
+default = ["filesystem"]
 filesystem = ["dep:dashmap"]
 redb = ["dep:redb"]
 
