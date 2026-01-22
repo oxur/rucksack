@@ -21,7 +21,7 @@ impl StoreManager for FileSystemBackend {
         backup::copy(src_file, dest_dir, version)
     }
 
-    fn read(&self, path: &Path, pwd: String, salt: String) -> Result<EncryptedDB> {
+    fn read(&self, path: &Path, pwd: &str, salt: &str) -> Result<EncryptedDB> {
         EncryptedDB::from_file(path, pwd, salt)
     }
 }

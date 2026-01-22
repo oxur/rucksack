@@ -20,6 +20,7 @@ pub const ANY_CATEGORY: &str = "any";
 
 // Enums
 
+#[non_exhaustive]
 #[derive(
     Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode, Sequence,
 )]
@@ -64,6 +65,7 @@ pub fn migrate_kind_from_v060(k: v060::Kind) -> Kind {
     }
 }
 
+#[non_exhaustive]
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Encode, Decode)]
 pub enum Status {
     #[default]

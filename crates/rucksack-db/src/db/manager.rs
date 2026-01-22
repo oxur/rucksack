@@ -110,14 +110,12 @@ impl DB {
             .store_pwd
             .as_ref()
             .expect("store_pwd must be set to open database")
-            .expose_secret()
-            .to_string();
+            .expose_secret();
         let salt = self
             .salt
             .as_ref()
             .expect("salt must be set to open database")
-            .expose_secret()
-            .to_string();
+            .expose_secret();
         let file_path = file::create_parents(&self.file_name).with_context(|| {
             format!(
                 "failed to create parent directory for database: {}",

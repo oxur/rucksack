@@ -21,7 +21,7 @@ impl StoreManager for ReDBBackend {
         backup::copy(src_file, dest_dir, version)
     }
 
-    fn read(&self, _path: &Path, _pwd: String, _salt: String) -> Result<EncryptedDB> {
+    fn read(&self, _path: &Path, _pwd: &str, _salt: &str) -> Result<EncryptedDB> {
         todo!()
     }
 }
@@ -73,8 +73,8 @@ mod tests {
         let backend = ReDBBackend::new();
         let _ = backend.read(
             std::path::Path::new("/some/path"),
-            "password".to_string(),
-            "salt".to_string(),
+            "password",
+            "salt",
         );
     }
 

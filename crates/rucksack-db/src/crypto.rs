@@ -9,6 +9,7 @@ use aes_gcm::{
 
 const NONCE_SIZE: usize = 12;
 
+#[non_exhaustive]
 pub enum KeySize {
     Bit128,
     Bit256,
