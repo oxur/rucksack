@@ -2,7 +2,7 @@ use std::io::Write;
 use std::os::unix::fs::PermissionsExt;
 use std::{env, fs, io, path};
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use chrono::offset::Local;
 use chrono::DateTime;
 use path_clean::PathClean;
@@ -14,6 +14,7 @@ const BACKUP_DIR: &str = "backups";
 const DEFAULT_DB_NAME: &str = "secrets";
 const DB_EXTENSION: &str = "db";
 
+#[must_use = "path operation result must be checked"]
 pub fn abs_path(path_name: String) -> io::Result<path::PathBuf> {
     let expanded = expanded_name(path_name);
     let path = path::Path::new(expanded.as_str());
@@ -48,26 +49,28 @@ pub fn config_file(project: &str) -> String {
         .to_string()
 }
 
+#[must_use = "directory creation result must be checked"]
 pub fn create_parents(path: String) -> Result<path::PathBuf> {
     // Make sure the path is created
-    log::debug!("Attempting to create parent directory of {path} ...");
+    log::debug!(path = path.as_str(), operation = "create_parent"; "Attempting to create parent directory");
     let ap = abs_path(path.clone())?;
     let parent = ap
         .parent()
         .ok_or_else(|| anyhow!("path has no parent directory: {}", path))?
         .to_path_buf();
-    log::debug!("Attempting to create directory {:}", parent.display());
+    log::debug!(path = parent.to_string_lossy().as_ref(), operation = "create_dir"; "Attempting to create directory");
     create_dirs(parent)?;
     Ok(ap)
 }
 
+#[must_use = "directory creation result must be checked"]
 pub fn create_dirs(path: path::PathBuf) -> Result<path::PathBuf> {
     let path_name = path.display();
     match fs::create_dir_all(path.clone()) {
         Ok(_) => Ok(path),
         Err(e) => {
             let msg = "Could not create missing parent dirs for";
-            log::error!("{msg} {path_name} ({e:})");
+            log::error!(path = path_name.to_string().as_str(), error = e.to_string().as_str(), operation = "create_dir"; "{}", msg);
             Err(anyhow!("{} {} ({:})", msg, path_name, e))
         }
     }
@@ -89,10 +92,11 @@ pub fn db_file(project: &str) -> String {
         .to_string()
 }
 
+#[must_use = "file deletion result must be checked"]
 pub fn delete(file_path: path::PathBuf) -> Result<()> {
     match fs::remove_file(file_path) {
         Ok(x) => {
-            log::debug!("Deleted file");
+            log::debug!(operation = "delete"; "Deleted file");
             Ok(x)
         }
         Err(e) => Err(anyhow!(e)),
@@ -113,6 +117,7 @@ pub fn expanded_name(path_name: String) -> String {
 pub type Data = (String, String, String);
 pub type Listing = Vec<Data>;
 
+#[must_use = "directory listing result must be checked"]
 pub fn files(dir: String) -> Result<Listing> {
     let mut f = Vec::<(String, String, String)>::new();
     for entry in fs::read_dir(dir)? {
@@ -133,41 +138,30 @@ pub fn files(dir: String) -> Result<Listing> {
     Ok(f)
 }
 
+#[must_use = "file read result must be checked"]
 pub fn read(file_name: String) -> Result<Vec<u8>> {
-    let expanded = expanded_name(file_name);
-    log::debug!("Reading file {:?} ...", expanded);
-    match fs::read(expanded) {
-        Ok(bytes) => Ok(bytes),
-        Err(e) => Err(anyhow!(e)),
-    }
+    let expanded = expanded_name(file_name.clone());
+    log::debug!(file = expanded.as_str(), operation = "read"; "Reading file");
+    fs::read(&expanded).with_context(|| format!("failed to read file: {}", file_name))
 }
 
+#[must_use = "file write result must be checked"]
 pub fn write(data: Vec<u8>, path: String) -> Result<()> {
     let ap = create_parents(path.clone())?;
     // Then write the file
-    log::debug!("Writing file {:?} ...", ap);
-    let mut file = match std::fs::OpenOptions::new()
+    log::debug!(file = ap.to_string_lossy().as_ref(), operation = "write"; "Writing file");
+    let mut file = std::fs::OpenOptions::new()
         .write(true)
         .create(true)
         .truncate(true)
-        .open(ap)
-    {
-        Ok(x) => Ok(x),
-        Err(e) => {
-            let msg = "Could not set up file options for";
-            log::error!("{} {} ({:})", msg, path, e);
-            Err(anyhow!("{} {} ({:})", msg, path, e))
-        }
-    }?;
-    file.write_all(&data[..])?;
-    match file.sync_all() {
-        Ok(x) => Ok(x),
-        Err(e) => {
-            let msg = "Could not write file";
-            log::error!("{} {} ({:})", msg, path, e);
-            Err(anyhow!("{} {} ({:})", msg, path, e))
-        }
-    }
+        .open(&ap)
+        .with_context(|| format!("failed to open file for writing: {}", path))?;
+
+    file.write_all(&data[..])
+        .with_context(|| format!("failed to write data to file: {}", path))?;
+
+    file.sync_all()
+        .with_context(|| format!("failed to sync file to disk: {}", path))
 }
 
 #[cfg(test)]

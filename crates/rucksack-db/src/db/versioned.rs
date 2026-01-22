@@ -22,22 +22,22 @@ impl VersionedDB {
     }
 
     pub fn deserialise(bytes: Vec<u8>) -> Result<VersionedDB> {
-        log::debug!("Creating versioned DB from previously serialised versioned DB ...");
-        match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
+        log::debug!(operation = "deserialise"; "Creating versioned DB from previously serialised versioned DB");
+        match bincode::decode_from_slice::<VersionedDB, _>(bytes.as_ref(), util::bincode_cfg()) {
             Ok((result, _len)) => {
-                log::trace!("deserialised versioned DB bytes: {:?}", result);
+                log::trace!(version = result.version.as_str(), operation = "deserialise"; "Deserialised versioned DB bytes");
                 Ok(result)
             }
             Err(e) => {
                 let msg = format!("couldn't deserialise versioned database file: {e:?}");
-                log::error!("{}", msg);
+                log::error!(error = e.to_string().as_str(), operation = "deserialise"; "{}", msg);
                 Err(anyhow!(msg))
             }
         }
     }
 
     pub fn from_bytes(bytes: Vec<u8>) -> Result<VersionedDB> {
-        log::debug!("Initialising versioned DB with encoded hashmap ...");
+        log::debug!(operation = "init"; "Initialising versioned DB with encoded hashmap");
         VersionedDB::new(bytes, records::version().to_string())
     }
 
@@ -50,12 +50,12 @@ impl VersionedDB {
     }
 
     pub fn serialise(&self) -> Result<Vec<u8>> {
-        log::debug!("Serialising versioned DB ...");
+        log::debug!(operation = "serialise"; "Serialising versioned DB");
         match bincode::encode_to_vec(self, util::bincode_cfg()) {
             Ok(bytes) => Ok(bytes),
             Err(e) => {
                 let msg = format!("couldn't serialise versioned database ({e})");
-                log::error!("{}", msg);
+                log::error!(error = e.to_string().as_str(), operation = "serialise"; "{}", msg);
                 Err(anyhow!("{}", msg))
             }
         }

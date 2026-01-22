@@ -186,7 +186,7 @@ pub fn duplicates(matches: &ArgMatches, app: &App) -> Result<()> {
             hash_fields.append(&mut default_hash_fields);
         }
         Some(t) => {
-            log::error!("Got unexpected type '{}'; using default ...", t);
+            log::error!(type_str = t, operation = "hash_fields"; "Got unexpected type; using default");
             hash_fields.append(&mut default_hash_fields);
         }
         None => {
@@ -240,7 +240,7 @@ pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
         md.updated,
         md.last_used,
     ));
-    log::debug!("history length: {}", record.history().len());
+    log::debug!(length = record.history().len(), operation = "list_history"; "History length");
     // Let's get these in order of most recent to oldest:
     let mut history = record.history();
     history.reverse();
@@ -257,7 +257,7 @@ pub fn passwords(matches: &ArgMatches, app: &App) -> Result<()> {
             old.metadata.last_used,
         ));
     }
-    log::debug!("results length: {}", results.len());
+    log::debug!(length = results.len(), operation = "list"; "Results length");
     let mut t = table::new(results.to_owned(), opts);
     t.display();
     println!();

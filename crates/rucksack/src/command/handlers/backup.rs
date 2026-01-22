@@ -43,9 +43,9 @@ use crate::output::{result, table, Column, Opts};
 pub fn delete(matches: &ArgMatches, app: &App) -> Result<()> {
     let backup_path = app.backup_path();
     let backup_name = options::backup_name(matches);
-    log::debug!("Preparing to delete backup DB file '{}'", backup_name);
+    log::debug!(file = backup_name.as_str(), operation = "delete_backup"; "Preparing to delete backup DB file");
     if !backup_path.exists() {
-        log::error!("Cannot find file {}", backup_path.display());
+        log::error!(file = backup_path.to_string_lossy().as_ref(), operation = "delete_backup"; "Cannot find file");
         return Err(anyhow!("backup file '{}' does not exist", backup_name));
     }
     file::delete(backup_path)
@@ -53,7 +53,7 @@ pub fn delete(matches: &ArgMatches, app: &App) -> Result<()> {
 
 pub fn list(matches: &ArgMatches, app: &App) -> Result<()> {
     let backup_dir = app.backup_dir();
-    log::debug!("Preparing to list backup DB files in {backup_dir:}");
+    log::debug!(dir = backup_dir.as_str(), operation = "list_backups"; "Preparing to list backup DB files");
     let opts = Opts {
         backup_files: true,
         latest_only: options::latest(matches),
@@ -89,12 +89,12 @@ pub fn restore(matches: &ArgMatches, app: &App) -> Result<()> {
     // Do a backup before we go any further
     run(matches, app)?;
     backup::restore(app.backup_path(), backup_name.clone(), app.db_path())?;
-    log::info!("Successfully restored {backup_name} to {}", app.db_file());
+    log::info!(backup_file = backup_name.as_str(), db_file = app.db_file().as_str(), operation = "restore_backup"; "Successfully restored backup");
     Ok(())
 }
 
 pub fn run(_matches: &ArgMatches, app: &App) -> Result<()> {
-    log::debug!("Backing up database ...");
+    log::debug!(operation = "backup"; "Backing up database");
     let r = backup::copy(
         app.db_file(),
         app.backup_dir(),
@@ -106,6 +106,6 @@ pub fn run(_matches: &ArgMatches, app: &App) -> Result<()> {
             return Err(anyhow!(e));
         }
     };
-    log::debug!("Backed up database to {backup_file}");
+    log::debug!(backup_file = backup_file.as_str(), operation = "backup"; "Backed up database");
     Ok(())
 }

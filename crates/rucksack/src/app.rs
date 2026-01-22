@@ -17,7 +17,7 @@ pub struct App {
 
 impl App {
     pub fn new(cfg: Config, cmd: String, matches: &ArgMatches) -> Result<App> {
-        log::debug!("Setting up rucksack application ...");
+        log::debug!(operation = "setup"; "Setting up rucksack application");
         let inputs = cfg.to_inputs(matches);
         let db = setup_db(&inputs, cmd)?;
         Ok(App { inputs, db })
@@ -81,19 +81,19 @@ impl App {
     }
 
     pub fn run(&self, matches: &ArgMatches) -> Result<()> {
-        log::info!("Executing rucksack command ...");
+        log::info!(operation = "execute"; "Executing rucksack command");
         if !self.backup_path().exists() {
-            log::debug!("Checking for backup dir {:?} ...", self.backup_dir());
+            log::debug!(dir = self.backup_dir().as_str(), operation = "check_backup_dir"; "Checking for backup dir");
             file::create_dirs(self.backup_path())?;
-            log::info!("Created backup dir.");
+            log::info!(operation = "create_backup_dir"; "Created backup dir");
         }
         command::dispatch(self, matches)?;
-        log::debug!("Command execution complete.");
+        log::debug!(operation = "execute"; "Command execution complete");
         Ok(())
     }
 
     pub fn shutdown(&self, _matches: &ArgMatches) -> Result<()> {
-        log::info!("Performing shutdown operations ...");
+        log::info!(operation = "shutdown"; "Performing shutdown operations");
         if self.inputs.retention.purge_on_shutdown {
             todo!();
         }
@@ -107,16 +107,13 @@ impl App {
 }
 
 pub fn setup_db(inputs: &Inputs, cmd: String) -> Result<DB> {
-    log::debug!("Setting up database ...");
-    log::trace!("Got inputs: {:#?}", inputs);
+    log::debug!(operation = "setup_db"; "Setting up database");
+    log::trace!(db_file = inputs.db_file().as_str(), operation = "setup_db"; "Got inputs");
     if !inputs.db_needed() {
-        log::debug!(
-            "Database not needed for the '{}' command; skipping load ...",
-            cmd
-        );
+        log::debug!(cmd = &cmd[..], operation = "setup_db"; "Database not needed for command; skipping load");
         return Ok(DB::new(inputs.db_file(), inputs.backup_dir(), None, None));
     }
-    log::debug!("Database is needed; preparing for read ...");
+    log::debug!(operation = "setup_db"; "Database is needed; preparing for read");
     let mut db = DB::new(
         inputs.db_file(),
         inputs.backup_dir(),

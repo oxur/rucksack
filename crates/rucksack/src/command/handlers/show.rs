@@ -62,7 +62,9 @@ pub fn config_file(_matches: &ArgMatches, app: &App) -> Result<()> {
 pub fn config(_matches: &ArgMatches, app: &App) -> Result<()> {
     let bytes = file::read(app.inputs.config_file())
         .with_context(|| format!("failed to read config file '{}'", app.inputs.config_file()))?;
-    println!("\n{}", str::from_utf8(bytes.as_ref()).unwrap());
+    let config_str =
+        str::from_utf8(bytes.as_ref()).context("config file contains invalid UTF-8")?;
+    println!("\n{}", config_str);
     Ok(())
 }
 
@@ -89,7 +91,8 @@ pub fn categories(_matches: &ArgMatches, app: &App) -> Result<()> {
             app.db.store_pwd(),
             app.inputs.salt(),
             app.db.version(),
-        )?;
+        )
+        .with_context(|| format!("failed to decrypt record '{}'", i.key()))?;
         results.insert(dr.metadata().category, true);
     }
     let mut cats: Vec<&String> = results.keys().clone().collect();
@@ -114,7 +117,8 @@ pub fn tags(_matches: &ArgMatches, app: &App) -> Result<()> {
             app.db.store_pwd(),
             app.inputs.salt(),
             app.db.version(),
-        )?;
+        )
+        .with_context(|| format!("failed to decrypt record '{}'", i.key()))?;
         for t in dr.metadata().tags {
             results.insert(t.display_or_value(), true);
         }

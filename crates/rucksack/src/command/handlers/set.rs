@@ -64,7 +64,7 @@ use crate::app::App;
 use crate::input::{options, query, Flag};
 
 pub fn record_type(matches: &ArgMatches, app: &App) -> Result<()> {
-    log::debug!("Setting record type ...");
+    log::debug!(operation = "set_type"; "Setting record type");
     let mut record = query::record(app)?;
     record.set_kind(options::record_kind(matches));
     app.db.insert(record)?;
@@ -73,7 +73,7 @@ pub fn record_type(matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 pub fn password(matches: &ArgMatches, app: &App) -> Result<()> {
-    log::debug!("Setting record password ...");
+    log::debug!(operation = "set_password"; "Setting record password");
     let mut record = query::record(app)?;
     let key = record.key();
     record.set_password(options::record_pwd_revealed(matches));
@@ -83,7 +83,7 @@ pub fn password(matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 pub fn status(matches: &ArgMatches, app: &App) -> Result<()> {
-    log::debug!("Setting record status ...");
+    log::debug!(operation = "set_status"; "Setting record status");
     let mut record = query::record(app)?;
     record.set_status(options::record_state(matches));
     app.db.insert(record)?;
@@ -92,7 +92,7 @@ pub fn status(matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 pub fn url(matches: &ArgMatches, app: &App) -> Result<()> {
-    log::debug!("Setting record URL ...");
+    log::debug!(operation = "set_url"; "Setting record URL");
     let category = app.inputs.category(Flag::One);
     let kind = options::record_kind(matches);
     let user = options::user(matches);
@@ -100,7 +100,7 @@ pub fn url(matches: &ArgMatches, app: &App) -> Result<()> {
     let new_url = options::url_new(matches);
     let key = store::key(&category, kind, &user, &old_url);
     let mut record = query::record_by_key(app, key.clone())?;
-    log::debug!("Got record: {record:?}");
+    log::debug!(key = record.key().as_str(), operation = "set_url"; "Got record");
     record.set_url(new_url);
     app.db.update(key, record)?;
     app.db.close()?;
@@ -108,7 +108,7 @@ pub fn url(matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 pub fn user(matches: &ArgMatches, app: &App) -> Result<()> {
-    log::debug!("Setting record user ...");
+    log::debug!(operation = "set_user"; "Setting record user");
     let category = app.inputs.category(Flag::One);
     let kind = options::record_kind(matches);
     let old_user = options::user_old(matches);
@@ -119,9 +119,9 @@ pub fn user(matches: &ArgMatches, app: &App) -> Result<()> {
     record.set_user(new_user);
     let msg = "there was a problem deleting the old record";
     match app.db.delete(key) {
-        Some(false) => log::error!("{msg}"),
+        Some(false) => log::error!(operation = "delete_old_record"; "{}", msg),
         Some(_) => (),
-        None => log::error!("{msg}"),
+        None => log::error!(operation = "delete_old_record"; "{}", msg),
     }
     app.db.insert(record)?;
     app.db.close()?;

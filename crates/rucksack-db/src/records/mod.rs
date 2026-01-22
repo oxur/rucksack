@@ -39,11 +39,7 @@ pub fn decrypt_versioned(
     use rucksack_lib::util;
 
     let trimmed_version = shared::trim_version(db_version.clone());
-    log::debug!(
-        "decrypt_versioned: db_version={}, trimmed={}",
-        db_version,
-        trimmed_version
-    );
+    log::debug!(db_version = db_version.to_string().as_str(), trimmed_version = trimmed_version.to_string().as_str(), operation = "decrypt_versioned"; "Decrypting versioned record");
 
     // v0.7.0 introduced the Secrets struct (replacing Creds)
     // v0.9.0 introduced the history field
@@ -52,7 +48,7 @@ pub fn decrypt_versioned(
 
     if trimmed_version < v070 {
         // Very old format: v0.4.0-v0.6.0 used Creds struct
-        log::debug!("Using v0.6.0 decrypt path for version < 0.7.0");
+        log::debug!(version_path = "v0.6.0", operation = "decrypt"; "Using v0.6.0 decrypt path for version < 0.7.0");
 
         // Convert v090::EncryptedRecord to v060::EncryptedRecord for decryption
         let old_record = v060::EncryptedRecord {
@@ -75,9 +71,9 @@ pub fn decrypt_versioned(
         };
 
         // Decrypt using v060's method (which expects Creds)
-        log::debug!("Calling v060::decrypt()");
+        log::debug!(version = "v0.6.0", operation = "decrypt"; "Calling v060::decrypt()");
         let decrypted_v060 = old_record.decrypt(store_pwd, salt)?;
-        log::debug!("v060::decrypt() succeeded, migrating to current version");
+        log::debug!(version = "v0.6.0", operation = "migrate"; "v060::decrypt() succeeded, migrating to current version");
 
         // Migrate from v060 to v070
         let decrypted_v070 = v070::migrate_decrypted_record_from_v060(decrypted_v060);
@@ -89,7 +85,7 @@ pub fn decrypt_versioned(
         Ok(v090::migrate_decrypted_record_from_v080(decrypted_v080))
     } else if trimmed_version < v090 {
         // Old format: v0.7.0 and v0.8.0 used Secrets but had no history field
-        log::debug!("Using v0.7.0/v0.8.0 decrypt path for version < 0.9.0");
+        log::debug!(version_path = "v0.7.0/v0.8.0", operation = "decrypt"; "Using v0.7.0/v0.8.0 decrypt path for version < 0.9.0");
 
         // Decrypt only the secrets field (v0.7.0/v0.8.0 EncryptedRecord has no history)
         let decrypted_bytes = crate::crypto::decrypt(encrypted.value(), store_pwd, salt)?;
@@ -110,7 +106,7 @@ pub fn decrypt_versioned(
         Ok(v090::migrate_decrypted_record_from_v080(decrypted_v080))
     } else {
         // Current format: v0.9.0+ has history field
-        log::debug!("Using current decrypt path for version >= 0.9.0");
+        log::debug!(version = "v0.9.0+", operation = "decrypt"; "Using current decrypt path for version >= 0.9.0");
         encrypted.decrypt(store_pwd, salt)
     }
 }

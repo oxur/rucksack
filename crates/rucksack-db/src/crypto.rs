@@ -14,6 +14,7 @@ pub enum KeySize {
     Bit256,
 }
 
+#[must_use = "encryption result must be checked - data may not be encrypted"]
 pub fn encrypt(data: Vec<u8>, pwd: String, salt: String) -> Result<Vec<u8>> {
     let key_bytes = sized_key(pwd, KeySize::Bit256);
     let key = aead::Key::<Aes256Gcm>::from_slice(key_bytes.as_ref());
@@ -25,16 +26,16 @@ pub fn encrypt(data: Vec<u8>, pwd: String, salt: String) -> Result<Vec<u8>> {
         .map_err(|e| anyhow!("encryption failed: {}", e))
 }
 
+#[must_use = "decryption result must be checked - data may not be decrypted"]
 pub fn decrypt(encrypted: Vec<u8>, pwd: String, salt: String) -> Result<Vec<u8>> {
     let key_bytes = sized_key(pwd, KeySize::Bit256);
     let key = aead::Key::<Aes256Gcm>::from_slice(key_bytes.as_ref());
     let cipher = Aes256Gcm::new(key);
     let nonce_bytes = sized_nonce(salt);
     let nonce = Nonce::from_slice(nonce_bytes.as_ref());
-    match cipher.decrypt(nonce, &encrypted[..]) {
-        Ok(result) => Ok(result),
-        Err(e) => Err(anyhow!(e)),
-    }
+    cipher.decrypt(nonce, &encrypted[..]).map_err(|_| {
+        anyhow!("decryption failed - password may be incorrect, salt invalid, or data corrupted")
+    })
 }
 
 fn sized_key(source: String, key_size: KeySize) -> Vec<u8> {

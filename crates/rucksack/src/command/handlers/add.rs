@@ -36,7 +36,7 @@ use crate::app::App;
 use crate::input::{query, Flag};
 
 pub fn new(_matches: &ArgMatches, app: &App) -> Result<()> {
-    log::debug!("Running 'add' subcommand ...");
+    log::debug!(operation = "add"; "Running 'add' subcommand");
     let kind = app.inputs.record_kind();
     if let Ok(_dr) = query::record(app) {
         return Err(anyhow!(

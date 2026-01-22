@@ -18,7 +18,7 @@
 //!   --file ~/Downloads/logins.csv
 //! ```
 //!
-use anyhow::Result;
+use anyhow::{Context, Result};
 use clap::ArgMatches;
 
 use rucksack_db::csv;
@@ -44,42 +44,48 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
 
 fn from_chrome_csv(matches: &ArgMatches, db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
     println!("Importing Chrome data from {csv_path}:");
-    let mut rdr = csv::reader::from_path(csv_path)?;
+    let mut rdr = csv::reader::from_path(csv_path.clone())
+        .with_context(|| format!("failed to read Chrome CSV file '{}'", csv_path))?;
     let mut count = 0;
     for result in rdr.deserialize() {
-        let chr: chrome::Record = result?;
+        let chr: chrome::Record = result.context("failed to parse Chrome CSV record")?;
         let mut dr = chr.to_decrypted();
-        log::debug!("Record: {}", dr.key());
+        log::debug!(key = dr.key().as_str(), operation = "import"; "Processing record");
         if !valid_import(matches, dr.clone()) {
             continue;
         }
         dr.set_name(dr.name_or_user());
-        db.insert(dr)?;
+        db.insert(dr)
+            .context("failed to insert imported record into database")?;
         count += 1;
         print!(".");
     }
     print_report(count, db.hash_map().len());
     db.close()
+        .context("failed to save database after Chrome import")
 }
 
 fn from_firefox_csv(matches: &ArgMatches, db: &DB, csv_path: String) -> Result<(), anyhow::Error> {
     println!("Importing Firefox data from {csv_path}:");
-    let mut rdr = csv::reader::from_path(csv_path)?;
+    let mut rdr = csv::reader::from_path(csv_path.clone())
+        .with_context(|| format!("failed to read Firefox CSV file '{}'", csv_path))?;
     let mut count: usize = 0;
     for result in rdr.deserialize() {
-        let ffr: firefox::Record = result?;
+        let ffr: firefox::Record = result.context("failed to parse Firefox CSV record")?;
         let mut dr = ffr.to_decrypted();
-        log::debug!("Record: {}", dr.key());
+        log::debug!(key = dr.key().as_str(), operation = "import"; "Processing record");
         if !valid_import(matches, dr.clone()) {
             continue;
         }
         dr.set_name(dr.name_or_user());
-        db.insert(dr)?;
+        db.insert(dr)
+            .context("failed to insert imported record into database")?;
         count += 1;
         print!(".");
     }
     print_report(count, db.hash_map().len());
     db.close()
+        .context("failed to save database after Firefox import")
 }
 
 fn print_report(count: usize, total: usize) {

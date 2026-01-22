@@ -12,11 +12,11 @@ pub const VERSION: &str = "0.2.0";
 pub type HashMap = dashmap::DashMap<String, EncryptedRecord>;
 
 pub fn decode_hashmap(bytes: Vec<u8>, version: versions::SemVer) -> Result<HashMap> {
-    log::debug!("Decoding hashmap from stored bytes (format version {version:})...");
+    log::debug!(version = version.to_string().as_str(), operation = "decode"; "Decoding hashmap from stored bytes");
     let hm: HashMap = dashmap::DashMap::new();
-    log::trace!("Created hashmap.");
+    log::trace!(operation = "decode"; "Created hashmap");
     let sorted_vec: Vec<(String, EncryptedRecord)>;
-    log::trace!("Created vec for sorted data.");
+    log::trace!(operation = "decode"; "Created vec for sorted data");
     match bincode::decode_from_slice(bytes.as_ref(), util::bincode_cfg()) {
         Ok((result, _len)) => {
             sorted_vec = result;
@@ -27,7 +27,7 @@ pub fn decode_hashmap(bytes: Vec<u8>, version: versions::SemVer) -> Result<HashM
         }
         Err(e) => {
             let msg = format!("couldn't deserialise bincoded hashmap bytes: {e:?}");
-            log::error!("{}", msg);
+            log::error!(error = e.to_string().as_str(), operation = "decode"; "{}", msg);
             Err(anyhow!(msg))
         }
     }

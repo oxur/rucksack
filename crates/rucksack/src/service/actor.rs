@@ -12,7 +12,7 @@ pub struct Commander {
 
 impl Commander {
     pub fn start(app: App) -> Result<SystemRunner> {
-        log::info!("Starting rucksack daemon ...");
+        log::info!(operation = "start_daemon"; "Starting rucksack daemon");
         let system = System::new();
         system.block_on(async {
             Commander::create(|ctx| Commander {
@@ -20,12 +20,12 @@ impl Commander {
                 recipient: ctx.address().recipient(),
             });
         });
-        log::debug!("Starting Actix system runner ...");
+        log::debug!(operation = "start_runner"; "Starting Actix system runner");
         Ok(system)
     }
 
     pub fn stop() {
-        log::info!("Stopping rucksack daemon ...");
+        log::info!(operation = "stop_daemon"; "Stopping rucksack daemon");
         System::current().stop()
     }
 }
@@ -33,20 +33,20 @@ impl Commander {
 impl Actor for Commander {
     type Context = Context<Self>;
 
-    fn started(&mut self, ctx: &mut Context<Self>) {
-        log::info!("Commander has started at {:?}", ctx.address());
+    fn started(&mut self, _ctx: &mut Context<Self>) {
+        log::info!(operation = "start"; "Commander has started");
     }
 
     fn stopped(&mut self, _ctx: &mut Context<Self>) {
-        log::info!("Commander has stopped");
+        log::info!(operation = "stop"; "Commander has stopped");
     }
 }
 
 impl Handler<Command> for Commander {
     type Result = anyhow::Result<()>;
 
-    fn handle(&mut self, msg: Command, _ctx: &mut actix::Context<Self>) -> Result<()> {
-        log::info!("Got msg {msg:?} from {:?}", self.recipient);
+    fn handle(&mut self, _msg: Command, _ctx: &mut actix::Context<Self>) -> Result<()> {
+        log::info!(operation = "handle"; "Got message");
         // TODO: add a command dispatch
         Ok(())
     }

@@ -19,8 +19,9 @@
 //
 use std::fmt;
 
-use anyhow::{anyhow, Error, Result};
+use anyhow::{anyhow, Context, Error, Result};
 use dashmap::DashMap;
+use secrecy::{ExposeSecret, SecretString};
 
 use rucksack_lib::{file, util};
 
@@ -37,9 +38,9 @@ pub struct DB {
     enabled: bool,
     hash_map: records::HashMap,
     manager: Box<dyn StoreManager>,
-    salt: Option<String>,
+    salt: Option<SecretString>,
     store_hash: u32,
-    store_pwd: Option<String>,
+    store_pwd: Option<SecretString>,
     version: versions::SemVer,
 }
 
@@ -62,8 +63,8 @@ impl DB {
         DB {
             file_name,
             backup_dir,
-            store_pwd,
-            salt,
+            store_pwd: store_pwd.map(SecretString::new),
+            salt: salt.map(SecretString::new),
             manager: store::manager::new(),
             enabled: true,
             hash_map: DashMap::new(),
@@ -79,39 +80,71 @@ impl DB {
         store_pwd: Option<String>,
         salt: Option<String>,
     ) -> Result<()> {
-        log::debug!("Initialising database ...");
+        log::debug!(operation = "init"; "Initialising database");
         let mut db = DB::new(file_name, backup_dir, store_pwd, salt);
         db.open()?;
         db.close()
     }
 
     // Moved in v0.9.0
+    #[must_use = "database operations must be checked for errors"]
     pub fn open(&mut self) -> Result<()> {
-        log::debug!("Opening database ...");
-        let store_pwd = self.store_pwd.clone().unwrap();
-        let salt = self.salt.clone().unwrap();
-        let file_path = file::create_parents(self.file_name.clone())?;
+        log::debug!(operation = "open"; "Opening database");
+        let store_pwd = self
+            .store_pwd
+            .as_ref()
+            .expect("store_pwd must be set to open database")
+            .expose_secret()
+            .to_string();
+        let salt = self
+            .salt
+            .as_ref()
+            .expect("salt must be set to open database")
+            .expose_secret()
+            .to_string();
+        let file_path = file::create_parents(self.file_name.clone()).with_context(|| {
+            format!(
+                "failed to create parent directory for database: {}",
+                self.file_name
+            )
+        })?;
         if file_path.exists() {
-            log::debug!("Creating encrypted DB ...");
-            let enc_db = self.manager.read(self.file_name.clone(), store_pwd, salt)?;
+            log::debug!(operation = "decrypt", db_file = self.file_name.as_str(); "Creating encrypted DB");
+            let enc_db = self
+                .manager
+                .read(self.file_name.clone(), store_pwd, salt)
+                .with_context(|| {
+                    format!(
+                        "failed to read database file: {} (check password and salt)",
+                        self.file_name
+                    )
+                })?;
             let vsn_db = match VersionedDB::deserialise(enc_db.decrypted()) {
                 Ok(db) => db,
                 Err(_) => {
-                    log::info!("Given database appears to be non-versioned; be sure to upgrade to the latest micro release of our old version before continuing ...");
-                    log::trace!("Bytes: {:?}", enc_db.decrypted());
-                    VersionedDB::from_bytes(enc_db.decrypted())?
+                    log::info!(db_file = self.file_name.as_str(), format = "non-versioned"; "Given database appears to be non-versioned; be sure to upgrade to the latest micro release of our old version before continuing");
+                    log::trace!(bytes_len = enc_db.decrypted().len(); "Database bytes");
+                    VersionedDB::from_bytes(enc_db.decrypted()).with_context(|| {
+                        format!("failed to parse database version from: {}", self.file_name)
+                    })?
                 }
             };
-            log::debug!("Getting database hash ...");
+            log::debug!(operation = "hash_compute"; "Getting database hash");
             self.store_hash = vsn_db.hash();
             self.version = vsn_db.version();
             // Decode the versioned DB's bytes to a hashmap
-            self.hash_map = records::decode_hashmap(vsn_db.bytes(), self.version.clone())?;
+            self.hash_map = records::decode_hashmap(vsn_db.bytes(), self.version.clone())
+                .with_context(|| {
+                    format!(
+                        "failed to decode database records (version: {})",
+                        self.version
+                    )
+                })?;
         };
 
         self.file_name = file_path.display().to_string();
         self.enabled = true;
-        log::debug!("Set database path: {}", self.file_name);
+        log::debug!(db_file = self.file_name.as_str(); "Set database path");
         Ok(())
     }
 
@@ -119,52 +152,66 @@ impl DB {
         self.backup_dir.clone()
     }
 
+    #[must_use = "database operations must be checked for errors"]
     pub fn close(&self) -> Result<()> {
-        log::debug!("Closing DB file ...");
-        let path = file::create_parents(self.file_name())?;
+        log::debug!(operation = "close", db_file = self.file_name().as_str(); "Closing DB file");
+        let path = file::create_parents(self.file_name()).with_context(|| {
+            format!(
+                "failed to create parent directory for database: {}",
+                self.file_name()
+            )
+        })?;
         if path.exists() {
-            log::debug!("Database file exists; backing up ...");
-            let backup_file = self.manager.backup(
-                self.file_name(),
-                self.backup_dir(),
-                self.schema_version().to_string(),
-            )?;
-            log::debug!("Backed up file to {backup_file}");
+            log::debug!(db_file = self.file_name().as_str(), operation = "backup"; "Database file exists; backing up");
+            let backup_file = self
+                .manager
+                .backup(
+                    self.file_name(),
+                    self.backup_dir(),
+                    self.schema_version().to_string(),
+                )
+                .with_context(|| {
+                    format!("failed to create backup of database: {}", self.file_name())
+                })?;
+            log::debug!(backup_file = backup_file.as_str(), operation = "backup_complete"; "Backed up file");
         }
 
         // Reverse the workflow of `open` ... encode the hashmap
-        let srl = match self.serialise() {
-            Ok(x) => Ok(x),
-            Err(e) => {
-                let msg = "Could not serialise self";
-                log::error!("{} {:?} ({:})", msg, self.file_name(), e);
-                Err(anyhow!("{} {:?} ({:})", msg, self.file_name(), e))
-            }
-        }?;
+        let srl = self
+            .serialise()
+            .with_context(|| format!("failed to serialize database: {}", self.file_name()))?;
+
         // Create versioned data
-        let vsn_db = VersionedDB::from_bytes(srl)?;
-        let encoded = match vsn_db.serialise() {
-            Ok(x) => Ok(x),
-            Err(e) => {
-                let msg = "Could not serialise version db";
-                log::error!("{} {:?} ({:})", msg, self.file_name(), e);
-                Err(anyhow!("{} {:?} ({:})", msg, self.file_name(), e))
-            }
-        }?;
+        let vsn_db = VersionedDB::from_bytes(srl).with_context(|| {
+            format!(
+                "failed to create versioned database wrapper: {}",
+                self.file_name()
+            )
+        })?;
+        let encoded = vsn_db.serialise().with_context(|| {
+            format!(
+                "failed to serialize versioned database: {}",
+                self.file_name()
+            )
+        })?;
         // Get the hash for the versioned data
         let store_hash = vsn_db.hash();
         if store_hash == self.store_hash {
-            log::debug!("No change in store hash; not persisting ...");
+            log::debug!(hash = store_hash, operation = "persist_skip"; "No change in store hash; not persisting");
             return Ok(());
         }
         // Encrypt the versioned data
         let enc_db =
-            EncryptedDB::from_decrypted(encoded, self.file_name(), self.store_pwd(), self.salt())?;
+            EncryptedDB::from_decrypted(encoded, self.file_name(), self.store_pwd(), self.salt())
+                .with_context(|| format!("failed to encrypt database: {}", self.file_name()))?;
 
         // Save the encrypted data
-        enc_db.write()
+        enc_db
+            .write()
+            .with_context(|| format!("failed to write database to disk: {}", self.file_name()))
     }
 
+    #[must_use = "database operations must be checked for errors"]
     pub fn collect_decrypted(&self) -> Result<Vec<DecryptedRecord>, Error> {
         let mut decrypted: Vec<DecryptedRecord> = Vec::new();
         for i in self.iter() {
@@ -181,7 +228,7 @@ impl DB {
 
     // Added in v0.7.0
     pub fn delete(&self, key: String) -> Option<bool> {
-        log::debug!("Deleting record with key {key} ...");
+        log::debug!(key = key.as_str(), operation = "delete"; "Deleting record");
         match self.hash_map.remove(&key) {
             Some(_) => Some(true),
             None => Some(false),
@@ -194,7 +241,7 @@ impl DB {
     }
 
     pub fn get(&self, key: String) -> Option<DecryptedRecord> {
-        log::trace!("Getting record with key {} ...", key);
+        log::trace!(key = key.as_str(), operation = "get"; "Getting record");
         self.hash_map.get(&key).and_then(|encrypted| {
             records::decrypt_versioned(
                 encrypted.value(),
@@ -207,11 +254,11 @@ impl DB {
     }
 
     pub fn get_metadata(&self, key: String) -> Option<Metadata> {
-        log::trace!("Getting metadata of record with key {key} ...");
+        log::trace!(key = key.as_str(), operation = "get_metadata"; "Getting metadata of record");
         match self.get(key.clone()) {
             Some(r) => Some(r.metadata()),
             None => {
-                log::debug!("key {key} not found");
+                log::debug!(key = key.as_str(), status = "not_found"; "Key not found");
                 None
             }
         }
@@ -221,14 +268,20 @@ impl DB {
         self.hash_map.clone()
     }
 
+    #[must_use = "database operations must be checked for errors"]
     pub fn insert(&self, record: DecryptedRecord) -> Result<Option<EncryptedRecord>> {
         let key = record.key();
-        log::debug!("Inserting record with key {} ...", key);
+        log::debug!(key = key.as_str(), operation = "insert"; "Inserting record");
         if let Some(r) = self.get(record.key()) {
-            log::trace!("Record exists; skipping insert");
-            return Ok(Some(r.encrypt(self.store_pwd(), self.salt())?));
+            log::trace!(key = key.as_str(), status = "exists"; "Record exists; skipping insert");
+            return Ok(Some(
+                r.encrypt(self.store_pwd(), self.salt())
+                    .with_context(|| format!("failed to encrypt existing record: {}", key))?,
+            ));
         };
-        let encrypted = record.encrypt(self.store_pwd(), self.salt())?;
+        let encrypted = record
+            .encrypt(self.store_pwd(), self.salt())
+            .with_context(|| format!("failed to encrypt new record: {}", key))?;
         Ok(self.hash_map.insert(key, encrypted))
     }
 
@@ -241,39 +294,47 @@ impl DB {
     }
 
     pub fn salt(&self) -> String {
-        self.salt.clone().expect(
-            "BUG: salt should be Some when database operations are performed. \
-            This indicates the database was not properly initialized with a salt.",
-        )
+        self.salt
+            .as_ref()
+            .expect(
+                "BUG: salt should be Some when database operations are performed. \
+                This indicates the database was not properly initialized with a salt.",
+            )
+            .expose_secret()
+            .to_string()
     }
 
     fn serialise(&self) -> Result<Vec<u8>> {
-        log::debug!("Serialising data ...");
+        log::debug!(operation = "serialize"; "Serialising data");
         let mut data: Vec<(String, EncryptedRecord)> = Vec::new();
         for i in self.iter() {
             data.push((i.key().clone(), i.value().clone()))
         }
-        log::trace!("Converted hashmap to vec.");
+        log::trace!(operation = "serialize_convert"; "Converted hashmap to vec");
         data.sort_by_key(|k| k.0.clone());
-        log::trace!("Sorted vec.");
+        log::trace!(operation = "serialize_sort"; "Sorted vec");
         match bincode::encode_to_vec(data, util::bincode_cfg()) {
             Ok(encoded) => {
-                log::trace!("Encoded vector.");
+                log::trace!(operation = "serialize_encode"; "Encoded vector");
                 Ok(encoded)
             }
             Err(e) => {
                 let msg = format!("couldn't encode DB hashmap ({e:?})");
-                log::error!("{}", msg);
+                log::error!(error = e.to_string().as_str(), operation = "serialize_encode"; "{}", msg);
                 Err(anyhow!("{}", msg))
             }
         }
     }
 
     pub fn store_pwd(&self) -> String {
-        self.store_pwd.clone().expect(
-            "BUG: store_pwd should be Some when database operations are performed. \
-            This indicates the database was not properly initialized with a password.",
-        )
+        self.store_pwd
+            .as_ref()
+            .expect(
+                "BUG: store_pwd should be Some when database operations are performed. \
+                This indicates the database was not properly initialized with a password.",
+            )
+            .expose_secret()
+            .to_string()
     }
 
     // Note that the key has to be passed here, even though the
@@ -281,28 +342,31 @@ impl DB {
     // might involved a field used to create the key (and since that
     // new key hasn't been saved yet, there's no record for it --
     // just one for the old key).
+    #[must_use = "database operations must be checked for errors"]
     pub fn update(&self, key: String, updated: DecryptedRecord) -> Result<()> {
-        log::debug!("Updating record with key {key} ...");
-        match self.delete(key) {
+        log::debug!(key = key.as_str(), operation = "update"; "Updating record");
+        match self.delete(key.clone()) {
             Some(true) => {
-                self.insert(updated)?;
+                self.insert(updated)
+                    .with_context(|| format!("failed to insert updated record: {}", key))?;
                 Ok(())
             }
             Some(false) => {
-                log::error!("Could not update record:");
-                Err(anyhow!("failed to delete record for update"))
+                log::error!(key = key.as_str(), operation = "update"; "Could not update record");
+                Err(anyhow!("failed to delete record '{}' for update", key))
             }
             None => unreachable!(),
         }
     }
 
+    #[must_use = "database operations must be checked for errors"]
     pub fn update_metadata(&self, key: String, metadata: Metadata) -> Result<()> {
-        log::debug!("Updating metadata on record with key {key} ...");
+        log::debug!(key = key.as_str(), operation = "update_metadata"; "Updating metadata on record");
         let key_for_error = key.clone();
         match self.hash_map.try_entry(key) {
             Some(entry) => {
                 entry.and_modify(|r| r.metadata = metadata);
-                log::trace!("updated!");
+                log::trace!(key = key_for_error.as_str(), status = "success"; "Updated metadata");
                 Ok(())
             }
             None => Err(anyhow!("record '{}' not found or locked", key_for_error)),

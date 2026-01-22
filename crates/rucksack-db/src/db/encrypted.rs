@@ -51,15 +51,15 @@ impl EncryptedDB {
             salt: SecretString::new(salt),
         };
         if bytes.is_none() && decrypted.is_none() {
-            log::debug!("No bytes provided; reading from file ...");
+            log::debug!(source = "file", path = edb.path.as_str(), operation = "init"; "No bytes provided; reading from file");
             edb.read()?;
             edb.decrypt()?;
         } else if let Some(b) = bytes {
-            log::debug!("Got encrypted bytes; decrypting ...");
+            log::debug!(source = "bytes", operation = "decrypt"; "Got encrypted bytes; decrypting");
             edb.bytes = b;
             edb.decrypt()?;
         } else if let Some(d) = decrypted {
-            log::debug!("Got decrypted bytes; encrypting ...");
+            log::debug!(source = "bytes", operation = "encrypt"; "Got decrypted bytes; encrypting");
             edb.decrypted = Secret::new(d);
             edb.encrypt()?;
         }
@@ -71,17 +71,17 @@ impl EncryptedDB {
     }
 
     pub fn decrypt(&mut self) -> Result<()> {
-        log::debug!("Decrypting stored bytes ...");
-        log::trace!("{}, {}", self.pwd(), self.salt());
+        log::debug!(operation = "decrypt"; "Decrypting stored bytes");
+        log::trace!(pwd_len = self.pwd().len(), salt_len = self.salt().len(); "Credentials info");
         match crypto::decrypt(self.bytes.clone(), self.pwd(), self.salt()) {
             Ok(bytes) => {
-                log::trace!("Decrypted bytes: {:?}", bytes);
+                log::trace!(bytes_len = bytes.len(), operation = "decrypt_success"; "Decrypted bytes");
                 self.decrypted = Secret::new(bytes);
                 Ok(())
             }
             Err(e) => {
                 let msg = format!("Could not decrypt data: {e:?}");
-                log::error!("{}", msg);
+                log::error!(error = e.to_string().as_str(), operation = "decrypt"; "{}", msg);
                 Err(anyhow!("{}", msg))
             }
         }
@@ -92,9 +92,9 @@ impl EncryptedDB {
     }
 
     pub fn encrypt(&mut self) -> Result<()> {
-        log::trace!("Byte len before: {}", self.bytes.len());
+        log::trace!(bytes_len_before = self.bytes.len(), operation = "encrypt"; "Byte length before encryption");
         self.bytes = crypto::encrypt(self.decrypted(), self.pwd(), self.salt())?;
-        log::trace!("Byte len after: {}", self.bytes.len());
+        log::trace!(bytes_len_after = self.bytes.len(), operation = "encrypt"; "Byte length after encryption");
         Ok(())
     }
 
@@ -107,9 +107,9 @@ impl EncryptedDB {
     }
 
     pub fn read(&mut self) -> Result<()> {
-        log::trace!("Byte len before: {}", self.bytes.len());
+        log::trace!(bytes_len_before = self.bytes.len(), operation = "read"; "Byte length before read");
         self.bytes = file::read(self.path())?;
-        log::trace!("Byte len after: {}", self.bytes.len());
+        log::trace!(bytes_len_after = self.bytes.len(), operation = "read"; "Byte length after read");
         Ok(())
     }
 
@@ -118,7 +118,7 @@ impl EncryptedDB {
     }
 
     pub fn write(&self) -> Result<()> {
-        log::debug!("Writing encrypted DB ...");
+        log::debug!(operation = "write", path = self.path().as_str(); "Writing encrypted DB");
         file::write(self.bytes(), self.path())
     }
 }

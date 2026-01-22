@@ -101,19 +101,16 @@ pub fn migrate_hashmap_from_v060(hm_v060: v060::HashMap) -> HashMap {
 }
 
 pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<HashMap> {
-    log::debug!(
-        "Decoding hashmap from stored bytes (format version {:})...",
-        version
-    );
+    log::debug!(version = version.to_string().as_str(), operation = "decode"; "Decoding hashmap from stored bytes");
     version = shared::trim_version(version);
     let hm: HashMap = dashmap::DashMap::new();
-    log::trace!("Created hashmap.");
+    log::trace!(operation = "decode"; "Created hashmap");
     let sorted_vec: Vec<(String, EncryptedRecord)>;
-    log::trace!("Created vec for sorted data.");
+    log::trace!(operation = "decode"; "Created vec for sorted data");
     let current_version = shared::version(VERSION).map_err(|e| anyhow!("{}", e))?;
     if version < current_version {
         // version.
-        log::info!("Attempting to decode hashmap from previous version (0.6.0)");
+        log::info!(version = "0.6.0", operation = "migrate"; "Attempting to decode hashmap from previous version");
         let hm = v060::decode_hashmap(bytes, version)?;
         return Ok(migrate_hashmap_from_v060(hm));
     }
@@ -126,7 +123,7 @@ pub fn decode_hashmap(bytes: Vec<u8>, mut version: versions::SemVer) -> Result<H
             Ok(hm)
         }
         Err(e) => {
-            log::info!("couldn't deserialise bincoded hashmap bytes: {:?}", e);
+            log::info!(error = e.to_string().as_str(), operation = "decode"; "couldn't deserialise bincoded hashmap bytes");
             Err(anyhow!(e))
         }
     }

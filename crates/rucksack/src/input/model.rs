@@ -52,19 +52,16 @@ impl Inputs {
     pub fn backup_dir(&self) -> String {
         let mut dir = options::backup_dir(&self.matches);
         if !dir.is_empty() {
-            log::debug!("Got backup dir from flag: {}", dir);
+            log::debug!(dir = dir.as_str(), source = "flag", operation = "get_backup_dir"; "Got backup dir from flag");
             return dir;
         }
         dir = self.db.backup_dir.clone();
         if !dir.is_empty() {
-            log::debug!(
-                "No database flag provided; using configured file ({:})",
-                dir
-            );
+            log::debug!(dir = dir.as_str(), source = "config", operation = "get_backup_dir"; "No database flag provided; using configured file");
             return dir;
         }
         dir = file::backup_dir(constant::NAME).display().to_string();
-        log::debug!("No configured database file; using default ({:})", dir);
+        log::debug!(dir = dir.as_str(), source = "default", operation = "get_backup_dir"; "No configured database file; using default");
         dir
     }
 
@@ -105,20 +102,17 @@ impl Inputs {
     pub fn db_file(&self) -> String {
         match options::db(&self.matches) {
             Some(file_name) => {
-                log::debug!("Got database file from flag: {}", file_name);
+                log::debug!(file = file_name.as_str(), source = "flag", operation = "get_db_file"; "Got database file from flag");
                 file_name
             }
             None => {
                 let mut db_file = self.db.path.clone();
                 if !db_file.is_empty() {
-                    log::debug!(
-                        "No database flag provided; using configured file ({:})",
-                        db_file
-                    );
+                    log::debug!(file = db_file.as_str(), source = "config", operation = "get_db_file"; "No database flag provided; using configured file");
                     return db_file;
                 }
                 db_file = file::db_file(constant::NAME);
-                log::debug!("No configured database file; using default ({:})", db_file);
+                log::debug!(file = db_file.as_str(), source = "default", operation = "get_db_file"; "No configured database file; using default");
                 db_file
             }
         }

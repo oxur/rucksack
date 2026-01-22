@@ -9,7 +9,7 @@
 //!   --file /tmp/exported-logins.csv
 //! ```
 //!
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use clap::ArgMatches;
 
 use rucksack_db::csv::writer;
@@ -21,7 +21,7 @@ use rucksack_lib::file;
 use crate::app::App;
 
 pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
-    log::debug!("Running 'export' subcommand ...");
+    log::debug!(operation = "export"; "Running 'export' subcommand");
     let serialised_format = matches.get_one::<String>("format").map(|s| s.as_str());
     // For non-debug types, we need the file option set; for the debug type, there
     // is not file option, so we need to process that one and return right away.
@@ -40,64 +40,69 @@ pub fn new(matches: &ArgMatches, app: &App) -> Result<()> {
 }
 
 fn to_stdout(app: &App) -> Result<()> {
-    match app.db.collect_decrypted() {
-        Ok(rs) => {
-            for r in rs {
-                if r.metadata().state == Status::Deleted {
-                    continue;
-                }
-                println!("{r:?}")
-            }
+    let rs = app
+        .db
+        .collect_decrypted()
+        .context("failed to decrypt records for export")?;
+    for r in rs {
+        if r.metadata().state == Status::Deleted {
+            continue;
         }
-        Err(e) => {
-            log::error!("{e:?}")
-        }
+        println!("{r:?}")
     }
     Ok(())
 }
 
 fn to_chrome_csv(matches: &ArgMatches, app: &App, csv_path: String) -> Result<(), anyhow::Error> {
-    let mut wtr = writer::to_bytes()?;
+    let mut wtr = writer::to_bytes().context("failed to create CSV writer")?;
     let mut count = 0;
-    for dr in app.db.collect_decrypted()? {
-        log::debug!("Record: {}", dr.key());
+    for dr in app
+        .db
+        .collect_decrypted()
+        .context("failed to decrypt records for Chrome export")?
+    {
+        log::debug!(key = dr.key().as_str(), operation = "export"; "Processing record");
         if !valid_export(matches, dr.clone()) {
             continue;
         }
-        wtr.serialize(chrome::from_decrypted(dr))?;
+        wtr.serialize(chrome::from_decrypted(dr))
+            .context("failed to serialize record to Chrome CSV format")?;
         count += 1;
         print!(".");
     }
-    wtr.flush()?;
-    match wtr.into_inner() {
-        Ok(data) => {
-            print_report(count, app.db.hash_map().len());
-            file::write(data, csv_path)
-        }
-        Err(e) => Err(anyhow!(e)),
-    }
+    wtr.flush().context("failed to flush CSV writer")?;
+    let data = wtr
+        .into_inner()
+        .map_err(|e| anyhow!("failed to finalize CSV data: {}", e))?;
+    print_report(count, app.db.hash_map().len());
+    file::write(data, csv_path.clone())
+        .with_context(|| format!("failed to write Chrome CSV export to '{}'", csv_path))
 }
 
 fn to_firefox_csv(matches: &ArgMatches, app: &App, csv_path: String) -> Result<(), anyhow::Error> {
-    let mut wtr = writer::to_bytes()?;
+    let mut wtr = writer::to_bytes().context("failed to create CSV writer")?;
     let mut count = 0;
-    for dr in app.db.collect_decrypted()? {
-        log::debug!("Record: {}", dr.key());
+    for dr in app
+        .db
+        .collect_decrypted()
+        .context("failed to decrypt records for Firefox export")?
+    {
+        log::debug!(key = dr.key().as_str(), operation = "export"; "Processing record");
         if !valid_export(matches, dr.clone()) {
             continue;
         }
-        wtr.serialize(firefox::from_decrypted(dr))?;
+        wtr.serialize(firefox::from_decrypted(dr))
+            .context("failed to serialize record to Firefox CSV format")?;
         count += 1;
         print!(".");
     }
-    wtr.flush()?;
-    match wtr.into_inner() {
-        Ok(data) => {
-            print_report(count, app.db.hash_map().len());
-            file::write(data, csv_path)
-        }
-        Err(e) => Err(anyhow!(e)),
-    }
+    wtr.flush().context("failed to flush CSV writer")?;
+    let data = wtr
+        .into_inner()
+        .map_err(|e| anyhow!("failed to finalize CSV data: {}", e))?;
+    print_report(count, app.db.hash_map().len());
+    file::write(data, csv_path.clone())
+        .with_context(|| format!("failed to write Firefox CSV export to '{}'", csv_path))
 }
 
 fn print_report(count: usize, total: usize) {

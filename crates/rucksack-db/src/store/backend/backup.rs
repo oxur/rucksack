@@ -22,7 +22,7 @@ pub fn copy(src_file: String, dest_dir: String, version: String) -> Result<Strin
         Ok(_) => Ok(bu_path.display().to_string()),
         Err(e) => {
             let msg = "Could not copy file";
-            log::error!("{msg} {src_file:?} ({e:})");
+            log::error!(file = src_file.as_str(), error = e.to_string().as_str(), operation = "backup_copy"; "{}", msg);
             Err(anyhow!("{msg} {src_file:?} ({e:})"))
         }
     }
@@ -56,17 +56,13 @@ pub fn restore(
 ) -> Result<()> {
     let mut old_path = backup_path;
     old_path.push(old_name);
-    log::debug!(
-        "Restoring backup from {} to {} ...",
-        old_path.display(),
-        dest_path.display()
-    );
+    log::debug!(source = old_path.to_string_lossy().as_ref(), dest = dest_path.to_string_lossy().as_ref(), operation = "restore"; "Restoring backup");
     let old_file = old_path.display().to_string();
     match fs::copy(old_path, dest_path) {
         Ok(_) => (),
         Err(e) => {
             let msg = "Could not copy file";
-            log::error!("{msg} {old_file:?} ({e:})");
+            log::error!(file = old_file.as_str(), error = e.to_string().as_str(), operation = "restore"; "{}", msg);
             return Err(anyhow!("{msg} {old_file:?} ({e:})"));
         }
     }

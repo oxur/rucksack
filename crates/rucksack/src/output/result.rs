@@ -102,7 +102,7 @@ impl ResultRow {
         let col = match self.get(column) {
             Some(c) => c.to_string(),
             None => {
-                log::warn!("Key {} has no value for column {}", self.id(), column);
+                log::warn!(key = self.id().as_str(), column = format!("{:?}", column).as_str(), operation = "get_value"; "Key has no value for column");
                 "".to_string()
             }
         };

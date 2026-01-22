@@ -159,7 +159,7 @@ impl Config {
     pub fn init(opts: &Opts) -> Result<()> {
         let file_path = file::create_parents(opts.file_name.clone())?;
         if file_path.exists() && !opts.force {
-            log::debug!("File already exists; skipping init ...");
+            log::debug!(operation = "init"; "File already exists; skipping init");
             return Ok(());
         }
         file::write(DEFAULT.as_bytes().to_vec(), opts.file_name.clone())
@@ -207,9 +207,9 @@ impl Config {
             }
         }
         cfg.rucksack.cfg_file = opts.file_name.clone();
-        log::debug!("Config setup complete (using {})", cfg.rucksack.cfg_file);
+        log::debug!(file = cfg.rucksack.cfg_file.as_str(), operation = "setup"; "Config setup complete");
         cfg.rucksack.name = opts.name.clone();
-        log::debug!("Logger setup complete");
+        log::debug!(operation = "setup"; "Logger setup complete");
         Ok(cfg)
     }
 

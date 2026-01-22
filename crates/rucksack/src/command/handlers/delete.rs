@@ -26,7 +26,7 @@ use crate::input::query;
 
 pub fn one(_matches: &ArgMatches, app: &App) -> Result<()> {
     let key = app.inputs.key();
-    log::debug!("Marking record '{}' as deleted ...", key);
+    log::debug!(key = key.as_str(), operation = "delete"; "Marking record as deleted");
     let mut record = query::record(app)?;
     record.set_status(Status::Deleted);
     app.db.update(key, record)?;

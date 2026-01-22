@@ -89,12 +89,12 @@ impl fmt::Display for DupeInfo {
 }
 
 fn dedupe_exact(_matches: &ArgMatches, _db: &DB) -> Result<(), anyhow::Error> {
-    log::debug!("Performing exact record deduplication ...");
+    log::debug!(type_str = "exact", operation = "dedupe"; "Performing exact record deduplication");
     Ok(())
 }
 
 fn dedupe_passwords_updated(_matches: &ArgMatches, _db: &DB) -> Result<(), anyhow::Error> {
-    log::debug!("Performing updated password record deduplication ...");
+    log::debug!(type_str = "updated", operation = "dedupe"; "Performing updated password record deduplication");
     Ok(())
 }
 
